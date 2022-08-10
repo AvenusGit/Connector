@@ -1,0 +1,36 @@
+﻿<UserControl x:Class="Connector.View.SettingsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Connector.View"
+             xmlns:AuraS="clr-namespace:AuraS.Controls;assembly=AuraS"
+             mc:Ignorable="d">
+    <ScrollViewer Style="{DynamicResource AuraScrollViewer}" VerticalScrollBarVisibility="Auto">
+        <Grid Margin="30,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <!--TODO Settings Control-->
+            <AuraS:AuraSettingControl Margin="20,10,20,50" Name="iAuraSettingsControl"/>
+            <Grid Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Top">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" Style="{DynamicResource AuraDefaultButtonStyle}" 
+                        HorizontalAlignment="Right" Command="{Binding CancelCommand}"
+                        Width="{Binding ActualWidth, ElementName=iSaveButton}">
+                    <TextBlock Style="{DynamicResource AuraDefaultText}" Text="Отмена"/>
+                </Button>
+                <Button Grid.Column="1" Style="{DynamicResource AuraDefaultButtonStyle}" 
+                         HorizontalAlignment="Left" x:Name="iSaveButton"
+                        Command="{Binding SaveCommand}">
+                    <TextBlock Style="{DynamicResource AuraDefaultText}" Text="Сохранить"/>
+                </Button>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

@@ -1,0 +1,23 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit">
+    <Style x:Key="AuraColorPickerStyle" TargetType="{x:Type xctk:ColorPicker}">
+        <Setter Property="Background" Value="{DynamicResource FoneBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Setter Property="ShowTabHeaders" Value="False"/>
+        <Setter Property="ColorMode" Value="ColorCanvas"/>
+        <Setter Property="DisplayColorAndName" Value="False"/>
+        <Setter Property="DisplayColorTooltip" Value="true"/>
+        <Setter Property="DropDownBackground" Value="{DynamicResource PanelBrush}"/>
+        <Setter Property="DropDownBorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="ShowDropDownButton" Value="True"/>
+        <Setter Property="ButtonStyle" Value="{DynamicResource ColorPickerDropDownButton}"/>
+    </Style>
+    <Style x:Key="ColorPickerDropDownButton" TargetType="ToggleButton">
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="Template" Value="{DynamicResource AuraToggleButton}"/>
+    </Style>
+
+</ResourceDictionary>

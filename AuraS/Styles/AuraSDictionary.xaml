@@ -1,0 +1,31 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/Border.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/TabControl.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/Border.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/Separator.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/ColorPicker.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/TextBlock.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/Menu.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/ScrollBar.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/ScrollViewer.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/CheckBox.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/RadioButton.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/Slider.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/ProgressBar.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/DatePicker.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/Expander.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/TreeView.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/DataGrid.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/Tooltip.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/TextBox.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/PasswordBox.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/GroupBox.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/ToggleButton.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/Combobox.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/Button.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/Calendar.xaml"/>
+        <ResourceDictionary Source="/AuraS;component/Styles/AuraS/ListBox.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

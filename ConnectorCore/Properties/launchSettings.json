@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ConnectorCore": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
