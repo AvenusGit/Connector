@@ -17,4 +17,12 @@
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.15.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\Application\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ConnectorCore\ConnectorCore.csproj" />
+  </ItemGroup>
+
 </Project>

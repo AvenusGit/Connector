@@ -8,6 +8,7 @@ using ConnectorCore.Models.Server;
 using ConnectorCore.Models.Authorization;
 using Connector.Models.Commands;
 using Connector.Models.Authorization;
+using ConnectorCore.Interfaces;
 using Connector.View;
 
 namespace Connector.ViewModels
@@ -24,11 +25,11 @@ namespace Connector.ViewModels
         {
             get { return ConnectorApp.Instance.CurrentUser; }
         }
-        public ObservableCollection<RdpInfo> RdpConnections
+        public ObservableCollection<IConnection> RdpConnections
         {
             get
             {
-                return new ObservableCollection<RdpInfo>(CurrentUser.Connections);
+                return new ObservableCollection<IConnection>(CurrentUser.Connections);
             }
         }
         #endregion

@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ConnectorCore.Models.Server;
 
 namespace ConnectorCore.Interfaces
 {
-    public interface IServerInfo
+    public interface IUserSettings
     {
-        public string Name { get; }
-        public int Port { get; }
-        public string HostOrIP { get; }
+        public ServerInfo ConnectorServer { get; set; }
     }
 }

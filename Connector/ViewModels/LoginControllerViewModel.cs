@@ -56,8 +56,7 @@ namespace Connector.ViewModels
             {
                 ConnectorApp.Instance.CurrentUser = new ConnectorUser(
                     user.Name,
-                    user.Credentials,
-                    user.Role);
+                    user.Credentials);
                 await ConnectorApp.Instance.CurrentUser.UpdateConnections(
                     new Action(() =>
                     {

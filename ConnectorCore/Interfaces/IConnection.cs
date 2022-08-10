@@ -7,11 +7,10 @@ using ConnectorCore.Models.Authorization;
 
 namespace ConnectorCore.Interfaces
 {
-    public interface IConnectionInfo
+    public interface IConnection
     {
         public string ConnectionName { get; set; }
-        public string UserName { get; set; }
-        public Сredentials Сredentials { get; set; }
-        public IServerInfo ServerInfo { get; set; }
+        public string ConnectionDescription { get;}
+        public bool Locked { get; set; }
     }
 }

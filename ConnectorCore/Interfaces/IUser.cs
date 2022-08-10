@@ -11,12 +11,5 @@ namespace ConnectorCore.Interfaces
     {
         public string Name { get; set; }
         public Сredentials Credentials { get; set; }
-        public Roles Role { get; set; }
-        public enum Roles
-        {
-            User,
-            Support,
-            Administrator
-        }
     }
 }

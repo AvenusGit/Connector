@@ -8,6 +8,8 @@ using ConnectorCore.Interfaces;
 using ConnectorCore.Models.Server;
 using conn=Connector.Models.Authorization;
 using ConnectorCore.Models.Authorization;
+using ConnectorCore.Models.Connections;
+using ConnectorCore.Models.Server;
 using Connector.Models.Settings;
 using AuraS.Models;
 using AuraS.Interfaces;
@@ -23,9 +25,9 @@ namespace Connector.Models.REST
         {
             return new conn.ConnectorUser()
             {
-                Name = "testConnectorUser",
+                Name = "authorizeUser",
                 Credentials = сredentials,
-                Role = IUser.Roles.Administrator
+                Role = IApplicationUser.AppRoles.Administrator
             };
         }
         public async Task<IUser?> AuthorizeAsync(Сredentials сredentials)
@@ -33,29 +35,34 @@ namespace Connector.Models.REST
             await Task.Delay(1000);
             return Authorize(сredentials);
         }
-        public IEnumerable<RdpInfo> GetServerList(IUser user)
+        public IEnumerable<IConnection> GetServerList(IUser user)
         {
             //TODO test method
-            return new List<RdpInfo>()
+            return new List<IConnection>()
                 {
-                    new RdpInfo()
+                    new RdpConnection()
                     {
-                        ConnectionName = "TestConnection1",
-                        UserName = user.Name,
-                        Сredentials = new Сredentials(user.Credentials.Login,user.Credentials.Password),
-                        ServerInfo = new ServerInfo()
+                        ConnectionName = "RdpTestConnection",
+                        Locked = false,
+                        Server = new ServerInfo()
                         {
-                            Name = "TestServer 1",
+                            Name = "TestRdpServer",
                             HostOrIP = "127.0.0.1",
-                            Port = 3389,
+                            Port = 3389
+                        },
+                        User = new RdpUser()
+                        {
+                            Name = "rdpTestUser1",
+                            Credentials = new Сredentials("login", "pass"),
+                            Role = RdpUser.RdpRoles.User
                         }
                     },
-                    new RdpInfo()
+                    new SshConnection()
                     {
-                        ConnectionName = "TestConnection2",
-                        UserName = "TestUser2",
-                        Сredentials = new Сredentials(user.Credentials.Login,user.Credentials.Password),
-                        ServerInfo = new ServerInfo()
+                        ConnectionName = "SshTestConnection",
+                        Locked = false,
+                        Сredentials = new Сredentials("login", "password"),
+                        Server = new ServerInfo()
                         {
                             Name = "TestServer 2",
                             HostOrIP = "127.0.0.2",
@@ -64,17 +71,17 @@ namespace Connector.Models.REST
                     }
                 };
         }
-        public async Task<IEnumerable<RdpInfo>> GetServerListAsync(IUser user)
+        public async Task<IEnumerable<IConnection>> GetConnectionListAsync(IUser user)
         {
             //TODO
             await Task.Delay(1200);
             return GetServerList(user);
         }
-        public ISettings? GetSettings(IUser user)
+        public IUserSettings? GetSettings(IUser user)
         {
-            return new ConnectorSettings()
+            return new ConnectorUserSettings()
             {
-                MainServer = new ServerInfo()
+                ConnectorServer = new ServerInfo()
                 {
                     HostOrIP = "127.0.0.1",
                     Name = "MainServer",
@@ -82,7 +89,7 @@ namespace Connector.Models.REST
                 },
             };
         }
-        public async Task<ISettings?> GetUserSettingsAsync(IUser user)
+        public async Task<IUserSettings?> GetUserSettingsAsync(IUser user)
         {
             await Task.Delay(900);
             return GetSettings(user);
