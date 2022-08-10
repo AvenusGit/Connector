@@ -9,13 +9,13 @@ namespace AuraS.Models
 {
     public class FontScheme : IScheme<IFontScheme>, IFontScheme
     {
-        public string Font { get; set; }
+        public FontFamily Font { get; set; }
         public double? FontMultiplierPercent { get; set; }
         public IFontScheme GetCurrent()
         {
             FontScheme result = new FontScheme();
-            if(Application.Current.Resources.Contains("FontFamily"))
-                result.Font = ((FontFamily)Application.Current.Resources["FontFamily"]).Source;
+            if (Application.Current.Resources.Contains("Font"))
+                result.Font = (FontFamily)Application.Current.Resources["Font"];
             if (Application.Current.Resources.Contains("FontMultiplier"))
                 result.FontMultiplierPercent = (double)Application.Current.Resources["FontMultiplier"];
             return result;

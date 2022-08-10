@@ -15,7 +15,7 @@ namespace AuraS.Controls.ControlsViewModels
         {
             ColorScheme = scheme.ColorScheme;
             FontScheme = scheme.FontScheme;
-            SelectedFont = new FontFamily(FontScheme.Font);
+            SelectedFont = FontScheme.Font;
         }
         private FontFamily _selectedFont;
         public IColorScheme ColorScheme { get; set; }
@@ -47,7 +47,7 @@ namespace AuraS.Controls.ControlsViewModels
             set
             {
                 _selectedFont = value;
-                FontScheme.Font = _selectedFont.Source;
+                FontScheme.Font = _selectedFont;
                 FontScheme.Apply();
             }
         }
@@ -76,30 +76,6 @@ namespace AuraS.Controls.ControlsViewModels
                 }
                 return cyrillicFamilies;
             }
-        }
-
-        private List<FontFamily> GetOnlyCyrillicFontFamyly(ICollection<FontFamily> fontFamilyList)
-        {
-            var cyrillicFamilies = new List<FontFamily>();
-            const char RUS_CHAR = 'ъ';
-            var lang = System.Windows.Markup.XmlLanguage.GetLanguage("en-us");
-
-            foreach (System.Windows.Media.FontFamily fontFamily in System.Windows.Media.Fonts.SystemFontFamilies)
-            {
-                ICollection<Typeface> typeFaces = fontFamily.GetTypefaces();
-                foreach (Typeface typeFace in typeFaces)
-                {
-                    GlyphTypeface glyph;
-                    if (!typeFace.TryGetGlyphTypeface(out glyph)) continue;
-                    ushort temporary;
-                    if (glyph.CharacterToGlyphMap.TryGetValue((int)RUS_CHAR, out temporary))
-                    {
-                        cyrillicFamilies.Add(fontFamily);
-                        break;
-                    }
-                }
-            }
-            return cyrillicFamilies;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

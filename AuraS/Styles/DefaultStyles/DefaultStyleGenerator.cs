@@ -23,7 +23,7 @@ namespace AuraS.Styles.DefaultStyles
         {
             return new FontScheme()
             {
-                Font = "Arial", //TODO
+                Font = new FontFamily("Yu Gothic UI Light"), //TODO
                 FontMultiplierPercent = 100
             };
         }

@@ -9,7 +9,7 @@ namespace AuraS.Interfaces
 {
     public interface IFontScheme : IScheme<IFontScheme>
     {
-        public string Font { get; set; }
+        public FontFamily Font { get; set; }
         public double? FontMultiplierPercent { get; set; }
     }
 }
