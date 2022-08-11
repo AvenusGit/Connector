@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Connector.ViewModels;
-using ConnectorCore.Interfaces;
 
 namespace Connector.View
 {

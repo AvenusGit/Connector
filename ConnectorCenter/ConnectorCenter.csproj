@@ -4,25 +4,31 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>aspnet-ConnectorCenter-5766C8A3-BD9A-47E0-A21B-D030DD247DD5</UserSecretsId>
+    <UserSecretsId>aspnet-ConnectorCenter-C1559EB4-253B-4B0A-B32C-02D3BEE36E0D</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.7" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.7" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.7" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.7" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.7" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.15.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Models\Application\" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.8" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ConnectorCore\ConnectorCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\App\" />
+    <Folder Include="Models\Servers\" />
+    <Folder Include="Views\DashBoard\" />
+    <Folder Include="wwwroot\bootstrap\" />
+    <Folder Include="wwwroot\images\" />
   </ItemGroup>
 
 </Project>

@@ -1,10 +1,9 @@
 ﻿using System;
-using ConnectorCore.Interfaces;
 using Connector.Models.Commands;
 using Connector.Models.REST;
-using ConnectorCore.Models.Authorization;
 using Connector.Models.Authorization;
 using Connector.View;
+using ConnectorCore.Models;
 
 namespace Connector.ViewModels
 {
@@ -50,8 +49,8 @@ namespace Connector.ViewModels
         private async void Authorize()
         {
             ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Авторизация...");
-            ConnectorRestService restService = new ConnectorRestService();
-            IUser? user =  await restService.AuthorizeAsync(Сredentials);
+            RestService restService = new RestService();
+            AppUser? user =  await restService.AuthorizeAsync(Сredentials);
             if (user is not null)
             {
                 ConnectorApp.Instance.CurrentUser = new ConnectorUser(

@@ -12,4 +12,8 @@
     <ProjectReference Include="..\ConnectorCore\ConnectorCore.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\Visual\" />
+  </ItemGroup>
+
 </Project>

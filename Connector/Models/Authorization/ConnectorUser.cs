@@ -1,53 +1,45 @@
-﻿using ConnectorCore.Interfaces;
-using ConnectorCore.Models.Authorization;
-using Connector.Models.Settings;
-using ConnectorCore.Models.Server;
-using Connector.Models.REST;
+﻿using Connector.Models.REST;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System;
 using AuraS.Interfaces;
 using AuraS.Models;
-using ConnectorCore.Interfaces;
+using ConnectorCore.Models;
 
 namespace Connector.Models.Authorization
 {
-    public class ConnectorUser : IApplicationUser
+    public class ConnectorUser :  AppUser
     {
+       
         public ConnectorUser() { }
         public ConnectorUser(string name, Сredentials credentials)
         {
             Name = name;
             Credentials = credentials;
         }
-
-        public string Name { get; set; }
-        public Сredentials Credentials { get; set; }
-        public IEnumerable<IConnection> Connections { get; set; }
-        public IUserSettings UserSettings { get; set; }
         public IVisualScheme VisualScheme { get; set; }
-        public IApplicationUser.AppRoles Role { get; set; }
+        
         public async Task UpdateConnections(Action before, Action after)
         {
             before?.Invoke();
-            ConnectorRestService restService = new ConnectorRestService();
-            IEnumerable<IConnection> connectionList = await restService.GetConnectionListAsync(ConnectorApp.Instance.CurrentUser);
+            RestService restService = new RestService();
+            IEnumerable<Connection> connectionList = await restService.GetConnectionListAsync(ConnectorApp.Instance.CurrentUser.Id);
             after?.Invoke();
-            Connections = new ObservableCollection<IConnection>(connectionList);
+            Connections = new ObservableCollection<Connection>(connectionList);
         }
         public async Task UpdateUserSettings(Action before, Action after)
         {
             before?.Invoke();
-            ConnectorRestService restService = new ConnectorRestService();
-            UserSettings = await restService.GetUserSettingsAsync(this);
+            RestService restService = new RestService();
+            UserSettings = await restService.GetUserSettingsAsync(Id);
             after?.Invoke();
         }
         public async Task UpdateVisualSettings(Action before, Action after)
         {
             before?.Invoke();
-            ConnectorRestService restService = new ConnectorRestService();
-            IVisualScheme visualSettings = await restService.GetVisualSchemeAsync(this);
+            RestService restService = new RestService();
+            IVisualScheme visualSettings = await restService.GetVisualSchemeAsync(Id);
             after?.Invoke();
             VisualScheme = new VisualScheme()
             {

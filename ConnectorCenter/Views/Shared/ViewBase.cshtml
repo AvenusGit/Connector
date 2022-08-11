@@ -1,0 +1,29 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, height=100%, initial-scale=1">
+    <title>ConnectorCenter</title>
+    <link href="~/bootstrap/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href="~/css/site.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="container">
+        <div class="row" style="height:10vh">
+
+        </div>
+        <div class="row" style="height:80vh">
+            <div class="col-1">
+            </div>
+            <div class="col-10">
+                @RenderBody()
+            </div>
+            <div class="col-1">
+            </div>
+        </div>
+        <div class="row" style="height:10vh">
+        </div>
+        @RenderBody()
+    </div>
+</body>
+</html>

@@ -11,8 +11,38 @@ html {
 html {
   position: relative;
   min-height: 100%;
+  min-width: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+    background-image: radial-gradient(top, ellipse cover, rgba(71, 71, 71, 0.85), rgba(20, 20, 20, 1) 80%), url("/images/connector_fone.jpg");
+    background-image: -webkit-radial-gradient(top, ellipse cover, rgba(71, 71, 71, 0.85), rgba(20, 20, 20, 1) 80%), url("/images/connector_fone.jpg");
+    background-image: -moz-radial-gradient(top, ellipse cover, rgba(71, 71, 71, 0.85), rgba(20, 20, 20, 1) 80%), url("/images/connector_fone.jpg");
+    background-image: -o-radial-gradient(top, ellipse cover, rgba(71, 71, 71, 0.85), rgba(20, 20, 20, 1) 80%), url("/images/connector_fone.jpg");
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.panel {
+    background: #ffffff5a;
+    margin: 4px;
+    box-shadow: rgba(0,0,0,0.6), 20px,10px,inset;
+    width: 100%;
+    height:100%;
+}
+.panelbutton {
+    background: #ffffff5a;
+    margin: 4px;
+    width: 100%;
+    height: 100%;
+    box-shadow: rgba(0,0,0,0.6), 20px,10px,inset;
+    transition: background linear 350ms;
+    border-color: transparent;
+}
+.sspanelbutton:hover {
+    transition: background linear 350ms;
+    background: #000000bc;
 }

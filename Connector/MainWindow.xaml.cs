@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Connector.View;
-using ConnectorCore.Models.Authorization;
 using Connector.ViewModels;
 
 namespace Connector

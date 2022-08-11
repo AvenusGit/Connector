@@ -4,11 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ConnectorCore.Models.Server;
-using ConnectorCore.Models.Authorization;
+using ConnectorCore.Models;
 using Connector.Models.Commands;
 using Connector.Models.Authorization;
-using ConnectorCore.Interfaces;
 using Connector.View;
 
 namespace Connector.ViewModels
@@ -25,11 +23,11 @@ namespace Connector.ViewModels
         {
             get { return ConnectorApp.Instance.CurrentUser; }
         }
-        public ObservableCollection<IConnection> RdpConnections
+        public ObservableCollection<Connection> RdpConnections
         {
             get
             {
-                return new ObservableCollection<IConnection>(CurrentUser.Connections);
+                return new ObservableCollection<Connection>(CurrentUser.Connections);
             }
         }
         #endregion

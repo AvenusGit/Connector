@@ -1,0 +1,45 @@
+﻿@model ConnectorCenter.Views.Login.IndexModel
+@{
+    Layout = "~/Views/Shared/ViewBase.cshtml";
+}
+<div class="bg-gradient">
+    <form formaction="/">
+        @if (!String.IsNullOrEmpty(Model.Message))
+        {
+            <label>@Model?.Message</label>
+        }
+        <input type="text" id="login"/>
+        <input type="password" id="password"/>
+        <input type="submit" id="submitLogin"/>
+    </form>
+</div>
+<script>
+    var tokenKey = "accessToken";
+    // при нажатии на кнопку отправки формы идет запрос к /login для получения токена
+    document.getElementById("submitLogin").addEventListener("click", async e => {
+        e.preventDefault();
+        // отправляет запрос и получаем ответ
+        const response = await fetch("/api/authorization/authorize", {
+            method: "POST",
+            headers: { "Accept": "application/json", "Content-Type": "application/json" },
+            body: JSON.stringify({
+
+                    Login: document.getElementById("login").value,
+                    Password: document.getElementById("password").value
+                })                
+        });
+        // если запрос прошел нормально
+        if (response.ok === true) {
+            // получаем данные
+            const data = await response.json();
+            // сохраняем в хранилище sessionStorage токен доступа
+            sessionStorage.setItem(tokenKey, data.token);
+            window.location.href = "/dashboard";
+        }
+        else{
+            console.log("Authorize status: ", response.status);
+            window.location.href = "/login?message=" + response.body;
+        }
+            
+    });    
+</script>

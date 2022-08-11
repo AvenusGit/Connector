@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows.Controls;
-using ConnectorCore.Interfaces;
-using Connector.Models.Settings;
 using Connector.Models.Authorization;
-using Connector.Models.REST;
+using ConnectorCore.Models;
 using Connector.ViewModels;
 
 namespace Connector
@@ -34,7 +32,7 @@ namespace Connector
         #endregion
         #region Fields
         private ConnectorUser _currentUser;
-        private AppSettings _connectorSettings;
+        private UserSettings _connectorSettings;
         #endregion
         #region Properties
         public MainWindowViewModel WindowViewModel { get; set; }
@@ -50,7 +48,7 @@ namespace Connector
                 OnPropertyChanged("CurrentUser");
             }
         }
-        public AppSettings AppSettings
+        public UserSettings AppSettings
         {
             get
             {
@@ -66,7 +64,7 @@ namespace Connector
         #region Methods
         private void Initialize()
         {
-            AppSettings = new AppSettings();
+            AppSettings = new UserSettings();
         }
         #endregion
 
