@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorCore", "ConnectorC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuraS", "AuraS\AuraS.csproj", "{7375342B-96B7-4DDB-8E32-B08DD74C281D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorCenter", "ConnectorCenter\ConnectorCenter.csproj", "{6FE88D98-C043-4630-B007-32F7293CF217}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorCenter", "ConnectorCenter\ConnectorCenter.csproj", "{3B2E7D27-0E51-4F87-891C-86D83D560695}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +29,10 @@ Global
 		{7375342B-96B7-4DDB-8E32-B08DD74C281D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7375342B-96B7-4DDB-8E32-B08DD74C281D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7375342B-96B7-4DDB-8E32-B08DD74C281D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6FE88D98-C043-4630-B007-32F7293CF217}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6FE88D98-C043-4630-B007-32F7293CF217}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6FE88D98-C043-4630-B007-32F7293CF217}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6FE88D98-C043-4630-B007-32F7293CF217}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B2E7D27-0E51-4F87-891C-86D83D560695}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B2E7D27-0E51-4F87-891C-86D83D560695}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B2E7D27-0E51-4F87-891C-86D83D560695}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B2E7D27-0E51-4F87-891C-86D83D560695}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

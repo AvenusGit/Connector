@@ -14,5 +14,17 @@
             Support,
             Administrator
         }
+
+        public static AppUser GetDefault()
+        {
+            return new AppUser()
+            {
+                Name = "DefaultAdmin",
+                Credentials = new Сredentials("connectorCenter", "connectorCenter"),
+                Connections = new List<Connection>(),
+                Role = AppRoles.Administrator,
+                UserSettings = UserSettings.GetDefault()
+            };
+        }
     }
 }

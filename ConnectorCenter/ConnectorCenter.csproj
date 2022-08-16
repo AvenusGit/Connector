@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>aspnet-ConnectorCenter-C1559EB4-253B-4B0A-B32C-02D3BEE36E0D</UserSecretsId>
+    <UserSecretsId>aspnet-ConnectorCenter-85EFAA3A-CF6F-418E-ABF5-DE22D979EE32</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
@@ -16,19 +16,10 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.8" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ConnectorCore\ConnectorCore.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Models\App\" />
-    <Folder Include="Models\Servers\" />
-    <Folder Include="Views\DashBoard\" />
-    <Folder Include="wwwroot\bootstrap\" />
-    <Folder Include="wwwroot\images\" />
   </ItemGroup>
 
 </Project>

@@ -9,5 +9,9 @@ namespace ConnectorCore.Models
     public class UserSettings
     {
         public long Id { get; set; }
+        public static UserSettings GetDefault()
+        {
+            return new UserSettings();
+        }
     }
 }

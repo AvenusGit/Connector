@@ -15,6 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAuthentication("Bearer").AddJwtBearer(
     options =>
     {
+        options.SaveToken = true;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             // указывает, будет ли валидироваться издатель при валидации токена
@@ -33,7 +34,12 @@ builder.Services.AddAuthentication("Bearer").AddJwtBearer(
             ValidateIssuerSigningKey = true,
         };
     });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.DefaultPolicy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
+        .RequireAuthenticatedUser()
+        .Build();
+});
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -43,7 +49,11 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<DataBaseContext>();
-builder.Services.AddControllersWithViews();
+// добавление MVC сервиса
+builder.Services.AddControllersWithViews(mvcOtions =>
+{
+    mvcOtions.EnableEndpointRouting = false;
+});
 
 var app = builder.Build();
 
@@ -57,7 +67,7 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/Home/Error"); //TODO
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
@@ -65,15 +75,19 @@ else
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-app.UseRouting();
+// стандартный маршрут mvc
+app.UseMvcWithDefaultRoute();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
-app.MapRazorPages();
+// включаем паттерн mvc
+app.UseMvc(routes =>
+{
+    routes.MapRoute( // базовый маршрут при отсутствии указанного пути
+        name: "/",
+        template: "/home");
+});
 
 app.Run();
 
@@ -81,7 +95,7 @@ public static class AuthOptions
 {
     public const string ISSUER = "ConnectorCenter"; // издатель токена
     public const string AUDIENCE = "ConnectorClient"; // потребитель токена
-    const string KEY = "ElefantGoNorth";   // ключ для шифрации
+    const string KEY = "ExtremeUltraSuperLoooongSecretKey";   // ключ для шифрации
     public static SymmetricSecurityKey GetSymmetricSecurityKey() =>
         new SymmetricSecurityKey(Encoding.UTF8.GetBytes(KEY));
 }

@@ -4,9 +4,9 @@ using ConnectorCore.Models;
 
 namespace ConnectorCenter.Views.FirstStart
 {
-    public class FirstStartViewModel : PageModel
+    public class IndexViewModel : PageModel
     {
-        public FirstStartViewModel(bool isFirstStart)
+        public IndexViewModel(bool isFirstStart)
         {
             IsFirstStart = isFirstStart;
         }
