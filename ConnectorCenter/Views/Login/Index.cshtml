@@ -2,47 +2,17 @@
 @{
     Layout = "~/Views/Shared/ViewBase.cshtml";
 }
-<div class="bg-gradient">
-    <form formaction="/">
+@section Scripts{
+
+}
+<div>
+    <form action="/login/authorize" method="post">
         @if (!String.IsNullOrEmpty(Model.Message))
         {
             <label>@Model?.Message</label>
         }
-        <input type="text" id="login"/>
-        <input type="password" id="password"/>
-        <input type="submit" id="submitLogin"/>
+        <input type="text" name="Login"/>
+        <input type="password" name="Password"/>
+        <input type="submit"/>
     </form>
 </div>
-<script>
-    var tokenKey = "accessToken";
-    // при нажатии на кнопку отправки формы идет запрос к /login для получения токена
-    document.getElementById("submitLogin").addEventListener("click", async e => {
-        e.preventDefault();
-        // отправляет запрос и получаем ответ
-        const response = await fetch("/api/authorization/authorize", {
-            method: "POST",
-            headers: { "Accept": "application/json", "Content-Type": "application/json" },
-            body: JSON.stringify({
-                
-                    Login: document.getElementById("login").value,
-                    Password: document.getElementById("password").value
-                })                
-        });
-        // если запрос прошел нормально
-        if (response.ok === true) {
-            // получаем данные
-            const data = await response.json();
-            // сохраняем в хранилище sessionStorage токен доступа
-            sessionStorage.setItem(tokenKey, data.token);
-            location.assign("/dashboard", {
-                Headers: { "Authorization": "Bearer " + tokenKey }
-            });
-        }
-        else{
-            console.log("Authorize status: ", response.status);
-            location.assign("/login",{
-                Headers: { "Authorization": "Bearer " + tokenKey }
-            });
-        }            
-    });    
-</script>

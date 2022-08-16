@@ -1,5 +1,5 @@
 ﻿using ConnectorCenter.Data;
-using ConnectorCenter.Services;
+using ConnectorCenter.Services.Authorize;
 using ConnectorCore.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,12 +8,13 @@ using System.Net.Mime;
 
 namespace ConnectorCenter.Controllers.Api
 {
-    [Route("/api/authorization")]
+    [Route("/api/token")]
+    [AllowAnonymous]
     [ApiController]
-    public class Authorization : ControllerBase
+    public class TokenApi : ControllerBase
     {
         private readonly DataBaseContext _dataBaseContext;
-        public Authorization(DataBaseContext context)
+        public TokenApi(DataBaseContext context)
         {
             _dataBaseContext = context;
         }
@@ -21,15 +22,15 @@ namespace ConnectorCenter.Controllers.Api
         [HttpGet]
         private async Task Index()
         {
-            await HttpContext.Response.WriteAsync("JSON (Credentials{string Login, string Password}) ib request body need!");
+            Response.StatusCode = 400;
+            await HttpContext.Response.WriteAsync("JSON (Credentials{string Login, string Password}) in request body need!");
         }
 
-        [Route("/api/authorization/authorize")]
+        [Route("/api/token/gettoken")]
         [Produces(MediaTypeNames.Application.Json)]
         [Consumes("application/json")]
         [HttpPost]
-        [AllowAnonymous]
-        public async Task Authorize([FromBody] Сredentials credentials)
+        public async Task GetToken([FromBody] Сredentials credentials)
         {
             if(!ModelState.IsValid)
             {
@@ -41,7 +42,7 @@ namespace ConnectorCenter.Controllers.Api
                 AppUser? user;
                 if (AuthorizeService.IsAuthorized(_dataBaseContext, credentials, out user))
                 {
-                    JwtSecurityToken jwt = AuthorizeService.GetJwtToken(user!);
+                    JwtSecurityToken jwt = JwtAuthorizeService.GetJwtToken(user!);
                     Response.StatusCode = 200;
                     JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
                     var json = new
