@@ -14,7 +14,7 @@ namespace ConnectorCenter.Services.Authorize
     {
         public static JwtSecurityToken GetJwtToken(AppUser user)
         {
-            IEnumerable<Claim> claims = new List<Claim> { new Claim(JwtRegisteredClaimNames.Name, user.Credentials?.Login ?? "DefaultAdmin") };
+            IEnumerable<Claim> claims = GetUserClaims(user);
             ClaimsIdentity identity = new ClaimsIdentity(claims, "Token");
             JwtSecurityToken jwt = new JwtSecurityToken(
                 issuer: AuthOptions.ISSUER,

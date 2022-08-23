@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Media;
 
-namespace AuraS.Interfaces
+namespace ConnectorCore.Models.VisualModels.Interfaces
 {
-    public interface IFontScheme : IScheme<IFontScheme>
+    public interface IFontScheme
     {
-        public FontFamily Font { get; set; }
+        public string Font { get; set; }
         public double? FontMultiplierPercent { get; set; }
     }
 }

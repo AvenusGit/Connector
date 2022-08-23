@@ -23,4 +23,9 @@
     <ProjectReference Include="..\ConnectorCore\ConnectorCore.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\VisualModels\" />
+    <Folder Include="wwwroot\images\" />
+  </ItemGroup>
+
 </Project>

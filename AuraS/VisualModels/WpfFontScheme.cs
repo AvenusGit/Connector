@@ -3,19 +3,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
-using AuraS.Interfaces;
+using ConnectorCore.Models.VisualModels;
+using ConnectorCore.Models.VisualModels.Interfaces;
 
-namespace AuraS.Models
+namespace AuraS.VisualModels
 {
-    public class FontScheme : IScheme<IFontScheme>, IFontScheme
+    public class WpfFontScheme : FontScheme
     {
-        public FontFamily Font { get; set; }
-        public double? FontMultiplierPercent { get; set; }
-        public IFontScheme GetCurrent()
+        public FontFamily FontValue
         {
-            FontScheme result = new FontScheme();
+            get
+            {
+                return new FontFamily(Font);
+            }
+            set
+            {
+                Font = value.Source;
+            }
+        }
+        public WpfFontScheme GetCurrent()
+        {
+            WpfFontScheme result = new WpfFontScheme();
             if (Application.Current.Resources.Contains("Font"))
-                result.Font = (FontFamily)Application.Current.Resources["Font"];
+                result.Font = ((FontFamily)Application.Current.Resources["Font"]).Source;
             if (Application.Current.Resources.Contains("FontMultiplier"))
                 result.FontMultiplierPercent = (double)Application.Current.Resources["FontMultiplier"];
             return result;
@@ -24,25 +34,17 @@ namespace AuraS.Models
         {
             foreach (string key in Application.Current.Resources.Keys)
             {
-                if(key.StartsWith("FontSize"))
+                if (key.StartsWith("FontSize"))
                 {
                     double withoutMultiplier;
                     if (double.TryParse(key.Replace("FontSize", ""), out withoutMultiplier))
                         Application.Current.Resources[key] = withoutMultiplier * FontMultiplierPercent / 100;
                     else continue;
                 }
-                      
+
             }
-            Application.Current.Resources["Font"] = Font;
+            Application.Current.Resources["Font"] = FontValue;
             Application.Current.Resources["FontMultiplier"] = FontMultiplierPercent ?? 100;
-        }
-        public IFontScheme Clone()
-        {
-            return new FontScheme()
-            {
-                Font = this.Font,
-                FontMultiplierPercent = this.FontMultiplierPercent,
-            };
         }
     }
 }

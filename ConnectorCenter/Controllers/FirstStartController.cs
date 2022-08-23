@@ -1,12 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using ConnectorCenter.Data;
+using ConnectorCenter.Services.Authorize;
 using ConnectorCenter.Views.FirstStart;
 using ConnectorCore.Models;
+using ConnectorCore.Models.VisualModels.Interfaces;
+using ConnectorCore.Models.VisualModels;
 
 namespace ConnectorCenter.Controllers
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "Cookies")]
     public class FirstStartController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -20,7 +23,7 @@ namespace ConnectorCenter.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            return View(new IndexViewModel(_dataBaseContext));
         }
         [HttpPost]
         public IActionResult CreateFirstUser(string username, Сredentials credentials)
@@ -33,14 +36,15 @@ namespace ConnectorCenter.Controllers
             {
                 Name = username,
                 Credentials = credentials,
-                Role = AppUser.AppRoles.Administrator,
+                Role = IAppUser.AppRoles.Administrator,
                 Connections = new List<Connection>(),
-                UserSettings = UserSettings.GetDefault()
+                UserSettings = UserSettings.GetDefault(),
+                VisualScheme = VisualScheme.GetDefaultVisualScheme()
             };
             _dataBaseContext.AppUsers.Add(newUser);
-            _dataBaseContext.SaveChangesAsync();
+            _dataBaseContext.SaveChanges();
+            CookieAuthorizeService.SignOut(HttpContext);
             return RedirectToAction("Index","Login");
-
         }
     }
 }

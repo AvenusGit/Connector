@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using AuraS.Models;
+using AuraS.VisualModels;
 using AuraS.Controls.ControlsViewModels;
 using Connector.ViewModels;
 

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System;
-using AuraS.Interfaces;
-using AuraS.Models;
+using AuraS.VisualModels;
 using ConnectorCore.Models;
+using ConnectorCore.Models.VisualModels;
 
 namespace Connector.Models.Authorization
 {
@@ -18,7 +18,7 @@ namespace Connector.Models.Authorization
             Name = name;
             Credentials = credentials;
         }
-        public IVisualScheme VisualScheme { get; set; }
+        public WpfVisualScheme VisualScheme { get; set; }
         
         public async Task UpdateConnections(Action before, Action after)
         {
@@ -39,12 +39,12 @@ namespace Connector.Models.Authorization
         {
             before?.Invoke();
             RestService restService = new RestService();
-            IVisualScheme visualSettings = await restService.GetVisualSchemeAsync(Id);
+            VisualScheme visualSettings = await restService.GetVisualSchemeAsync(Id);
             after?.Invoke();
-            VisualScheme = new VisualScheme()
+            VisualScheme = new WpfVisualScheme()
             {
-                ColorScheme = visualSettings.ColorScheme,
-                FontScheme = visualSettings.FontScheme
+                ColorScheme = visualSettings.ColorScheme as WpfColorScheme,
+                FontScheme = visualSettings.FontScheme as WpfFontScheme
             };
 
         }

@@ -5,8 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Http;
 using ConnectorCore.Models;
-using AuraS.Interfaces;
-using AuraS.Styles.DefaultStyles;
+using AuraS.VisualModels;
+using ConnectorCore.Models.VisualModels.Interfaces;
+using ConnectorCore.Models.VisualModels;
 
 namespace Connector.Models.REST
 {
@@ -20,7 +21,7 @@ namespace Connector.Models.REST
             {
                 Name = "authorizeUser",
                 Credentials = сredentials,
-                Role = AppUser.AppRoles.Administrator
+                Role = IAppUser.AppRoles.Administrator
             };
         }
         public async Task<AppUser?> AuthorizeAsync(Сredentials сredentials)
@@ -85,11 +86,11 @@ namespace Connector.Models.REST
             await Task.Delay(900);
             return GetSettings(userId);
         }
-        public IVisualScheme? GetVisualScheme(long userId)
+        public VisualScheme GetVisualScheme(long userId)
         {
-            return DefaultStyleGenerator.GetDefaultVisualScheme();
+            return WpfVisualScheme.GetDefaultVisualScheme(); //TODO
         }
-        public async Task<IVisualScheme?> GetVisualSchemeAsync(long userId)
+        public async Task<VisualScheme>? GetVisualSchemeAsync(long userId)
         {
             await Task.Delay(1500);
             return GetVisualScheme(userId);

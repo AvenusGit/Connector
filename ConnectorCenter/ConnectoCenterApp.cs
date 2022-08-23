@@ -1,9 +1,15 @@
-﻿namespace ConnectorCenter
+﻿using ConnectorCore.Models;
+namespace ConnectorCenter
 {
     public class ConnectorCenterApp
     {
-        private ConnectorCenterApp _connectorCenterApp;
-        public ConnectorCenterApp Instance
+        public readonly ApplicationVersion ApplicationVersion = new ApplicationVersion()
+        {
+            VersionSeries = "A",
+            VersionNumber = 0
+        };
+        private static ConnectorCenterApp _connectorCenterApp;
+        public static ConnectorCenterApp Instance
         {
             get
             {

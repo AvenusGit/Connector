@@ -4,22 +4,22 @@ using System.Linq;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Media;
-using AuraS.Models;
-using AuraS.Interfaces;
+using AuraS.VisualModels;
+using ConnectorCore.Models.VisualModels.Interfaces;
 
 namespace AuraS.Controls.ControlsViewModels
 {
     public class AuraSettingControlViewModel : INotifyPropertyChanged
     {
-        public AuraSettingControlViewModel(IVisualScheme scheme)
+        public AuraSettingControlViewModel(WpfVisualScheme scheme)
         {
             ColorScheme = scheme.ColorScheme;
             FontScheme = scheme.FontScheme;
-            SelectedFont = FontScheme.Font;
+            SelectedFont = new FontFamily(FontScheme.Font);
         }
         private FontFamily _selectedFont;
-        public IColorScheme ColorScheme { get; set; }
-        public IFontScheme FontScheme { get; set; }
+        public WpfColorScheme ColorScheme { get; set; }
+        public WpfFontScheme FontScheme { get; set; }
         public int SelectedFontSize 
         {
             get
@@ -47,7 +47,7 @@ namespace AuraS.Controls.ControlsViewModels
             set
             {
                 _selectedFont = value;
-                FontScheme.Font = _selectedFont;
+                FontScheme.Font = _selectedFont.Source;
                 FontScheme.Apply();
             }
         }

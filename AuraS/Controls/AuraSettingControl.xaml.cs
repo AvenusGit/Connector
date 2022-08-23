@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using AuraS.Controls.ControlsViewModels;
-using AuraS.Models;
+using AuraS.VisualModels;
 
 namespace AuraS.Controls
 {

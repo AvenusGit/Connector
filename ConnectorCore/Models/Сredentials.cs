@@ -18,5 +18,10 @@ namespace ConnectorCore.Models
         public long Id { get; set; }
         public string? Login { get; set; }
         public string? Password { get; set; }
+
+        public bool IsIdentical(Сredentials original)
+        {
+            return Login == original.Login && Password == original.Password;
+        }
     }
 }

@@ -3,42 +3,40 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media;
 using System.Windows;
-using AuraS.Interfaces;
+using ConnectorCore.Models.VisualModels.Interfaces;
+using ConnectorCore.Models.VisualModels;
 
-namespace AuraS.Models
+namespace AuraS.VisualModels
 {
-    public class ColorProperty : IColorProperty
+    public class WpfColorProperty : ColorProperty
     {
-        public ColorProperty(string name)
+        public WpfColorProperty(string name)
         {
             Name = name;
         }
-        public ColorProperty(string name, Color color)
+        public WpfColorProperty(string name, string color)
         {
             Name = name;
-            ColorValue = color;
+            Color = color;
         }
-        private Color? _color;
-        public string Name { get; set; }
-        public string ColorKeyName { get { return Name + "Color"; } }
-        public Color? ColorValue 
+        public Color? ColorValue
         {
-            get 
+            get
             {
-                return _color;
+                return (Color)ColorConverter.ConvertFromString(Color); ;
             }
-            set 
+            set
             {
-                _color = value;
+                Color = value is null ? "#FFFFFF" : value.ToString();
                 Apply();
             }
         }
         public string BrushKeyName { get { return Name + "Brush"; } }
-        public Brush? BrushValue 
+        public Brush? BrushValue
         {
             get
             {
-                if(ColorValue.HasValue)
+                if (ColorValue.HasValue)
                     return new SolidColorBrush(ColorValue.Value);
                 else return null;
             }
@@ -49,15 +47,15 @@ namespace AuraS.Models
             if (Application.Current.Resources.Contains(ColorKeyName))
             {
                 var resource = Application.Current.Resources[ColorKeyName];
-                if(resource is Color)
+                if (resource is Color)
                     ColorValue = (Color)resource;
-            }   
+            }
             else
                 ColorValue = null;
         }
-        public static ColorProperty GetColorProperty(string name)
+        public static WpfColorProperty GetColorProperty(string name)
         {
-            ColorProperty result = new ColorProperty(name);
+            WpfColorProperty result = new WpfColorProperty(name);
             result.Update();
             return result;
         }

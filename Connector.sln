@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorCore", "ConnectorC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuraS", "AuraS\AuraS.csproj", "{7375342B-96B7-4DDB-8E32-B08DD74C281D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorCenter", "ConnectorCenter\ConnectorCenter.csproj", "{3B2E7D27-0E51-4F87-891C-86D83D560695}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorCenter", "ConnectorCenter\ConnectorCenter.csproj", "{3B2E7D27-0E51-4F87-891C-86D83D560695}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -7,9 +7,9 @@ namespace ConnectorCenter.Services.Authorize
 {
     public class CookieAuthorizeService : AuthorizeService
     {
-        public async static void SignIn(HttpContext context, Сredentials сredentials)
+        public async static void SignIn(HttpContext context, AppUser user)
         {
-            List<Claim> claims = new List<Claim> { new Claim(ClaimTypes.Name, сredentials.Login) };
+            List<Claim> claims = GetUserClaims(user);
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims, "Cookies", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
             await Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.SignInAsync(context, new ClaimsPrincipal(claimsIdentity));
         }

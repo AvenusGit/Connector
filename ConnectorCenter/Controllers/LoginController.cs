@@ -22,7 +22,7 @@ namespace ConnectorCenter.Controllers
         [HttpGet]
         public IActionResult Index(string? message)
         {
-            return View(new IndexModel(message));
+            return View(new IndexModel(HttpContext,message));
         }
 
         [HttpPost]
@@ -35,13 +35,22 @@ namespace ConnectorCenter.Controllers
             AppUser user;
             if (AuthorizeService.IsAuthorized(_dataBaseContext, сredentials, out user))
             {
-                CookieAuthorizeService.SignIn(HttpContext, сredentials);
+                CookieAuthorizeService.SignIn(HttpContext, user);
+                if (user.Credentials.IsIdentical(AppUser.GetDefault().Credentials))
+                    return RedirectToAction("Index","FirstStart");
                 return RedirectToAction("Index", "DashBoard");
             }
             else
             {
-                return View("Index", new IndexModel("Неверный логин/пароль"));
+                return View("Index", new IndexModel(HttpContext,"Неверный логин/пароль"));
             }
+        }
+
+        [HttpPost]
+        public IActionResult SignOut()
+        {
+            CookieAuthorizeService.SignOut(HttpContext);
+            return View("Index", new IndexModel(HttpContext, "Выполнен выход из аккаунта"));
         }
     }
 }

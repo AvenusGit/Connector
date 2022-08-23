@@ -10,4 +10,12 @@
     <PackageReference Include="Extended.Wpf.Toolkit" Version="4.3.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Interfaces\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ConnectorCore\ConnectorCore.csproj" />
+  </ItemGroup>
+
 </Project>

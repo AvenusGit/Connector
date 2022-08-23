@@ -1,0 +1,111 @@
+﻿@model ConnectorCenter.Views.VisualScheme.GenerateCssModel
+@{
+
+}
+@functions{
+    private string ToCssColor(string wpfColor){
+        string opacity = wpfColor.Substring(1,2);
+        wpfColor = wpfColor.Remove(1,2);
+        return wpfColor + opacity;
+    }
+}
+
+.col-4{
+    margin:0px;
+    padding:2px;
+}
+.col-2{
+    margin:0px;
+    padding:2px;
+}
+.col-3{
+    margin:0px;
+    padding:2px;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+  min-width: 100%;
+}
+
+body {
+    background: linear-gradient(20deg, @ToCssColor(Model.Scheme.ColorScheme.Fone.Color),
+        @ToCssColor(Model.Scheme.ColorScheme.SubAccent.Color),
+        @ToCssColor(Model.Scheme.ColorScheme.Fone.Color),
+        @ToCssColor(Model.Scheme.ColorScheme.SubAccent.Color),
+        @ToCssColor(Model.Scheme.ColorScheme.Fone.Color))
+
+}
+
+.panel {
+    background: @ToCssColor(Model.Scheme.ColorScheme.Panel.Color);
+    border-radius: 10px;
+    box-shadow: rgba(30,22,30,1), 50px 50px, inset;
+    width: 100%;
+    height:100%;
+    box-shadow: -10px 0px 20px @ToCssColor(Model.Scheme.ColorScheme.SubAccent.Color);;
+}
+.panelButton {
+    outline: none;
+    border-color: transparent;
+    background: @ToCssColor(Model.Scheme.ColorScheme.Panel.Color);
+    border-radius: 10px;
+    margin: 0px;
+    width: 100%;
+    height:100%;
+    box-shadow: 0px 0px 100px @ToCssColor(Model.Scheme.ColorScheme.SubAccent.Color);
+}
+.panelButton:hover {
+    transition: margin linear 350ms;
+    transition: box-shadow linear 50ms;
+    margin: 1px;
+    box-shadow: 0px 0px 10px @ToCssColor(Model.Scheme.ColorScheme.SubAccent.Color);
+}
+.path{
+    fill: @ToCssColor(Model.Scheme.ColorScheme.Path.Color);
+    box
+}
+
+.button{
+    background: @ToCssColor(Model.Scheme.ColorScheme.Panel.Color);
+    Color: @ToCssColor(Model.Scheme.ColorScheme.Text.Color);
+    border-radius: 5px;
+    border: 1px solid @ToCssColor(Model.Scheme.ColorScheme.Border.Color);
+    padding:  5px 20px 5px 20px;
+    box-shadow: none;
+    max-height: 5vh;
+    font-size: 2vh;
+    font-family: @Model.Scheme.FontScheme.Font;
+    color: @ToCssColor(Model.Scheme.ColorScheme.Text.Color);
+}
+.button:hover {
+    transition: border-color linear 150ms;
+    border-color: @ToCssColor(Model.Scheme.ColorScheme.SubAccent.Color);
+}
+
+.text{
+    color: @ToCssColor(Model.Scheme.ColorScheme.Text.Color);
+    font-family: @Model.Scheme.FontScheme.Font;
+    font-size: 2vh;
+}
+.textLogo{
+    color: @ToCssColor(Model.Scheme.ColorScheme.Text.Color);
+    font-family: @Model.Scheme.FontScheme.Font;
+    font-size: 4vh;
+}
+.textbox{
+    background: @ToCssColor(Model.Scheme.ColorScheme.Panel.Color);
+    border-width: 0 0 1px 0;
+    border-color: @ToCssColor(Model.Scheme.ColorScheme.Border.Color);
+    font-family: @Model.Scheme.FontScheme.Font;
+    font-size: 2vh;
+}
+.textbox:focus{
+    outline: none;
+    transition: border-color linear 150ms;
+    border-color: @ToCssColor(Model.Scheme.ColorScheme.Accent.Color);
+}
+.isError{
+    color: @ToCssColor(Model.Scheme.ColorScheme.Error.Color);
+}
