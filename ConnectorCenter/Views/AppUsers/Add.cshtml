@@ -1,20 +1,19 @@
-﻿@using ConnectorCore.Models;
-@model ConnectorCenter.Views.AppUsers.EditModel
+﻿@model ConnectorCenter.Views.AppUsers.AddModel
 @{
     Layout = "~/Views/Shared/ViewBase.cshtml";
 }
 
-<div class="container panel" style="height:80vh;">
-    <!--Logo-->
+    <div class="container panel" style="height:80vh;">
+        <!--Logo-->
     <form>
         <div class="row" style="margin:0px 3vw">
             <div class="col-lg-auto">
-                <h1 class="textLogo" style="margin:2vh 0px 2vh 0vw;">Изменение пользователя</h1>
+                <h1 class="textLogo" style="margin:2vh 0px 2vh 0vw;">Добавление пользователя</h1>
             </div>
             <div class="col">
                 <div class="d-flex align-items-center justify-content-end h-100">
                     <button class="iconButton mx-2" title="Назад к списку" formaction="/appusers" formmethod="get">
-                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24" >
                             <path class="path" d="M20 13.5C20 17.09 17.09 20 13.5 20H6V18H13.5C16 18 18 16 18 13.5S16 9 13.5 9H7.83L10.91 12.09L9.5 13.5L4 8L9.5 2.5L10.92 3.91L7.83 7H13.5C17.09 7 20 9.91 20 13.5Z" />
                         </svg>
                     </button>
@@ -27,27 +26,26 @@
             </div>
         </div>
     </form>
-    <!--separator-->
-    <div class="row" style="margin:0px 3vw">
-        <div class="separator" style="height:1px;">
+        <!--separator-->
+        <div class="row" style="margin:0px 3vw">
+            <div class="separator" style="height:1px;">
+
+            </div>
         </div>
-    </div>
-    <!--menu-->
+        <!--menu-->
     <form>
-        <div class="row" style="margin: 3vh 3vw;">
+        <div class="row" style="margin: 3vh 3vw;" >
             <div class="d-flex justify-content-center">
                 <div class="container w-50">
                     <div class="row">
-                        <h1 class="text text-center fw-bold" style="font-size:2vh;">Редактируемый пользователь:</h1>
+                        <h1 class="text text-center fw-bold" style="font-size:2vh;">Новый пользователь:</h1>
                     </div>
                     <div class="row">
                         <div class="col-3 ">
                             <p class="text">Имя</p>
                         </div>
                         <div class="col">
-                            <input type="text" name="Id" style="display:none" value="@Model.User.Id"/>
-                            <input type="text" name="Name" class="textbox text-center w-100" required 
-                            value="@Model.User.Name"/>
+                            <input type="text" name="Name" class="textbox text-center w-100" required/>
                         </div>
                     </div>
                     <div class="row">
@@ -55,17 +53,15 @@
                             <p class="text">Логин</p>
                         </div>
                         <div class="col">
-                            <input type="text" name="Credentials.Login" class="textbox text-center w-100" required
-                                   value="@Model.User.Credentials?.Login" />
+                            <input type="text" name="Credentials.Login" class="textbox text-center w-100" required />
                         </div>
-                    </div>
+                    </div>    
                     <div class="row">
                         <div class="col-3">
                             <p class="text">Пароль</p>
                         </div>
                         <div class="col">
-                            <input type="password" name="Credentials.Password" class="textbox text-center w-100" required
-                                   value="@Model.User.Credentials?.Password" />
+                            <input type="password" name="Credentials.Password" class="textbox text-center w-100" required />
                         </div>
                     </div>
                     <div class="row">
@@ -75,18 +71,13 @@
                         <div class="col">
                             <div class="select">
                                 <select name="Role">
-                                    <option selected value="@Model.User.Role.ToString()">@Model.User.Role.ToString()</option>
-                                    @foreach (AppUser.AppRoles role in (AppUser.AppRoles[])Enum.GetValues(typeof(AppUser.AppRoles)))
-                                    {
-                                        if (Model.User.Role != role)
-                                        {
-                                            <option value="@role.ToString()">@role.ToString()</option>
-                                        }
-                                    }
+                                    <option selected value="User">Пользователь</option>
+                                    <option value="Support">Техник</option>
+                                    <option value="Administrator">Администратор</option>
                                 </select>
                             </div>
                         </div>
-                    </div>
+                    </div>  
                     <div class="row">
                         <div class="col-3">
                             <p class="text">Активен</p>
@@ -94,22 +85,15 @@
                         <div class="col">
                             <div class="select">
                                 <select name="IsEnabled">
-                                    @if(Model.User.IsEnabled){
-                                        <option selected value="True">Да</option>
-                                        <option value="False">Нет</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="True">Да</option>
-                                        <option selected value="False">Нет</option>
-                                    }
+                                    <option selected value="True">Да</option>
+                                    <option value="False">Нет</option>
                                 </select>
                             </div>
                         </div>
                     </div>
                     <div class="row" style="margin:3vh;">
                         <div class="d-flex justify-content-center">
-                            <button class="button" formaction="/appusers/edit" formmethod="post">
+                            <button class="button" formaction="/appusers/add" formmethod="post">
                                 <h1 class="text text-center fw-bold">Сохранить</h1>
                             </button>
                         </div>

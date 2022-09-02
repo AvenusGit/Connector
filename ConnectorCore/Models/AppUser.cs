@@ -6,19 +6,25 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ConnectorCore.Models
 {
-    public class AppUser : IAppUser
+    public class AppUser
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
         public string? Name { get; set; }
         public Сredentials? Credentials { get; set; }
-        public IEnumerable<UserGroup> Groups { get; set; } = new List<UserGroup>();
-        public IEnumerable<Connection> Connections { get; set; } = new List<Connection>();
+        public List<AppUserGroup> Groups { get; set; } = new List<AppUserGroup>();
+        public List<Connection> Connections { get; set; } = new List<Connection>();
         public UserSettings? UserSettings { get; set; }
-        public IAppUser.AppRoles Role { get; set; }
-        public VisualScheme VisualScheme { get; set; }
-
+        public AppRoles Role { get; set; }
+        public VisualScheme VisualScheme { get; set; } = VisualScheme.GetDefaultVisualScheme();
+        public bool IsEnabled { get; set; }
+        public enum AppRoles
+        {
+            User,
+            Support,
+            Administrator
+        }
         public static AppUser GetDefault()
         {
             return new AppUser()
@@ -26,7 +32,7 @@ namespace ConnectorCore.Models
                 Name = "DefaultAdmin",
                 Credentials = new Сredentials("connectorCenter", "connectorCenter"),
                 Connections = new List<Connection>(),
-                Role = IAppUser.AppRoles.Administrator,
+                Role = AppUser.AppRoles.Administrator,
                 UserSettings = UserSettings.GetDefault()
             };
         }

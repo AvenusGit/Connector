@@ -1,0 +1,113 @@
+﻿@using ConnectorCore.Models;
+@using ConnectorCore.Models.Connections;
+@model ConnectorCenter.Views.AppUsers.AddConnectionsModel;
+@{
+    Layout = "~/Views/Shared/ViewBase.cshtml";
+}
+
+    <div class="container panel" style="height:80vh;">
+        <!--Logo-->
+    <form>
+        <div class="row" style="margin:0px 3vw">
+            <div class="col-lg-auto">
+                <h1 class="textLogo" style="margin:2vh 0px 2vh 0vw;">Выбор подключений для '@Model.User.Name'</h1>
+            </div>
+
+            <div class="col">
+                <div class="d-flex align-items-center justify-content-end h-100">
+                    <input type="text" style="display:none" name="userId" value="@Model.User.Id" />
+                    <button class="iconButton mx-2" formaction="/appUsers/showConnections/@Model.User.Id" formmethod="get" title="Назад">
+                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                            <path class="path" d="M20 13.5C20 17.09 17.09 20 13.5 20H6V18H13.5C16 18 18 16 18 13.5S16 9 13.5 9H7.83L10.91 12.09L9.5 13.5L4 8L9.5 2.5L10.92 3.91L7.83 7H13.5C17.09 7 20 9.91 20 13.5Z" />
+                        </svg>
+                    </button>
+                                      
+                </div>
+            </div>
+        </form>
+        </div>  
+        <!--separator-->
+        <div class="row" style="margin:0px 3vw">
+            <div class="separator" style="height:1px;">
+
+            </div>
+        </div>
+        <!--List-->
+            <div class="row" style="margin:0px 2vw; height:70vh;">
+
+                @if (Model.FullServerList.Any())
+                {
+                    <div class="scrollDiv">
+                        @foreach (Server server in Model.FullServerList)
+                        {
+                            <div class="row" style="margin: 2vh 2vw;">
+                                <h1 class="text text-center fw-bold" style="font-size:2vh;">Сервер @server.Name</h1>
+                        <table class="table my-3 w-100">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="px-3 text text-center">Имя</th>
+                                    <th scope="col" class="px-3 text text-center">Тип</th>
+                                    <th scope="col" class="px-3 text text-center">Порт</th>
+                                    <th scope="col" class="px-3 text text-center">Доступно</th>
+                                    <th scope="col" class="px-3 text text-center">Имя пользователя</th>
+                                    <th scope="col" class="px-3 text text-center">Логин</th>
+                                    <th scope="col" class="px-3 text text-center">Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (Connection connection in server.Connections.OrderBy(conn => conn.ConnectionName))
+                                {
+                                    <tr>
+                                        <td class="text text-center">@connection.ConnectionName</td>
+                                        <td class="text text-center">@connection.ConnectionType.ToString()</td>
+                                        <td class="text text-center">@connection.Port</td>
+                                        @if (connection.IsAvailable)
+                                        {
+                                            <td class="text text-center">Да</td>
+                                        }
+                                        else
+                                        {
+                                            <td class="text text-center">Нет</td>
+                                        }
+                                        <td class="text text-center">@connection.User?.Name</td>
+                                        <td class="text text-center">@connection.User?.Credentials?.Login</td>
+                                        <td class="text text-center">
+                                            <div class="container d-flex justify-content-center">
+                                                <form>
+                                                <input type="text" style="display:none;" value="@connection.Id" name="connectionId" />
+                                                <input type="text" style="display:none;" value="@Model.User.Id" name="userId" />
+                                                @if(Model.User.Connections.Contains(connection)){
+                                                    <button class="iconButton mx-1" title="Убрать у этого пользователя"
+                                                        formaction="/appUsers/DropConnectionOnAddConnectionList" formmethod="post">
+                                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                                            <path class="path" d="M19,13H5V11H19V13Z" />
+                                                        </svg>
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    
+                                                    <button class="iconButton mx-1" title="Добавить это подключение"
+                                                        formaction="/appUsers/AddConnections" formmethod="post">
+                                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                                            <path class="path" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+                                                        </svg>
+                                                    </button>
+                                                }  
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                            </div>
+
+                        }               
+                    </div>
+                    }
+                else{
+                    <p class="text text-center m-3">Список подключений пуст</p>
+                }
+             </div>
+</div>

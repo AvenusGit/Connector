@@ -9,7 +9,7 @@ namespace ConnectorCenter.Views.FirstStart
     {
         public IndexViewModel(DataBaseContext context)
         {
-            IsFirstStart = !context.AppUsers.Any();
+            IsFirstStart = !context.Users.Any();
         }
         public IndexViewModel(bool isFirstStart)
         {

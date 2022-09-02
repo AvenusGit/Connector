@@ -28,7 +28,7 @@ namespace ConnectorCenter.Controllers
             if(long.TryParse(HttpContext.User.FindFirstValue(ClaimTypes.Sid), out userId))
             {
                 AppUser currentUser =
-                    _dataBaseContext.AppUsers
+                    _dataBaseContext.Users
                         .Where(user => user.Id == userId)
                         .SingleOrDefaultAsync()
                         .Result;

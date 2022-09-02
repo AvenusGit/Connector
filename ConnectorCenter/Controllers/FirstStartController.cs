@@ -36,13 +36,14 @@ namespace ConnectorCenter.Controllers
             AppUser newUser = new AppUser()
             {
                 Name = username,
+                IsEnabled = true,
                 Credentials = credentials,
-                Role = IAppUser.AppRoles.Administrator,
+                Role = AppUser.AppRoles.Administrator,
                 Connections = new List<Connection>(),
                 UserSettings = UserSettings.GetDefault(),
                 VisualScheme = VisualScheme.GetDefaultVisualScheme()
             };
-            _dataBaseContext.AppUsers.Add(newUser);
+            _dataBaseContext.Users.Add(newUser);
             _dataBaseContext.SaveChanges();
             CookieAuthorizeService.SignOut(HttpContext);
             return RedirectToAction("Index","Login");

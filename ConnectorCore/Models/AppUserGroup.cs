@@ -4,12 +4,13 @@ using ConnectorCore.Models.Connections;
 
 namespace ConnectorCore.Models
 {
-    public class UserGroup
+    public class AppUserGroup
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
         public string? GroupName { get; set; }
+        public List<AppUser> Users { get; set; } = new List<AppUser>();
         public IEnumerable<Connection> Servers { get; set; } = new List<Connection>();
     }
 }
