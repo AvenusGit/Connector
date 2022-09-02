@@ -27,7 +27,7 @@ namespace Connector.Models.Authorization
             RestService restService = new RestService();
             IEnumerable<Connection> connectionList = await restService.GetConnectionListAsync(ConnectorApp.Instance.CurrentUser.Id);
             after?.Invoke();
-            Connections = new ObservableCollection<Connection>(connectionList);
+            //Connections = new ObservableCollection<Connection>(connectionList); //TODO
         }
         public async Task UpdateUserSettings(Action before, Action after)
         {

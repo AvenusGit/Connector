@@ -22,7 +22,7 @@ namespace Connector.Models.REST
             {
                 Name = "authorizeUser",
                 Credentials = сredentials,
-                Role = IAppUser.AppRoles.Administrator
+                Role = AppUser.AppRoles.Administrator
             };
         }
         public async Task<AppUser?> AuthorizeAsync(Сredentials сredentials)

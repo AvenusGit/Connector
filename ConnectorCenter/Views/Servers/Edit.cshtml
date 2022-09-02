@@ -42,7 +42,7 @@
                             <p class="text">Имя сервера</p>
                         </div>
                         <div class="col">
-                            <input type="text" name="Id" value="@Model.Server.Id" style="display:none" />
+                            <input type="text" name="id" value="@Model.Server.Id" style="display:none" />
                             <input type="text" name="Name" class="textbox text-center w-100" value="@Model.Server.Name" required/>
                         </div>
                     </div>
@@ -78,9 +78,6 @@
                     </div>   
                     <div class="row" style="margin:3vh;">
                         <div class="d-flex justify-content-center">
-                            <button class="button mx-2" formaction="/servers/add" formmethod="post">
-                                <h1 class="text text-center fw-bold">Подключения</h1>
-                            </button>
                             <button class="button" formaction="/servers/edit" formmethod="post">
                                 <h1 class="text text-center fw-bold">Сохранить</h1>
                             </button>                            
