@@ -7,9 +7,9 @@ namespace ConnectorCenter.Views.Login
 {
     public class IndexModel : PageModel
     {
-        public IndexModel(HttpContext context, string? message)
+        public IndexModel(string? username, string? message)
         {
-            UserName = context.User.Identity?.Name;
+            UserName = username;
             Message = message;
         }
         public string? Message { get; set; }

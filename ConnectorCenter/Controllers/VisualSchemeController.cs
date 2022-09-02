@@ -7,6 +7,7 @@ using static System.Net.WebRequestMethods;
 using Microsoft.EntityFrameworkCore;
 using ConnectorCore.Models;
 using ConnectorCore.Models.VisualModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ConnectorCenter.Controllers
 {

@@ -22,7 +22,7 @@ namespace ConnectorCenter.Controllers
         [HttpGet]
         public IActionResult Index(string? message)
         {
-            return View(new IndexModel(HttpContext,message));
+            return View(new IndexModel(HttpContext.User.Identity?.Name,message));
         }
 
         [HttpPost]
@@ -42,7 +42,7 @@ namespace ConnectorCenter.Controllers
             }
             else
             {
-                return View("Index", new IndexModel(HttpContext,"Неверный логин/пароль"));
+                return View("Index", new IndexModel(null,"Неверный логин/пароль"));
             }
         }
 
@@ -50,7 +50,7 @@ namespace ConnectorCenter.Controllers
         public IActionResult SignOut()
         {
             CookieAuthorizeService.SignOut(HttpContext);
-            return View("Index", new IndexModel(HttpContext, "Выполнен выход из аккаунта"));
+            return View("Index", new IndexModel(null, "Выполнен выход из аккаунта"));
         }
     }
 }

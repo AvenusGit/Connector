@@ -11,7 +11,7 @@ using ConnectorCore.Models;
 
 namespace ConnectorCenter.Controllers
 {
-    [Authorize(Policy = "Cookies")]
+    [Authorize(AuthenticationSchemes = "Cookies")]
     public class AppUsersController : Controller
     {
         private readonly DataBaseContext _context;

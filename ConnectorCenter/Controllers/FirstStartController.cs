@@ -4,6 +4,7 @@ using ConnectorCenter.Data;
 using ConnectorCenter.Services.Authorize;
 using ConnectorCenter.Views.FirstStart;
 using ConnectorCore.Models;
+using ConnectorCore.Models.Connections;
 using ConnectorCore.Models.VisualModels.Interfaces;
 using ConnectorCore.Models.VisualModels;
 

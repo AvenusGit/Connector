@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System;
 using AuraS.VisualModels;
 using ConnectorCore.Models;
+using ConnectorCore.Models.Connections;
 using ConnectorCore.Models.VisualModels;
 
 namespace Connector.Models.Authorization

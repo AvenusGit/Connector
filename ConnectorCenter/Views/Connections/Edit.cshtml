@@ -1,0 +1,146 @@
+﻿@using ConnectorCore.Models.Connections;
+@model ConnectorCenter.Views.Connections.EditModel
+@{
+    Layout = "~/Views/Shared/ViewBase.cshtml";
+}
+
+    <div class="container panel" style="height:80vh;">
+        <!--Logo-->
+        <form>
+        <div class="row" style="margin:0px 3vw">
+            <div class="col-lg-auto">
+                <h1 class="textLogo" style="margin:2vh 0px 2vh 0vw;">Изменение подключения</h1>
+            </div>
+            <div class="col">
+                <div class="d-flex align-items-center justify-content-end h-100">
+                    <button class="iconButton mx-2" title="Назад к списку" formaction="/servers/showConnections/@Model.Connection.Server.Id" formmethod="get">
+                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24" >
+                            <path class="path" d="M20 13.5C20 17.09 17.09 20 13.5 20H6V18H13.5C16 18 18 16 18 13.5S16 9 13.5 9H7.83L10.91 12.09L9.5 13.5L4 8L9.5 2.5L10.92 3.91L7.83 7H13.5C17.09 7 20 9.91 20 13.5Z" />
+                        </svg>
+                    </button>
+                    <button class="iconButton mx-2" formaction="/dashboard" formmethod="get" title="В главное меню">
+                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                            <path class="path" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+        <!--separator-->
+        <div class="row" style="margin:0px 3vw">
+            <div class="separator" style="height:1px;">
+
+            </div>
+        </div>
+        <!--menu-->
+    <form>
+        <div class="row py-5" style="overflow:scroll; overflow-x:auto; overflow-y:hidden;">
+            <div class="d-flex justify-content-center">
+                <div class="container" style="width:60%;">
+                    <div class="row">
+                        <h1 class="text text-center fw-bold" style="font-size:2vh;">Параметры подключения:</h1>
+                    </div>
+                    <div class="row">
+                        <div class="col-4 ">
+                            <p class="text">Имя</p>
+                        </div>
+                        <div class="col">
+                            <input type="text" name="serverId" style="display:none;" value="@Model.Connection.Server.Id" />
+                            <input type="text" name="Id" style="display:none;" value="@Model.Connection.Id" />
+                            <input type="text" name="ConnectionName" class="textbox text-center w-100" 
+                                value="@Model.Connection.ConnectionName" required />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">
+                            <p class="text">Тип</p>
+                        </div>
+                        <div class="col">
+                            <div class="select">
+                                <select name="ConnectionType">                                    
+                                    <option selected value="@Model.Connection.ConnectionType.ToString()">@Model.Connection.ConnectionType.ToString()</option>
+                                    @foreach (Connection.ConnectionTypes type in (Connection.ConnectionTypes[])Enum.GetValues(typeof(Connection.ConnectionTypes)))
+                                    {
+                                        if(Model.Connection.ConnectionType != type)
+                                        {
+                                            <option value="@type.ToString()">@type.ToString()</option>
+                                        }                                            
+                                    }
+                                   
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4 ">
+                            <p class="text">Порт</p>
+                        </div>
+                        <div class="col">
+                            <input type="text" name="Port" class="textbox text-center w-100"
+                                   value="@Model.Connection.Port" required />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">
+                            <p class="text">Доступно</p>
+                        </div>
+                        <div class="col">
+                            <div class="select">
+                                <select name="IsAvailable">
+                                    @if(Model.Connection.IsAvailable)
+                                    {
+                                        <option selected value="True">Да</option>
+                                        <option value="False">Нет</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="True">Да</option>
+                                        <option selected value="False">Нет</option>
+                                    }                                    
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <h1 class="text text-center fw-bold" style="font-size:2vh;margin-top:3vh;">Параметры пользователя:</h1>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">
+                            <p class="text">Имя пользователя</p>
+                        </div>
+                        <div class="col">
+                            <input type="text" name="User.Name" class="textbox text-center w-100"
+                                   value="@Model.Connection.User?.Name" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">
+                            <p class="text">Логин</p>
+                        </div>
+                        <div class="col">
+                            <input type="text" name="User.Credentials.Login" class="textbox text-center w-100"
+                                   value="@Model.Connection.User?.Credentials?.Login"  required />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">
+                            <p class="text">Пароль</p>
+                        </div>
+                        <div class="col">
+                            <input type="password" name="User.Credentials.Password" class="textbox text-center w-100"
+                                   value="@Model.Connection.User?.Credentials?.Password" required />
+                        </div>
+                    </div>
+                    <div class="row" style="margin:3vh;">
+                        <div class="d-flex justify-content-center">
+                            <button class="button" formaction="/connections/edit" formmethod="post">
+                                <h1 class="text text-center fw-bold">Сохранить</h1>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </form>
+    </div>

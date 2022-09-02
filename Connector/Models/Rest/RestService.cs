@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using ConnectorCore.Models;
 using AuraS.VisualModels;
+using ConnectorCore.Models.Connections;
 using ConnectorCore.Models.VisualModels.Interfaces;
 using ConnectorCore.Models.VisualModels;
 
@@ -37,33 +38,29 @@ namespace Connector.Models.REST
                     new Connection()
                     {
                         ConnectionName = "RdpTestConnection",
-                        Locked = false,
-                        Server = new ServerInfo()
+                        IsAvailable = false,
+                        Server = new Server()
                         {
-                            Host = "127.0.0.1",
-                            Port = 3389
+                            Host = "127.0.0.1",                        
                         },
                         User = new ServerUser()
                         {
                             Name = "rdpTestUser1",
                             Credentials = new Сredentials("login", "pass"),
-                            Role = ServerUser.Roles.User
                         }
                     },
                     new Connection()
                     {
                         ConnectionName = "SshTestConnection",
-                        Locked = false,
-                        Server = new ServerInfo()
+                        IsAvailable = false,
+                        Server = new Server()
                         {
-                            Host = "127.0.0.1",
-                            Port = 3389
+                            Host = "127.0.0.1",                           
                         },
                         User = new ServerUser()
                         {
                             Name = "sshTestUser1",
                             Credentials = new Сredentials("login", "pass"),
-                            Role = ServerUser.Roles.Administrator
                         }
                     }
                 };

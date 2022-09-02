@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ConnectorCore.Models;
 using Connector.Models.Commands;
+using ConnectorCore.Models.Connections;
 using Connector.Models.Authorization;
 using Connector.View;
 
