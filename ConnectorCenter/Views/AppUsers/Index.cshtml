@@ -70,7 +70,7 @@
                                 {
                                     <td class="text text-center">Нет</td>
                                 }
-                                <td class="text text-center">@user.Connections.Count()</td>
+                                <td class="text text-center">@(user.Connections.Count() + Model.GroupConnectionsCount)</td>
                             <td class="text text-center">
                                 <form>
                                 <div class="container d-flex justify-content-center">

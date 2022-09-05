@@ -3,7 +3,7 @@ using ConnectorCore.Models.Connections;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace ConnectorCenter.Views.AppUserGroups
+namespace ConnectorCenter.Views.AppUsers
 {
     public class AddConnectionsModel : PageModel
     {
@@ -11,8 +11,16 @@ namespace ConnectorCenter.Views.AppUserGroups
         {
             User = user;
             FullServerList = fullConnectionList;
+
+            GroupConnections = new List<Connection>();
+            foreach (AppUserGroup group in user.Groups)
+            {
+                GroupConnections.AddRange(group.GroupConnections);
+            }
+            GroupConnections = GroupConnections.Distinct().ToList();
         }
         public new AppUser User { get; set; }
         public IEnumerable<Server> FullServerList { get; set; }
+        public List<Connection> GroupConnections { get; set; }
     }
 }

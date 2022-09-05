@@ -12,6 +12,7 @@ using ConnectorCore.Models;
 using ConnectorCore.Models.VisualModels;
 using ConnectorCenter.Services.Authorize;
 using ConnectorCore.Models.Connections;
+using Microsoft.AspNetCore.Identity;
 
 namespace ConnectorCenter.Controllers
 {
@@ -30,6 +31,8 @@ namespace ConnectorCenter.Controllers
             return _context.Users is null
               ? View(new IndexModel(new List<AppUser>()))
               : View(new IndexModel(await _context.Users
+                    .Include(usr => usr.Groups)
+                        .ThenInclude(gr => gr.GroupConnections)
                     .Include(user =>user.Credentials)
                     .Include(user => user.Connections)
                     .ToListAsync()));
@@ -84,9 +87,13 @@ namespace ConnectorCenter.Controllers
                 return NotFound();
 
             AppUser? appUser = await _context.Users
+                .Include(usr => usr.Connections)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (appUser != null)
             {
+                appUser.Connections.Clear(); // очистка подключений, чтобы они не были каскадно удалены с пользователем
+                _context.Update(appUser);
+                await _context.SaveChangesAsync();
                 _context.Users.Remove(appUser);
                 await _context.SaveChangesAsync();
                 if(AuthorizeService.CompareHttpUserWithAppUser(HttpContext.User, appUser))
@@ -120,6 +127,10 @@ namespace ConnectorCenter.Controllers
             if (_context.Users == null)
                 return Problem("Entity set 'DataBaseContext.Users'  is null.");
             AppUser? user = await _context.Users
+                .Include(usr => usr.Groups)
+                    .ThenInclude(gr => gr.GroupConnections)
+                        .ThenInclude(conn => conn.User)
+                            .ThenInclude(usr => usr!.Credentials)
                 .Include(usr => usr.Connections)
                     .ThenInclude(conn => conn.User)
                         .ThenInclude(usr => usr!.Credentials)
@@ -134,7 +145,12 @@ namespace ConnectorCenter.Controllers
         {
             if (!userId.HasValue)
                 return BadRequest();
-            AppUser? user = await _context.Users.FindAsync(userId);
+            AppUser? user = await _context.Users
+                .Include(usr => usr.Groups)
+                    .ThenInclude(gr => gr.GroupConnections)
+                        .ThenInclude(conn => conn.User)
+                            .ThenInclude(usr => usr!.Credentials)
+                .FirstOrDefaultAsync(usr => usr.Id == userId);
             List<Server> servers = _context.Servers
                 .Include(srv => srv.Connections)
                     .ThenInclude(conn => conn.User)
@@ -152,9 +168,13 @@ namespace ConnectorCenter.Controllers
             if (!connectionId.HasValue || !userId.HasValue)
                 return BadRequest();
             AppUser? user = await _context.Users
+                .Include(usr => usr.Groups)
+                    .ThenInclude(gr => gr.GroupConnections)
+                        .ThenInclude(conn => conn.User)
+                            .ThenInclude(usr => usr!.Credentials)
+                
                 .Include(usr => usr.Connections)
-                .Where(usr => usr.Id == userId)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(usr => usr.Id == userId);
             Connection? connection = await _context.Connections.FindAsync(connectionId);
             user.Connections.Add(connection);
             _context.Update(user);
@@ -195,9 +215,12 @@ namespace ConnectorCenter.Controllers
             if (!connectionId.HasValue || !userId.HasValue)
                 return BadRequest();
             AppUser? user = await _context.Users
+                .Include(usr => usr.Groups)
+                    .ThenInclude(gr => gr.GroupConnections)
+                        .ThenInclude(conn => conn.User)
+                            .ThenInclude(usr => usr!.Credentials)
                 .Include(usr => usr.Connections)
-                .Where(usr => usr.Id == userId)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(usr => usr.Id == userId);
 
             if (user is null) return NotFound();
             await DropConnection(connectionId.Value, user);

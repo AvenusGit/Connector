@@ -5,14 +5,14 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace ConnectorCenter.Views.AppUserGroups
 {
-    public class AddConnectionsModel : PageModel
+    public class AddUserModel : PageModel
     {
-        public AddConnectionsModel(IEnumerable<Server> fullConnectionList, AppUserGroup group)
+        public AddUserModel(IEnumerable<AppUser> fullUsersList, AppUserGroup group)
         {
             Group = group;
-            FullServerList = fullConnectionList;
+            FullUsersList = fullUsersList;
         }
         public new AppUserGroup Group { get; set; }
-        public IEnumerable<Server> FullServerList { get; set; }
+        public IEnumerable<AppUser> FullUsersList { get; set; }
     }
 }

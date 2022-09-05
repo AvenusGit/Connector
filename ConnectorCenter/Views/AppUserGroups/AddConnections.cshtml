@@ -1,6 +1,6 @@
 ﻿@using ConnectorCore.Models;
 @using ConnectorCore.Models.Connections;
-@model ConnectorCenter.Views.AppUsers.AddConnectionsModel;
+@model ConnectorCenter.Views.AppUserGroups.AddConnectionsModel;
 @{
     Layout = "~/Views/Shared/ViewBase.cshtml";
 }
@@ -10,13 +10,13 @@
     <form>
         <div class="row" style="margin:0px 3vw">
             <div class="col-lg-auto">
-                <h1 class="textLogo" style="margin:2vh 0px 2vh 0vw;">Выбор подключений для '@Model.User.Name'</h1>
+                <h1 class="textLogo" style="margin:2vh 0px 2vh 0vw;">Выбор подключений для '@Model.Group.GroupName'</h1>
             </div>
 
             <div class="col">
                 <div class="d-flex align-items-center justify-content-end h-100">
-                    <input type="text" style="display:none" name="userId" value="@Model.User.Id" />
-                    <button class="iconButton mx-2" formaction="/appUsers/showConnections/@Model.User.Id" formmethod="get" title="Назад">
+                    <input type="text" style="display:none" name="groupId" value="@Model.Group.Id" />
+                    <button class="iconButton mx-2" formaction="/appUserGroups/showConnections/@Model.Group.Id" formmethod="get" title="Назад">
                         <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
                             <path class="path" d="M20 13.5C20 17.09 17.09 20 13.5 20H6V18H13.5C16 18 18 16 18 13.5S16 9 13.5 9H7.83L10.91 12.09L9.5 13.5L4 8L9.5 2.5L10.92 3.91L7.83 7H13.5C17.09 7 20 9.91 20 13.5Z" />
                         </svg>
@@ -75,10 +75,10 @@
                                             <div class="container d-flex justify-content-center">
                                                 <form>
                                                 <input type="text" style="display:none;" value="@connection.Id" name="connectionId" />
-                                                <input type="text" style="display:none;" value="@Model.User.Id" name="userId" />
-                                                @if(Model.User.Connections.Contains(connection)){
-                                                    <button class="iconButton mx-1" title="Убрать у этого пользователя"
-                                                        formaction="/appUsers/DropConnectionOnAddConnectionList" formmethod="post">
+                                                <input type="text" style="display:none;" value="@Model.Group.Id" name="groupId" />
+                                                @if(Model.Group.GroupConnections.Contains(connection)){
+                                                    <button class="iconButton mx-1" title="Убрать у этой группы"
+                                                        formaction="/appUserGroups/DropConnectionOnAddConnectionList" formmethod="post">
                                                         <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
                                                             <path class="path" d="M19,13H5V11H19V13Z" />
                                                         </svg>
@@ -88,7 +88,7 @@
                                                 {
                                                     
                                                     <button class="iconButton mx-1" title="Добавить это подключение"
-                                                        formaction="/appUsers/AddConnections" formmethod="post">
+                                                        formaction="/appUserGroups/AddConnections" formmethod="post">
                                                         <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
                                                             <path class="path" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
                                                         </svg>

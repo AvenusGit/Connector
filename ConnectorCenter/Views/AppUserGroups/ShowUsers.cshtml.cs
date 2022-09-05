@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace ConnectorCenter.Views.AppUserGroups
 {
-    public class ShowConnectionsModel : PageModel
+    public class ShowUsersModel : PageModel
     {
-        public ShowConnectionsModel(AppUserGroup group)
+        public ShowUsersModel(AppUserGroup group)
         {
             Group = group;
         }
