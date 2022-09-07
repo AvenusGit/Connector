@@ -8,6 +8,8 @@ namespace ConnectorCenter
             VersionSeries = "A",
             VersionNumber = 0
         };
+        public readonly string LogConfPath = Environment.CurrentDirectory.ToString() + "\\Configurations\\Log.config";
+
         private static ConnectorCenterApp _connectorCenterApp;
         public static ConnectorCenterApp Instance
         {
@@ -18,5 +20,7 @@ namespace ConnectorCenter
                 return _connectorCenterApp;
             }
         }
+
+        public ILogger Logger { get; set; }
     }
 }

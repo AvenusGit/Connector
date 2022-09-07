@@ -43,7 +43,7 @@ namespace Connector.Models.REST
                         {
                             Host = "127.0.0.1",                        
                         },
-                        User = new ServerUser()
+                        ServerUser = new ServerUser()
                         {
                             Name = "rdpTestUser1",
                             Credentials = new Сredentials("login", "pass"),
@@ -57,7 +57,7 @@ namespace Connector.Models.REST
                         {
                             Host = "127.0.0.1",                           
                         },
-                        User = new ServerUser()
+                        ServerUser = new ServerUser()
                         {
                             Name = "sshTestUser1",
                             Credentials = new Сredentials("login", "pass"),

@@ -13,232 +13,857 @@ using ConnectorCore.Models.VisualModels;
 using ConnectorCenter.Services.Authorize;
 using ConnectorCore.Models.Connections;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace ConnectorCenter.Controllers
 {
+    /// <summary>
+    /// Контроллер для работы с пользователями
+    /// </summary>
     [Authorize(AuthenticationSchemes = "Cookies")]
     public class AppUsersController : Controller
     {
+        #region Fields
         private readonly DataBaseContext _context;
-
-        public AppUsersController(DataBaseContext context)
+        private readonly ILogger _logger;
+        #endregion
+        #region Constructors
+        public AppUsersController(DataBaseContext context, ILogger<AppUserGroupsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
+        #endregion
+        #region GET
+        /// <summary>
+        /// Запрос на получение списка пользователей
+        /// </summary>
+        /// <returns>Страница с списком пользователей</returns>
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            return _context.Users is null
-              ? View(new IndexModel(new List<AppUser>()))
-              : View(new IndexModel(await _context.Users
-                    .Include(usr => usr.Groups)
-                        .ThenInclude(gr => gr.GroupConnections)
-                    .Include(user =>user.Credentials)
-                    .Include(user => user.Connections)
-                    .ToListAsync()));
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                try
+                {
+                    _logger.LogInformation("Запрос на получение списка пользователей");
+                    return _context.Users is null
+                        ? View(new IndexModel(new List<AppUser>()))
+                        : View(new IndexModel(await _context.Users
+                            .Include(usr => usr.Groups)
+                                .ThenInclude(gr => gr.Connections)
+                            .Include(user => user.Credentials)
+                            .Include(user => user.Connections)
+                            .ToListAsync()));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при запросе страницы списка пользователей. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Внутренняя ошибка обработки запроса страницы списка пользователей.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
+        }
+        /// <summary>
+        /// Запрос формы для добавления пользователя
+        /// </summary>
+        /// <returns>Страница с формой для добавления пользователя</returns>
+        [HttpGet]
+        /// <summary>
+        /// Запрос формы на редактирование пользователя
+        /// </summary>
+        /// <param name="id">Идентификатор редактируемого пользователя</param>
+        /// <returns>Страница редактирования, </returns>
+        [HttpGet]
+        public async Task<IActionResult> Edit(long? id)
+        {
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                try
+                {
+                    if (id == null)
+                    {
+                        _logger.LogWarning($"Ошибка при запросе страницы редактирования пользователя. Нет идентификатора или контекста.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе страницы редактирования пользователя. Нет идентификатора или контекста.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 400
+                            }));
+                    }
+
+                    AppUser? appUser = await _context.Users.Include(usr => usr.Credentials).Where(usr => usr.Id == id).FirstOrDefaultAsync();
+                    if (appUser == null)
+                    {
+                        _logger.LogWarning($"Ошибка при запросе страницы редактирования пользователя. Пользователь не найден.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе страницы редактирования пользователя. Пользователь не найден.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 404
+                            }));
+                    }
+                    _logger.LogInformation($"Запрос страницы для редактирования пользователя {appUser.Name}.");
+                    return View(new EditModel(appUser));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при запросе страницы редатирования пользователя. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при запросе страницы редатирования пользователя.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
+        }
+        /// <summary>
+        /// Запрос страницы подключений конкретного пользователя
+        /// </summary>
+        /// <param name="userId">Идентификатор пользователя</param>
+        /// <returns>Страница подключений пользователя</returns>
+        [HttpGet]
+        public async Task<IActionResult> ShowConnections(long? userId)
+        {
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                try
+                {
+                    if (!userId.HasValue)
+                    {
+                        _logger.LogWarning($"Ошибка при запросе страницы подключений пользователя. Нет идентификатора.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе страницы подключений пользователя. Нет идентификатора.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 400
+                            }));
+                    }
+                    AppUser? user = await _context.Users
+                        .Include(usr => usr.Groups)
+                            .ThenInclude(gr => gr.Connections)
+                                .ThenInclude(conn => conn.ServerUser)
+                                    .ThenInclude(usr => usr!.Credentials)
+                        .Include(usr => usr.Connections)
+                            .ThenInclude(conn => conn.ServerUser)
+                                .ThenInclude(usr => usr!.Credentials)
+                        .FirstOrDefaultAsync(usr => usr.Id == userId);
+                    if (user != null)
+                        return View(new ShowConnectionsModel(user));
+                    else
+                    {
+                        _logger.LogWarning($"Ошибка при запросе страницы подключений пользователя. Пользователь не найден.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе страницы подключений пользователя. Пользователь не найден.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 404
+                            }));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при запросе страницы подключений пользователя. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при запросе страницы подключений пользователя.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
         }
         [HttpGet]
         public IActionResult Add()
         {
-            return View(new AddModel());
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Add(AppUser appUser)
-        {
-            if (ModelState.IsValid)
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
-                appUser.VisualScheme = VisualScheme.GetDefaultVisualScheme();
-                _context.Users.Add(appUser);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Index","AppUsers");
-            }
-            return BadRequest();
-        }
-        public async Task<IActionResult> Edit(long? id)
-        {
-            if (id == null || _context.Users == null)
-                return NotFound();
-
-            AppUser? appUser = await _context.Users.Include(usr => usr.Credentials).Where(usr => usr.Id == id).FirstOrDefaultAsync();
-            if (appUser == null)
-                return NotFound();
-            return View(new EditModel(appUser));
-        }
-        [HttpPost]
-        public async Task<IActionResult> Edit(AppUser appUser)
-        {
-            if (ModelState.IsValid)
-            {
-                if (AppUserExists(appUser.Id))
+                try
                 {
-                    _context.Update(appUser);
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction("Index");
+                    _logger.LogInformation("Запрос страницы добавления пользователя");
+                    return View(new AddModel());
                 }
-                else return NotFound();                
-            }
-            return BadRequest();
-        }
-        [HttpPost]
-        public async Task<IActionResult> Delete(long? id)
-        {
-            if (id == null || _context.Users == null)
-                return NotFound();
-
-            AppUser? appUser = await _context.Users
-                .Include(usr => usr.Connections)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (appUser != null)
-            {
-                appUser.Connections.Clear(); // очистка подключений, чтобы они не были каскадно удалены с пользователем
-                _context.Update(appUser);
-                await _context.SaveChangesAsync();
-                _context.Users.Remove(appUser);
-                await _context.SaveChangesAsync();
-                if(AuthorizeService.CompareHttpUserWithAppUser(HttpContext.User, appUser))
+                catch (Exception ex)
                 {
-                    CookieAuthorizeService.SignOut(HttpContext);
-                    return RedirectToAction("Index", "Login", new RouteValueDictionary(
-                                new { message = "Ваш пользователь удален." }));
+                    _logger.LogError($"Ошибка при запросе страницы добавления пользователя. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Внутренняя ошибка обработки запроса страницы добавления пользователя.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
                 }
-                return RedirectToAction("Index");
             }
-            return NotFound();
         }
-        [HttpPost]
-        public async Task<IActionResult> ChangeEnableMode(long? id)
-        {
-            if (id == null || _context.Users == null)
-                return NotFound();
-            AppUser? user = await _context.Users.FindAsync(id) ?? null!;
-            if (user == null)
-                return NotFound();
-            user.IsEnabled = !user.IsEnabled;
-            _context.Update(user);
-            await _context.SaveChangesAsync();
-            return RedirectToAction("Index");
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> ShowConnections(long? userId)
-        {
-            if (!userId.HasValue) return BadRequest();
-            if (_context.Users == null)
-                return Problem("Entity set 'DataBaseContext.Users'  is null.");
-            AppUser? user = await _context.Users
-                .Include(usr => usr.Groups)
-                    .ThenInclude(gr => gr.GroupConnections)
-                        .ThenInclude(conn => conn.User)
-                            .ThenInclude(usr => usr!.Credentials)
-                .Include(usr => usr.Connections)
-                    .ThenInclude(conn => conn.User)
-                        .ThenInclude(usr => usr!.Credentials)
-                .FirstOrDefaultAsync(usr => usr.Id == userId);
-            if (user != null)
-                return View(new ShowConnectionsModel(user));
-            return NotFound();
-        }
-
+        /// <summary>
+        /// Запрос страницы на добавление подключений пользователю
+        /// </summary>
+        /// <param name="userId">Идентификатор пользователя</param>
+        /// <returns>Страница добавления подключений пользователю</returns>
         [HttpGet]
         public async Task<IActionResult> AddConnections(long? userId)
         {
-            if (!userId.HasValue)
-                return BadRequest();
-            AppUser? user = await _context.Users
-                .Include(usr => usr.Groups)
-                    .ThenInclude(gr => gr.GroupConnections)
-                        .ThenInclude(conn => conn.User)
-                            .ThenInclude(usr => usr!.Credentials)
-                .FirstOrDefaultAsync(usr => usr.Id == userId);
-            List<Server> servers = _context.Servers
-                .Include(srv => srv.Connections)
-                    .ThenInclude(conn => conn.User)
-                        .ThenInclude(usr => usr!.Credentials)
-                .ToList();
-            if(user is null) 
-                return NotFound();
-            if (servers is null)
-                servers = new List<Server>();
-            return View(new AddConnectionsModel(servers, user));
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                try
+                {
+                    if (!userId.HasValue)
+                    {
+                        _logger.LogWarning($"Ошибка при запросе страницы добавления подключений пользователю. Нет идентификатора.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе страницы добавления подключений пользователю. Нет идентификатора.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 400
+                            }));
+                    }
+                    AppUser? user = await _context.Users
+                        .Include(usr => usr.Groups)
+                            .ThenInclude(gr => gr.Connections)
+                                .ThenInclude(conn => conn.ServerUser)
+                                    .ThenInclude(usr => usr!.Credentials)
+                        .FirstOrDefaultAsync(usr => usr.Id == userId);
+                    List<Server> servers = _context.Servers
+                        .Include(srv => srv.Connections)
+                            .ThenInclude(conn => conn.ServerUser)
+                                .ThenInclude(usr => usr!.Credentials)
+                        .ToList();
+                    if (user is null)
+                    {
+                        _logger.LogWarning($"Ошибка при запросе страницы добавления подключений пользователю. Пользователь не найден.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе страницы добавления подключений пользователю. Пользователь не найден.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 404
+                            }));
+                    }
+                    if (servers is null)
+                        servers = new List<Server>();
+                    _logger.LogInformation($"Запрос на страницу доабвления подключений пользователю.");
+                    return View(new AddConnectionsModel(servers, user));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при запросе страницы добавления подключений пользователю. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при запросе страницы добавления подключений пользователю.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
         }
+        #endregion
+        #region POST
+        /// <summary>
+        /// Запрос на добавление пользователя
+        /// </summary>
+        /// <param name="appUser">Пользователь для добавления</param>
+        /// <returns>Страница со списком пользователей</returns>
+        [HttpPost]
+        public async Task<IActionResult> Add(AppUser appUser)
+        {
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                try
+                {
+                    if (ModelState.IsValid)
+                    {
+                        appUser.VisualScheme = VisualScheme.GetDefaultVisualScheme();
+                        _context.Users.Add(appUser);
+                        await _context.SaveChangesAsync();
+                        _logger.LogInformation($"Добавлен новый пользователь {appUser.Name} под логином {appUser.Credentials?.Login}");
+                        return RedirectToAction("Index", "AppUsers");
+                    }
+                    _logger.LogError($"Внутренняя ошибка обработки запроса на добавление пользователя. Неверные аргументы pfghjcf.");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Внутренняя ошибка обработки запроса на добавление пользователя. Неверные аргументы.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 400
+                        }));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Внутренняя ошибка обработки запроса на добавление пользователя. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Внутренняя ошибка обработки запроса на добавление пользователя.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
+        }
+        /// <summary>
+        /// Запрос на изиенение пользователя
+        /// </summary>
+        /// <param name="appUser">Пользователь для изменения</param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<IActionResult> Edit(AppUser appUser)
+        {
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                try
+                {
+                    if (ModelState.IsValid)
+                    {
+                        if (AppUserExists(appUser.Id))
+                        {
+                            _context.Update(appUser);
+                            await _context.SaveChangesAsync();
+                            _logger.LogInformation($"Изменен пользователь {appUser.Name} (ID:{appUser.Id}).");
+                            return RedirectToAction("Index");
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"Ошибка при изменении пользователя. Пользователь не найден.");
+                            return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                                new
+                                {
+                                    message = "Ошибка при изменении пользователя. Пользователь не найден.",
+                                    buttons = new Dictionary<string, string>()
+                                    {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                                    },
+                                    errorCode = 404
+                                }));
+                        }
+                    }
+                    _logger.LogWarning($"Ошибка при изменении пользователя. Неверные аргументы.");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при изменении пользователя. Неверные аргументы.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 400
+                        }));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при изменении пользователя. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при изменении пользователя.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
+        }
+        /// <summary>
+        /// Запрос на удаление пользователя
+        /// </summary>
+        /// <param name="id">Идентификатор пользователя</param>
+        /// <returns>Страница списка пользователей</returns>
+        [HttpPost]
+        public async Task<IActionResult> Delete(long? id)
+        {
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                try
+                {
+                    if (id == null)
+                    {
+                        _logger.LogWarning($"Ошибка при запросе удаления пользователя. Не указан идентификатор.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе удаления пользователя. Не указан идентификатор.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 400
+                            }));
+                    }
+
+                    AppUser? appUser = await _context.Users
+                        .Include(usr => usr.Connections)
+                        .FirstOrDefaultAsync(m => m.Id == id);
+                    if (appUser != null)
+                    {
+                        appUser.Connections.Clear(); // очистка подключений, чтобы они не были каскадно удалены с пользователем
+                        _context.Update(appUser);
+                        await _context.SaveChangesAsync();
+                        _context.Users.Remove(appUser);
+                        await _context.SaveChangesAsync();
+                        if (AuthorizeService.CompareHttpUserWithAppUser(HttpContext.User, appUser))
+                        {
+                            CookieAuthorizeService.SignOut(HttpContext);
+                            return RedirectToAction("Index", "Login", new RouteValueDictionary(
+                                        new { message = "Ваш пользователь удален." }));
+                        }
+                        _logger.LogInformation($"Удален пользователь {appUser.Name}.");
+                        return RedirectToAction("Index");
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Ошибка при запросе удаления пользователя. Пользователь не найден.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе удаления пользователя. Пользователь не найден.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 404
+                            }));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при запросе удаления пользователя. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при запросе удаления пользователя.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
+        }
+        /// <summary>
+        /// Запрос на изменение статуса активности пользователя
+        /// </summary>
+        /// <param name="id">Идентификатор пользователя</param>
+        /// <returns>СТраница списка пользователей</returns>
+        [HttpPost]
+        public async Task<IActionResult> ChangeEnableMode(long? id)
+        {
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                try
+                {
+                    if (id == null)
+                    {
+                        _logger.LogError($"Ошибка при запросе изменения активности пользователя. Нет идентификатора.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе изменения активности пользователя. Нет идентификатора.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 400
+                            }));
+                    }
+                    AppUser? user = await _context.Users.FindAsync(id) ?? null!;
+                    if (user == null)
+                    {
+                        _logger.LogError($"Ошибка при запросе изменения активности пользователя. Пользователь не найден.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе изменения активности пользователя. Пользователь не найден.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 404
+                            }));
+                    }
+                    user.IsEnabled = !user.IsEnabled;
+                    _context.Update(user);
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation($"Изменен статус активности пользователя {user.Name} с {!user.IsEnabled} на {user.IsEnabled}.");
+                    return RedirectToAction("Index");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при запросе изменения активности пользователя. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при запросе изменения активности пользователя.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Запрос на добавление подключения пользователю
+        /// </summary>
+        /// <param name="connectionId">Идентификатор подключения</param>
+        /// <param name="userId">Идентификатор пользователя</param>
+        /// <returns>Страница подключений пользователя</returns>
         [HttpPost]
         public async Task<IActionResult> AddConnections(long? connectionId, long? userId)
         {
-            if (!connectionId.HasValue || !userId.HasValue)
-                return BadRequest();
-            AppUser? user = await _context.Users
-                .Include(usr => usr.Groups)
-                    .ThenInclude(gr => gr.GroupConnections)
-                        .ThenInclude(conn => conn.User)
-                            .ThenInclude(usr => usr!.Credentials)
-                
-                .Include(usr => usr.Connections)
-                .FirstOrDefaultAsync(usr => usr.Id == userId);
-            Connection? connection = await _context.Connections.FindAsync(connectionId);
-            user.Connections.Add(connection);
-            _context.Update(user);
-            await _context.SaveChangesAsync();
-            List<Server> servers = _context.Servers
-                .Include(srv => srv.Connections)
-                    .ThenInclude(conn => conn.User)
-                        .ThenInclude(usr => usr!.Credentials)
-                .ToList();
-            return View("AddConnections", new AddConnectionsModel(servers, user));
-        }
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                try
+                {
+                    if (!connectionId.HasValue || !userId.HasValue)
+                    {
+                        _logger.LogWarning($"Ошибка при запросе добавления подключения пользователю. Неверные аргументы.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе добавления подключения пользователю. Неверные аргументы.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 400
+                            }));
+                    }
+                    AppUser? user = await _context.Users
+                        .Include(usr => usr.Groups)
+                            .ThenInclude(gr => gr.Connections)
+                                .ThenInclude(conn => conn.ServerUser)
+                                    .ThenInclude(usr => usr!.Credentials)
 
+                        .Include(usr => usr.Connections)
+                        .FirstOrDefaultAsync(usr => usr.Id == userId);
+                    if (user is null)
+                    {
+                        _logger.LogWarning($"Ошибка при запросе добавления подключения пользователю. Пользователь не найден.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе добавления подключения пользователю. Пользователь не найден.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 404
+                            }));
+                    }
+                    Connection? connection = await _context.Connections.FindAsync(connectionId);
+                    if (connection is null)
+                    {
+                        _logger.LogWarning($"Ошибка при запросе добавления подключения пользователю. Подключение не найдено.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе добавления подключения пользователю. Подключение не найдено.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 404
+                            }));
+                    }
+                    user.Connections.Add(connection);
+                    _context.Update(user);
+                    await _context.SaveChangesAsync();
+                    List<Server> servers = _context.Servers
+                        .Include(srv => srv.Connections)
+                            .ThenInclude(conn => conn.ServerUser)
+                                .ThenInclude(usr => usr!.Credentials)
+                        .ToList();
+                    _logger.LogInformation($"Подключение {connection.ConnectionName} добавлено пользователю {user.Name}.");
+                    return View("AddConnections", new AddConnectionsModel(servers, user));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при запросе добавления подключения пользователю. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при запросе добавления подключения пользователю.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
+        }
+        /// <summary>
+        /// Запрос на удаление подключения из списка добавления подключений
+        /// </summary>
+        /// <param name="connectionId">Идентификатор подключения</param>
+        /// <param name="userId">Идентификатор пользователя</param>
+        /// <returns>Страница добавления подключений</returns>
         [HttpPost]
         public async Task<IActionResult> DropConnectionOnAddConnectionList(long? connectionId, long? userId)
         {
-            if (!connectionId.HasValue || !userId.HasValue)
-                return BadRequest();
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                try
+                {
+                    if (!connectionId.HasValue || !userId.HasValue)
+                    {
+                        _logger.LogWarning($"Ошибка при запросе удаления подключения у пользователя. Неверные аргументы.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе удаления подключения у пользователя. Неверные аргументы.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 400
+                            }));
+                    }
 
-            AppUser? user = await _context.Users
-                .Include(usr => usr.Connections)
-                .Where(usr => usr.Id == userId)
-                .FirstOrDefaultAsync();
+                    AppUser? user = await _context.Users
+                        .Include(usr => usr.Connections)
+                        .Where(usr => usr.Id == userId)
+                        .FirstOrDefaultAsync();
 
-            if (user is null) return NotFound();
+                    if (user is null)
+                    {
+                        _logger.LogWarning($"Ошибка при запросе удаления подключения у пользователя. Пользователь не найден.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе удаления подключения у пользователя. Пользователь не найден.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 404
+                            }));
+                    }
 
-            await DropConnection(connectionId.Value, user);
-            List<Server> servers = _context.Servers
-                .Include(srv => srv.Connections)
-                    .ThenInclude(conn => conn.User)
-                        .ThenInclude(usr => usr!.Credentials)
-                .ToList();
-            return View("AddConnections", new AddConnectionsModel(servers, user));
+                    await DropConnection(connectionId.Value, user);
+                    List<Server> servers = _context.Servers
+                        .Include(srv => srv.Connections)
+                            .ThenInclude(conn => conn.ServerUser)
+                                .ThenInclude(usr => usr!.Credentials)
+                        .ToList();
+                    return View("AddConnections", new AddConnectionsModel(servers, user));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при запросе удаления подключения у пользователя. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при запросе удаления подключения у пользователя.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
         }
-
+        /// <summary>
+        /// Запрос на удаление подключения у пользователя из списка подключений
+        /// </summary>
+        /// <param name="connectionId">Идентификатор подключения</param>
+        /// <param name="userId">Идентификатор пользователя</param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> DropConnectionOnConnectionList(long? connectionId, long? userId)
         {
-            if (!connectionId.HasValue || !userId.HasValue)
-                return BadRequest();
-            AppUser? user = await _context.Users
-                .Include(usr => usr.Groups)
-                    .ThenInclude(gr => gr.GroupConnections)
-                        .ThenInclude(conn => conn.User)
-                            .ThenInclude(usr => usr!.Credentials)
-                .Include(usr => usr.Connections)
-                .FirstOrDefaultAsync(usr => usr.Id == userId);
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                try
+                {
+                    if (!connectionId.HasValue || !userId.HasValue)
+                    {
+                        _logger.LogWarning($"Ошибка при запросе удаления подключения у пользователя. Неверные аргументы.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе удаления подключения у пользователя. Неверные аргументы.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 400
+                            }));
+                    }
+                    AppUser? user = await _context.Users
+                        .Include(usr => usr.Groups)
+                            .ThenInclude(gr => gr.Connections)
+                                .ThenInclude(conn => conn.ServerUser)
+                                    .ThenInclude(usr => usr!.Credentials)
+                        .Include(usr => usr.Connections)
+                        .FirstOrDefaultAsync(usr => usr.Id == userId);
 
-            if (user is null) return NotFound();
-            await DropConnection(connectionId.Value, user);
-            return View("ShowConnections", new ShowConnectionsModel(user));
+                    if (user is null)
+                    {
+                        _logger.LogWarning($"Ошибка при запросе удаления подключения у пользователя. Пользователь не найден.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе удаления подключения у пользователя. Пользователь не найден.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 404
+                            }));
+                    }
+                    await DropConnection(connectionId.Value, user);
+                    return View("ShowConnections", new ShowConnectionsModel(user));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при запросе удаления подключения у пользователя. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при запросе удаления подключения у пользователя.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
         }
-
+        #endregion
+        #region Methods
+        /// <summary>
+        /// Метод удаления подключения у указанного пользователя
+        /// </summary>
+        /// <param name="connectionId">Идентификатор подключения</param>
+        /// <param name="user">Экземпляр пользователя, выгруженный из БД.</param>
         private async Task DropConnection(long connectionId, AppUser user)
         {
             Connection? connection = await _context.Connections.FindAsync(connectionId);
-            if (connection is null) return;
+            if (connection is null)
+            {
+                _logger.LogError($"Ошибка при запросе удаления подключения у пользователя. Подключение не найдено.");
+                return;
+            }
             user.Connections.Remove(connection);
             _context.Update(user);
+            _logger.LogInformation($"Подключение {connection.ConnectionName} удалено у пользователя {user.Name}.");
             await _context.SaveChangesAsync();
         }
-
+        /// <summary>
+        /// Проверка на существование пользователя в БД
+        /// </summary>
+        /// <param name="id">Идентификатор пользователя</param>
+        /// <returns>True - пользователь есть, False - пользователя нет</returns>
         private bool AppUserExists(long id)
         {
-          return (_context.Users?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Users?.Any(e => e.Id == id)).GetValueOrDefault();
         }
+        #endregion
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 }

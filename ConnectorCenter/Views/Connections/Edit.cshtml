@@ -110,8 +110,8 @@
                             <p class="text">Имя пользователя</p>
                         </div>
                         <div class="col">
-                            <input type="text" name="User.Name" class="textbox text-center w-100"
-                                   value="@Model.Connection.User?.Name" />
+                            <input type="text" name="ServerUser.Name" class="textbox text-center w-100"
+                                   value="@Model.Connection.ServerUser?.Name" />
                         </div>
                     </div>
                     <div class="row">
@@ -119,8 +119,8 @@
                             <p class="text">Логин</p>
                         </div>
                         <div class="col">
-                            <input type="text" name="User.Credentials.Login" class="textbox text-center w-100"
-                                   value="@Model.Connection.User?.Credentials?.Login"  required />
+                            <input type="text" name="ServerUser.Credentials.Login" class="textbox text-center w-100"
+                                   value="@Model.Connection.ServerUser?.Credentials?.Login" required />
                         </div>
                     </div>
                     <div class="row">
@@ -128,8 +128,8 @@
                             <p class="text">Пароль</p>
                         </div>
                         <div class="col">
-                            <input type="password" name="User.Credentials.Password" class="textbox text-center w-100"
-                                   value="@Model.Connection.User?.Credentials?.Password" required />
+                            <input type="password" name="ServerUser.Credentials.Password" class="textbox text-center w-100"
+                                   value="@Model.Connection.ServerUser?.Credentials?.Password" required />
                         </div>
                     </div>
                     <div class="row" style="margin:3vh;">

@@ -15,7 +15,7 @@ namespace ConnectorCenter.Views.AppUsers
             GroupConnections = new List<Connection>();
             foreach (AppUserGroup group in user.Groups)
             {
-                GroupConnections.AddRange(group.GroupConnections);
+                GroupConnections.AddRange(group.Connections);
             }
             GroupConnections = GroupConnections.Distinct().ToList();
         }

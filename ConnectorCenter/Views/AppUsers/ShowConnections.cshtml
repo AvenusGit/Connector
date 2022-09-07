@@ -45,11 +45,11 @@
         <!--List-->
 
     <div class="row" style="margin:0px 2vw; height:70vh;">
-                @if(Model.User.Connections.Any() || Model.User.Groups.Where(gr => gr.GroupConnections.Any()).Any())
+    @if (Model.User.Connections.Any() || Model.User.Groups.Where(gr => gr.Connections.Any()).Any())
                 {
                 <div class="scrollDiv">
 
-                @foreach (AppUserGroup group in Model.User.Groups.Where(gr => gr.GroupConnections.Count > 0))
+            @foreach (AppUserGroup group in Model.User.Groups.Where(gr => gr.Connections.Count > 0))
                 {
                             <form>
                         <h1 class="text fw-bold text-center" style="margin:2vh 0px">От группы @group.GroupName</h1>
@@ -66,7 +66,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                            @foreach (Connection grConnection in group.GroupConnections.OrderBy(conn => conn.ConnectionName))
+                            @foreach (Connection grConnection in group.Connections.OrderBy(conn => conn.ConnectionName))
                                 {
                                     <tr>
                                         <td class="text text-center">@grConnection.ConnectionName</td>
@@ -80,8 +80,8 @@
                                         {
                                             <td class="text text-center">Нет</td>
                                         }
-                                        <td class="text text-center">@grConnection.User?.Name</td>
-                                    <td class="text text-center">@grConnection.User?.Credentials?.Login</td>
+                                        <td class="text text-center">@grConnection.ServerUser?.Name</td>
+                                        <td class="text text-center">@grConnection.ServerUser?.Credentials?.Login</td>
                                         <td class="text text-center">
                                             <div class="container d-flex justify-content-center">
                                                 <input type="text" style="display:none;" value="@grConnection.Id" name="groupId" />
@@ -137,8 +137,8 @@
                                             {
                                                 <td class="text text-center">Нет</td>
                                             }
-                                            <td class="text text-center">@connection.User?.Name</td>
-                                            <td class="text text-center">@connection.User?.Credentials?.Login</td>
+                                        <td class="text text-center">@connection.ServerUser?.Name</td>
+                                        <td class="text text-center">@connection.ServerUser?.Credentials?.Login</td>
                                             <td class="text text-center">
                                                 <div class="container d-flex justify-content-center">
                                                     <input type="text" style="display:none;" value="@connection.Id" name="connectionId"/>

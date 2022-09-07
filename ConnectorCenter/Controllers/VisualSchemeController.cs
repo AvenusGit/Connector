@@ -11,34 +11,52 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace ConnectorCenter.Controllers
 {
+    /// <summary>
+    /// Контроллер для генерации CSS всех страниц
+    /// </summary>
+    [AllowAnonymous]
     public class VisualSchemeController : Controller
-    {
-        private readonly ILogger<HomeController> _logger;
+    {        
         private readonly DataBaseContext _dataBaseContext;
-
-        public VisualSchemeController(ILogger<HomeController> logger, DataBaseContext context)
+        public VisualSchemeController(DataBaseContext context)
         {
-            _logger = logger;
             _dataBaseContext = context;
         }
+        /// <summary>
+        /// Запрос на генерацию CSS
+        /// </summary>
+        /// <returns>CSS с цветами визуальной схемы пользователя, если он аутентифицирован, иначе - страндартная цветовая схема</returns>
+        [HttpGet]
         public async Task<IActionResult> GenerateCss()
         {
             HttpContext.Response.ContentType = "text/css";
             long userId;
             if(long.TryParse(HttpContext.User.FindFirstValue(ClaimTypes.Sid), out userId))
             {
-                AppUser currentUser =
-                    _dataBaseContext.Users
-                        .Where(user => user.Id == userId)
-                        .SingleOrDefaultAsync()
-                        .Result;
-                if(currentUser is not null)
-                    if(currentUser.VisualScheme is not null)
-                        return View(new GenerateCssModel(currentUser.VisualScheme));
+                // этот запрос не логируется ввиду его частоты
+                try
+                {
+                    AppUser? currentUser = await _dataBaseContext.Users.FirstOrDefaultAsync(user => user.Id == userId);
+                    if (currentUser is not null)
+                        if (currentUser.VisualScheme is not null)
+                            return View(new GenerateCssModel(currentUser.VisualScheme));
+                }
+                catch 
+                {
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Внутренняя ошибка обработки запроса на CSS.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }                
             }
-            return View(new GenerateCssModel(VisualScheme.GetDefaultVisualScheme()));
-
-
+            return View(new GenerateCssModel(VisualScheme.GetDefaultVisualScheme()));          
         }
     }
 }

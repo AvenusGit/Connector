@@ -45,7 +45,7 @@
         <!--List-->
         <form>
     <div class="row" style="margin:0px 2vw; height:70vh;">
-                @if(Model.Group.GroupConnections.Any())
+        @if (Model.Group.Connections.Any())
                 {
                 <div class="scrollDiv">
                     <table class="table my-3 w-100">
@@ -61,7 +61,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                        @foreach (Connection connection in Model.Group.GroupConnections.OrderBy(conn => conn.ConnectionName))
+                        @foreach (Connection connection in Model.Group.Connections.OrderBy(conn => conn.ConnectionName))
                             {
                                 <tr>
                                     <td class="text text-center">@connection.ConnectionName</td>
@@ -75,8 +75,8 @@
                                     {
                                         <td class="text text-center">Нет</td>
                                     }
-                                    <td class="text text-center">@connection.User?.Name</td>
-                                    <td class="text text-center">@connection.User?.Credentials?.Login</td>
+                                    <td class="text text-center">@connection.ServerUser?.Name</td>
+                                    <td class="text text-center">@connection.ServerUser?.Credentials?.Login</td>
                                     <td class="text text-center">
                                         <div class="container d-flex justify-content-center">
                                             <input type="text" style="display:none;" value="@connection.Id" name="connectionId"/>

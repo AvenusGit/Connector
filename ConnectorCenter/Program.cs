@@ -5,8 +5,26 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Net.Http.Headers;
+using ConnectorCenter;
+using ConnectorCenter.Services.Logs;
+
+
+// Первоначальное задание на подгрузку конфигурации логгера. Это очень странная штука, которая то работает, то нет. Поэтому она дублирована ниже.
+// Watch = true ВАЖНО, т.к. таким образом обновляются параметры логгера!
+[assembly: log4net.Config.XmlConfigurator(ConfigFile = "Configurations/Log.config", Watch = true)]
+// Будет ли log4net логировать собственные ошибки. Стандартная политика log4net - проглатывать исключения.
+//TODO выключить этот параметр на проде.
+log4net.Util.LogLog.InternalDebugging = true;
+log4net.GlobalContext.Properties["LogFileName"] = LogService.GetLastLogFilePath();
+    
+log4net.Config.XmlConfigurator.Configure();
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+// Добавление консольного логгера .Net Core
+builder.Logging.Services.AddLogging();
+// Добавление log4net логгера
+builder.Logging.AddLog4Net(ConnectorCenterApp.Instance.LogConfPath);
 
 builder.Services.AddAuthentication(options =>
     {
@@ -92,6 +110,18 @@ builder.Services.AddControllers
 
 var app = builder.Build();
 
+try
+{
+    log4net.Config.XmlConfigurator.Configure(new FileInfo(ConnectorCenterApp.Instance.LogConfPath));
+    ConnectorCenterApp.Instance.Logger = app.Logger;
+}
+catch
+{
+    // сообщение в консоль, что файловый логгер не применил конфиг
+    app.Logger.LogCritical($"Не удалось применить конфигурацию логгера {ConnectorCenterApp.Instance.LogConfPath}. " +
+        $"Проверьте существование и структуру файла.");
+}
+
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -123,8 +153,11 @@ app.UseMvc(routes =>
         name: "default",
         template: "{controller=Home}/{action=Index}/{id?}");
 });
-
-app.Run();
+// запуск
+using (var scope = app.Logger.BeginScope("APPLICATION CORE"))
+{
+    app.Run();
+}
 
 public static class AuthOptions
 {

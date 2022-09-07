@@ -14,13 +14,15 @@ namespace ConnectorCore.Models.Connections
         {
             get
             {
-                return $"{ConnectionType.ToString()} ({Server.Host}:{Port})/{User?.Name}";
+                return $"{ConnectionType.ToString()} ({Server.Host}:{Port})/{ServerUser?.Name}";
             }
         }
         public bool IsAvailable { get; set; }
         public int Port { get; set; }
         public Server Server { get; set; }
-        public ServerUser? User { get; set; }
+        public ServerUser? ServerUser { get; set; }
+        public List<AppUser> AppUsers { get; set; }
+        public List<AppUserGroup> AppUsersGroups { get; set; }
         public ConnectionTypes ConnectionType { get; set; }
         public enum ConnectionTypes
         {

@@ -10,43 +10,113 @@ using ConnectorCore.Models.VisualModels;
 
 namespace ConnectorCenter.Controllers
 {
+    /// <summary>
+    /// Контроллер для работы с первым запуском приложения
+    /// </summary>
     [Authorize(AuthenticationSchemes = "Cookies")]
     public class FirstStartController : Controller
     {
+        #region Fields
         private readonly ILogger<HomeController> _logger;
         private readonly DataBaseContext _dataBaseContext;
-
+        #endregion
+        #region Constructors
         public FirstStartController(ILogger<HomeController> logger, DataBaseContext context)
         {
             _logger = logger;
             _dataBaseContext = context;
         }
-
+        #endregion
+        #region GET
+        /// <summary>
+        /// Запрос страницы первого запуска приложения
+        /// </summary>
+        /// <returns>Страница первого запуска приложения</returns>
+        [HttpGet]
         public IActionResult Index()
         {
-            return View(new IndexViewModel(_dataBaseContext));
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                try
+                {
+                    _logger.LogInformation($"Запрос страницы первого запуска.");
+                    return View(new IndexViewModel(_dataBaseContext));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при запросе страницы первого запуска. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при запросе страницы первого запуска.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"Повторить запрос",@"\firstStart" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }                
+            }
         }
+        #endregion
+        #region POST
         [HttpPost]
         public IActionResult CreateFirstUser(string username, Сredentials credentials)
         {
-            if (!ModelState.IsValid)
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
-                return BadRequest(ModelState);
+                try
+                {
+                    if (!ModelState.IsValid)
+                    {
+                        _logger.LogWarning($"Ошибка при запросе сохранении первого пользователя. Неверные аргументы.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе сохранении первого пользователя. Неверные аргументы.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"Повторить попытку",@"\firstStart" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 400
+                            }));
+                    }
+                    AppUser newUser = new AppUser()
+                    {
+                        Name = username,
+                        IsEnabled = true,
+                        Credentials = credentials,
+                        Role = AppUser.AppRoles.Administrator,
+                        Connections = new List<Connection>(),
+                        UserSettings = UserSettings.GetDefault(),
+                        VisualScheme = VisualScheme.GetDefaultVisualScheme()
+                    };
+                    _dataBaseContext.Users.Add(newUser);
+                    _dataBaseContext.SaveChanges();
+                    _logger.LogInformation($"Выполнено сохранение первого пользователя - {newUser.Name}. Назначены права администратора.");
+                    CookieAuthorizeService.SignOut(HttpContext);
+                    _logger.LogInformation($"Будет выполнен выход из под временного пользователя ввиду наличия постоянных.");
+                    return RedirectToAction("Index", "Login");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при запросе сохранении первого пользователя. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при запросе сохранении первого пользователя.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"Повторить попытку",@"\firstStart" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }                
             }
-            AppUser newUser = new AppUser()
-            {
-                Name = username,
-                IsEnabled = true,
-                Credentials = credentials,
-                Role = AppUser.AppRoles.Administrator,
-                Connections = new List<Connection>(),
-                UserSettings = UserSettings.GetDefault(),
-                VisualScheme = VisualScheme.GetDefaultVisualScheme()
-            };
-            _dataBaseContext.Users.Add(newUser);
-            _dataBaseContext.SaveChanges();
-            CookieAuthorizeService.SignOut(HttpContext);
-            return RedirectToAction("Index","Login");
         }
+        #endregion
     }
 }

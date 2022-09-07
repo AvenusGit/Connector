@@ -11,6 +11,6 @@ namespace ConnectorCore.Models
         public long Id { get; set; }
         public string? GroupName { get; set; }
         public List<AppUser> Users { get; set; } = new List<AppUser>();
-        public List<Connection> GroupConnections { get; set; } = new List<Connection>();
+        public List<Connection> Connections { get; set; } = new List<Connection>();
     }
 }

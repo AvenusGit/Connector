@@ -1,7 +1,23 @@
 ﻿@using ConnectorCore.Models;
+@using ConnectorCore.Models.Connections;
 @model ConnectorCenter.Views.AppUsers.IndexModel
 @{
     Layout = "~/Views/Shared/ViewBase.cshtml";
+}
+@functions{
+    private int CalcConnectionCount(IEnumerable<Connection> userConnections,IEnumerable<AppUserGroup> groups)
+    {
+        int result = userConnections.Count();
+        foreach (AppUserGroup group in groups)
+        {
+            foreach (Connection connection in group.Connections)
+            {
+                if (!userConnections.Contains(connection))
+                    result += 1;
+            }
+        }
+        return result;
+    }
 }
 <div class="container panel" style="height:80vh;">
     <!--Logo-->
@@ -70,7 +86,7 @@
                                 {
                                     <td class="text text-center">Нет</td>
                                 }
-                                <td class="text text-center">@(user.Connections.Count() + Model.GroupConnectionsCount)</td>
+                                <td class="text text-center">@(CalcConnectionCount(user.Connections, user.Groups))</td>
                             <td class="text text-center">
                                 <form>
                                 <div class="container d-flex justify-content-center">

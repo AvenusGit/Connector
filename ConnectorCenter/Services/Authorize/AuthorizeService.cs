@@ -55,12 +55,18 @@ namespace ConnectorCenter.Services.Authorize
                 return true;
             else return false;
         }
-        public static AppUser.AppRoles? GetHttpUserRole(ClaimsPrincipal claims)
+        public static AppUser.AppRoles? GetUserRole(HttpContext context)
         {
             object? role;
-            if (Enum.TryParse(typeof(AppUser.AppRoles), claims.FindFirstValue(ClaimTypes.GroupSid), true, out role))
+            if (Enum.TryParse(typeof(AppUser.AppRoles), context.User.FindFirstValue(ClaimTypes.GroupSid), true, out role))
                 return (AppUser.AppRoles)role!;
             else return null;
+        }
+        public static string GetUserName(HttpContext context)
+        {
+            return String.IsNullOrWhiteSpace(context.User.Identity?.Name)
+                ? "Unknow"
+                : context.User.Identity.Name;
         }
     }
 }

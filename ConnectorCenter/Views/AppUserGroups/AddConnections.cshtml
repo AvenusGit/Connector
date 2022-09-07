@@ -69,14 +69,15 @@
                                         {
                                             <td class="text text-center">Нет</td>
                                         }
-                                        <td class="text text-center">@connection.User?.Name</td>
-                                        <td class="text text-center">@connection.User?.Credentials?.Login</td>
+                                        <td class="text text-center">@connection.ServerUser?.Name</td>
+                                        <td class="text text-center">@connection.ServerUser?.Credentials?.Login</td>
                                         <td class="text text-center">
                                             <div class="container d-flex justify-content-center">
                                                 <form>
                                                 <input type="text" style="display:none;" value="@connection.Id" name="connectionId" />
                                                 <input type="text" style="display:none;" value="@Model.Group.Id" name="groupId" />
-                                                @if(Model.Group.GroupConnections.Contains(connection)){
+                                                @if (Model.Group.Connections.Contains(connection))
+                                                {
                                                     <button class="iconButton mx-1" title="Убрать у этой группы"
                                                         formaction="/appUserGroups/DropConnectionOnAddConnectionList" formmethod="post">
                                                         <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">

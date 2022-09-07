@@ -208,4 +208,13 @@ select {
     height:100%;
     overflow:auto;
 }
+textarea {
+    color: @ToCssColor(Model.Scheme.ColorScheme.Text.Color);
+    font-size: 1.5vh;
+    background: @ToCssColor(Model.Scheme.ColorScheme.Panel.Color);
+    border: 0px solid @ToCssColor(Model.Scheme.ColorScheme.Border.Color);
+    outline: none;
+    overflow: auto;
+    resize: none;
+}
 
