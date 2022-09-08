@@ -12,6 +12,7 @@ using ConnectorCore.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 using ConnectorCenter.Services.Authorize;
+using ConnectorCenter.Models.Settings;
 
 namespace ConnectorCenter.Controllers
 {
@@ -44,10 +45,16 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.Servers == AccessSettings.AccessModes.None)
+                    {
+                        _logger.LogWarning("Отказано в попытке запросить страницу со списком серверов. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\dashboard");
+                    }
                     _logger.LogInformation($"Запрос страницы списка серверов.");
                     return _context.Servers is null
-                      ? View(new IndexModel(new List<Server>()))
-                      : View(new IndexModel(await _context.Servers.Include("Connections").ToListAsync()));
+                      ? View(new IndexModel(new List<Server>(),accessSettings))
+                      : View(new IndexModel(await _context.Servers.Include("Connections").ToListAsync(),accessSettings));
                 }
                 catch (Exception ex)
                 {
@@ -77,6 +84,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.Servers != AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке запросить страницу добавления сервера. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\servers");
+                    }
                     _logger.LogInformation($"Запрос страницы добавления нового сервера.");
                     return View();
                 }
@@ -109,6 +122,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.Servers != AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке запросить страницу изменения сервера. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\servers");
+                    }
                     if (id == null)
                     {
                         _logger.LogWarning($"Ошибка при запросе страницы редактирования сервера. Нет идентификатора в запросе.");
@@ -173,6 +192,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.ServersConnections == AccessSettings.AccessModes.None)
+                    {
+                        _logger.LogWarning("Отказано в попытке запросить страницу подключений сервера. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\servers");
+                    }
                     Server? server = await _context.Servers
                         .Include(conn => conn.Connections)
                             .ThenInclude(conn => conn.ServerUser)
@@ -181,7 +206,7 @@ namespace ConnectorCenter.Controllers
                     if (server != null)
                     {
                         _logger.LogInformation($"Запрошена страница подключений сервера {server.Name}.");
-                        return View(new ShowConnectionsModel(server));
+                        return View(new ShowConnectionsModel(server,accessSettings));
                     }
                     else
                     {
@@ -230,12 +255,18 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.Servers != AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке добавить сервер. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\servers");
+                    }
                     if (ModelState.IsValid)
                     {
                         _context.Add(server);
                         await _context.SaveChangesAsync();
                         _logger.LogInformation($"Добавлен новый сервер {server.Name}.");
-                        return RedirectToAction(nameof(Index));
+                        return RedirectToAction("Index");
                     }
                     else
                     {
@@ -283,6 +314,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.Servers != AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке изменить сервер. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\servers");
+                    }
                     if (ModelState.IsValid)
                     {
                         if (!ServerExists(server.Id))
@@ -350,6 +387,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.Servers != AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке изменить статус активности сервера. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\servers");
+                    }
                     if (id == null)
                     {
                         _logger.LogWarning($"Ошибка при запросе изменения статуса активности сервера. Нет идентификатора в запросе.");
@@ -416,6 +459,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.Servers != AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке удалить сервер. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\servers");
+                    }
                     Server? server = await _context.Servers.FindAsync(id);
                     if (server != null)
                     {

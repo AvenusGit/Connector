@@ -7,6 +7,7 @@ using ConnectorCore.Models;
 using ConnectorCore.Models.Connections;
 using ConnectorCore.Models.VisualModels.Interfaces;
 using ConnectorCore.Models.VisualModels;
+using ConnectorCenter.Models.Settings;
 
 namespace ConnectorCenter.Controllers
 {

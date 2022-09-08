@@ -1,4 +1,5 @@
 ﻿@using ConnectorCore.Models;
+@using ConnectorCenter.Models.Settings;
 @model ConnectorCenter.Views.AppUserGroups.IndexModel
 @{
     Layout = "~/Views/Shared/ViewBase.cshtml";
@@ -6,18 +7,21 @@
 <div class="container panel" style="height:80vh;">
     <!--Logo-->
     <form>
-    <div class="row" style="margin:0px 3vw">
+        <div class="row" style="margin:0px 3vw">
         <div class="col-lg-auto">
             <h1 class="textLogo" style="margin:2vh 0px 2vh 0vw;">Группы пользователей</h1>
         </div>
         <div class="col">
             
             <div class="d-flex align-items-center justify-content-end h-100">
-                <button class="iconButton mx-2" title="Добавить группу" formaction="/appUserGroups/add" formmethod="get">
-                    <svg style="width:2vh;height:2vh" viewBox="0 0 24 24" >
-                        <path class="path" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
-                    </svg>
-                </button>
+                    @if (Model.AccessSettings.Groups == AccessSettings.AccessModes.Edit)
+                    {
+                        <button class="iconButton mx-2" title="Добавить группу" formaction="/appUserGroups/add" formmethod="get">
+                            <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                <path class="path" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+                            </svg>
+                        </button>
+                    }                
                 <button class="iconButton" formaction="/appuserGroups" formmethod="get" title="Обновить">
                     <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
                         <path class="path" d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z" />
@@ -64,31 +68,43 @@
                                 <form>
                                 <div class="container d-flex justify-content-center">
                                     <input type="text" name="groupId" value="@group.Id" style="display:none;"/>
-                                    <button class="iconButton mx-1" title="Подключения"
-                                        formaction="/appusergroups/showConnections" formmethod="get">
-                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
-                                            <path class="path" d="M21.4 7.5C22.2 8.3 22.2 9.6 21.4 10.3L18.6 13.1L10.8 5.3L13.6 2.5C14.4 1.7 15.7 1.7 16.4 2.5L18.2 4.3L21.2 1.3L22.6 2.7L19.6 5.7L21.4 7.5M15.6 13.3L14.2 11.9L11.4 14.7L9.3 12.6L12.1 9.8L10.7 8.4L7.9 11.2L6.4 9.8L3.6 12.6C2.8 13.4 2.8 14.7 3.6 15.4L5.4 17.2L1.4 21.2L2.8 22.6L6.8 18.6L8.6 20.4C9.4 21.2 10.7 21.2 11.4 20.4L14.2 17.6L12.8 16.2L15.6 13.3Z"/>
-                                        </svg>
-                                    </button>
-                                    <button class="iconButton mx-1" title="Пользователи"
-                                        formaction="/appusergroups/showUsers" formmethod="get">
-                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
-                                                    <path class="path" d="M12,5.5A3.5,3.5 0 0,1 15.5,9A3.5,3.5 0 0,1 12,12.5A3.5,3.5 0 0,1 8.5,9A3.5,3.5 0 0,1 12,5.5M5,8C5.56,8 6.08,8.15 6.53,8.42C6.38,9.85 6.8,11.27 7.66,12.38C7.16,13.34 6.16,14 5,14A3,3 0 0,1 2,11A3,3 0 0,1 5,8M19,8A3,3 0 0,1 22,11A3,3 0 0,1 19,14C17.84,14 16.84,13.34 16.34,12.38C17.2,11.27 17.62,9.85 17.47,8.42C17.92,8.15 18.44,8 19,8M5.5,18.25C5.5,16.18 8.41,14.5 12,14.5C15.59,14.5 18.5,16.18 18.5,18.25V20H5.5V18.25M0,20V18.5C0,17.11 1.89,15.94 4.45,15.6C3.86,16.28 3.5,17.22 3.5,18.25V20H0M24,20H20.5V18.25C20.5,17.22 20.14,16.28 19.55,15.6C22.11,15.94 24,17.11 24,18.5V20Z" />
-                                        </svg>
-                                    </button>
-                                    <button class="iconButton mx-1" title="Изменить @group.GroupName"
-                                            formaction="/appusergroups/edit/@group.Id" formmethod="get">
-                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
-                                            <path class="path" d="M14.06,9L15,9.94L5.92,19H5V18.08L14.06,9M17.66,3C17.41,3 17.15,3.1 16.96,3.29L15.13,5.12L18.88,8.87L20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18.17,3.09 17.92,3 17.66,3M14.06,6.19L3,17.25V21H6.75L17.81,9.94L14.06,6.19Z" />
-                                        </svg>
-                                    </button>
-                                            <button class="iconButton" title="Удалить @group.GroupName"
-                                            formaction="/appusergroups/delete/@group.Id" formmethod="post">
-                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
-                                            <path class="path" d="M14.12,10.47L12,12.59L9.87,10.47L8.46,11.88L10.59,14L8.47,16.12L9.88,17.53L12,15.41L14.12,17.53L15.53,16.12L13.41,14L15.53,11.88L14.12,10.47M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8,9H16V19H8V9Z" />
-                                        </svg>
-                                    </button>                                       
-                                </div>  
+                                    @if (Model.AccessSettings.GroupConnections != AccessSettings.AccessModes.None)
+                                    {
+                                        <button class="iconButton mx-1" title="Подключения"
+                                            formaction="/appusergroups/showConnections" formmethod="get">
+                                            <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                                <path class="path" d="M21.4 7.5C22.2 8.3 22.2 9.6 21.4 10.3L18.6 13.1L10.8 5.3L13.6 2.5C14.4 1.7 15.7 1.7 16.4 2.5L18.2 4.3L21.2 1.3L22.6 2.7L19.6 5.7L21.4 7.5M15.6 13.3L14.2 11.9L11.4 14.7L9.3 12.6L12.1 9.8L10.7 8.4L7.9 11.2L6.4 9.8L3.6 12.6C2.8 13.4 2.8 14.7 3.6 15.4L5.4 17.2L1.4 21.2L2.8 22.6L6.8 18.6L8.6 20.4C9.4 21.2 10.7 21.2 11.4 20.4L14.2 17.6L12.8 16.2L15.6 13.3Z"/>
+                                            </svg>
+                                        </button>
+                                    }
+                                    @if (Model.AccessSettings.GroupUsers != AccessSettings.AccessModes.None)
+                                    {
+                                        <button class="iconButton mx-1" title="Пользователи"
+                                                formaction="/appusergroups/showUsers" formmethod="get">
+                                            <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                                <path class="path" d="M12,5.5A3.5,3.5 0 0,1 15.5,9A3.5,3.5 0 0,1 12,12.5A3.5,3.5 0 0,1 8.5,9A3.5,3.5 0 0,1 12,5.5M5,8C5.56,8 6.08,8.15 6.53,8.42C6.38,9.85 6.8,11.27 7.66,12.38C7.16,13.34 6.16,14 5,14A3,3 0 0,1 2,11A3,3 0 0,1 5,8M19,8A3,3 0 0,1 22,11A3,3 0 0,1 19,14C17.84,14 16.84,13.34 16.34,12.38C17.2,11.27 17.62,9.85 17.47,8.42C17.92,8.15 18.44,8 19,8M5.5,18.25C5.5,16.18 8.41,14.5 12,14.5C15.59,14.5 18.5,16.18 18.5,18.25V20H5.5V18.25M0,20V18.5C0,17.11 1.89,15.94 4.45,15.6C3.86,16.28 3.5,17.22 3.5,18.25V20H0M24,20H20.5V18.25C20.5,17.22 20.14,16.28 19.55,15.6C22.11,15.94 24,17.11 24,18.5V20Z" />
+                                            </svg>
+                                        </button>
+                                    }
+                                    @if (Model.AccessSettings.Groups == AccessSettings.AccessModes.Edit)
+                                    {
+                                        <button class="iconButton mx-1" title="Изменить @group.GroupName"
+                                    formaction="/appusergroups/edit/@group.Id" formmethod="get">
+                                            <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                                <path class="path" d="M14.06,9L15,9.94L5.92,19H5V18.08L14.06,9M17.66,3C17.41,3 17.15,3.1 16.96,3.29L15.13,5.12L18.88,8.87L20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18.17,3.09 17.92,3 17.66,3M14.06,6.19L3,17.25V21H6.75L17.81,9.94L14.06,6.19Z" />
+                                            </svg>
+                                        </button>
+                                    }
+                                    @if (Model.AccessSettings.Groups == AccessSettings.AccessModes.Edit)
+                                    {
+                                        <button class="iconButton" title="Удалить @group.GroupName"
+                                    formaction="/appusergroups/delete/@group.Id" formmethod="post">
+                                            <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                                <path class="path" d="M14.12,10.47L12,12.59L9.87,10.47L8.46,11.88L10.59,14L8.47,16.12L9.88,17.53L12,15.41L14.12,17.53L15.53,16.12L13.41,14L15.53,11.88L14.12,10.47M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8,9H16V19H8V9Z" />
+                                            </svg>
+                                        </button>
+                                    }
+                                    </div>  
                                 </form>
                             </td>
                         </tr>

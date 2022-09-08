@@ -14,6 +14,7 @@ using ConnectorCenter.Services.Authorize;
 using ConnectorCore.Models.Connections;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using ConnectorCenter.Models.Settings;
 
 namespace ConnectorCenter.Controllers
 {
@@ -46,15 +47,21 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.Users == AccessSettings.AccessModes.None)
+                    {
+                        _logger.LogWarning("Отказано в попытке запросить страницу списка пользователей. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\dashboard");
+                    }
                     _logger.LogInformation("Запрос на получение списка пользователей");
                     return _context.Users is null
-                        ? View(new IndexModel(new List<AppUser>()))
+                        ? View(new IndexModel(new List<AppUser>(), accessSettings))
                         : View(new IndexModel(await _context.Users
                             .Include(usr => usr.Groups)
                                 .ThenInclude(gr => gr.Connections)
                             .Include(user => user.Credentials)
                             .Include(user => user.Connections)
-                            .ToListAsync()));
+                            .ToListAsync(), accessSettings));
                 }
                 catch (Exception ex)
                 {
@@ -78,6 +85,38 @@ namespace ConnectorCenter.Controllers
         /// </summary>
         /// <returns>Страница с формой для добавления пользователя</returns>
         [HttpGet]
+        public IActionResult Add()
+        {
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                try
+                {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.Users != AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке запросить страницу добавления пользователя. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
+                    }
+                    _logger.LogInformation("Запрос страницы добавления пользователя");
+                    return View(new AddModel());
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при запросе страницы добавления пользователя. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Внутренняя ошибка обработки запроса страницы добавления пользователя.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
+        }
         /// <summary>
         /// Запрос формы на редактирование пользователя
         /// </summary>
@@ -90,6 +129,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.Users != AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке запросить страницу изменения пользователя. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
+                    }
                     if (id == null)
                     {
                         _logger.LogWarning($"Ошибка при запросе страницы редактирования пользователя. Нет идентификатора или контекста.");
@@ -154,6 +199,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.UserConnections == AccessSettings.AccessModes.None)
+                    {
+                        _logger.LogWarning("Отказано в попытке запросить страницу подключений пользователя. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
+                    }
                     if (!userId.HasValue)
                     {
                         _logger.LogWarning($"Ошибка при запросе страницы подключений пользователя. Нет идентификатора.");
@@ -179,7 +230,7 @@ namespace ConnectorCenter.Controllers
                                 .ThenInclude(usr => usr!.Credentials)
                         .FirstOrDefaultAsync(usr => usr.Id == userId);
                     if (user != null)
-                        return View(new ShowConnectionsModel(user));
+                        return View(new ShowConnectionsModel(user,accessSettings));
                     else
                     {
                         _logger.LogWarning($"Ошибка при запросе страницы подключений пользователя. Пользователь не найден.");
@@ -213,33 +264,6 @@ namespace ConnectorCenter.Controllers
                 }
             }
         }
-        [HttpGet]
-        public IActionResult Add()
-        {
-            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
-            {
-                try
-                {
-                    _logger.LogInformation("Запрос страницы добавления пользователя");
-                    return View(new AddModel());
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"Ошибка при запросе страницы добавления пользователя. {ex.Message}. {ex.StackTrace}");
-                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
-                        new
-                        {
-                            message = "Внутренняя ошибка обработки запроса страницы добавления пользователя.",
-                            buttons = new Dictionary<string, string>()
-                            {
-                                {"На главную",@"\dashboard" },
-                                {"К логам",@"\logs" }
-                            },
-                            errorCode = 500
-                        }));
-                }
-            }
-        }
         /// <summary>
         /// Запрос страницы на добавление подключений пользователю
         /// </summary>
@@ -252,6 +276,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.UserConnections != AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке запросить страницу добавления подключения для пользователя. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
+                    }
                     if (!userId.HasValue)
                     {
                         _logger.LogWarning($"Ошибка при запросе страницы добавления подключений пользователю. Нет идентификатора.");
@@ -329,6 +359,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.Users != AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке запросить страницу добавления пользователя. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
+                    }
                     if (ModelState.IsValid)
                     {
                         appUser.VisualScheme = VisualScheme.GetDefaultVisualScheme();
@@ -379,6 +415,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.Users != AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке запросить страницу изменения пользователя. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
+                    }
                     if (ModelState.IsValid)
                     {
                         if (AppUserExists(appUser.Id))
@@ -446,6 +488,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.Users != AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке запросить страницу удаления пользователя. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
+                    }
                     if (id == null)
                     {
                         _logger.LogWarning($"Ошибка при запросе удаления пользователя. Не указан идентификатор.");
@@ -467,19 +515,42 @@ namespace ConnectorCenter.Controllers
                         .FirstOrDefaultAsync(m => m.Id == id);
                     if (appUser != null)
                     {
-                        appUser.Connections.Clear(); // очистка подключений, чтобы они не были каскадно удалены с пользователем
-                        _context.Update(appUser);
-                        await _context.SaveChangesAsync();
-                        _context.Users.Remove(appUser);
-                        await _context.SaveChangesAsync();
-                        if (AuthorizeService.CompareHttpUserWithAppUser(HttpContext.User, appUser))
+                        if(appUser.Role == AppUser.AppRoles.Administrator && 
+                            await _context.Users
+                                .Where(usr => usr.Role == AppUser.AppRoles.Administrator && usr.Id != appUser.Id)
+                                .AnyAsync()
+                          )
                         {
-                            CookieAuthorizeService.SignOut(HttpContext);
-                            return RedirectToAction("Index", "Login", new RouteValueDictionary(
-                                        new { message = "Ваш пользователь удален." }));
+                            appUser.Connections.Clear(); // очистка подключений, чтобы они не были каскадно удалены с пользователем
+                            _context.Update(appUser);
+                            await _context.SaveChangesAsync();
+                            _context.Users.Remove(appUser);
+                            await _context.SaveChangesAsync();
+                            if (AuthorizeService.CompareHttpUserWithAppUser(HttpContext.User, appUser))
+                            {
+                                CookieAuthorizeService.SignOut(HttpContext);
+                                return RedirectToAction("Index", "Login", new RouteValueDictionary(
+                                            new { message = "Ваш пользователь удален." }));
+                            }
+                            _logger.LogInformation($"Удален пользователь {appUser.Name}.");
+                            return RedirectToAction("Index");
                         }
-                        _logger.LogInformation($"Удален пользователь {appUser.Name}.");
-                        return RedirectToAction("Index");
+                        else
+                        {
+                            _logger.LogWarning($"Отказано в попытке удалить единственного администратора.");
+                            return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                                new
+                                {
+                                    message = "Запрещено удалять единственного администратора. Создайте другого администратора перед удалением.",
+                                    buttons = new Dictionary<string, string>()
+                                    {
+                                        {"На главную",@"\dashboard" },
+                                        {"К логам",@"\logs" },
+                                        {"К пользователям",@"\appUsers" }
+                                    },
+                                    errorCode = 412
+                                }));
+                        }                        
                     }
                     else
                     {
@@ -526,6 +597,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.Users != AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке изменить статус активности пользователя. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
+                    }
                     if (id == null)
                     {
                         _logger.LogError($"Ошибка при запросе изменения активности пользователя. Нет идентификатора.");
@@ -594,6 +671,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.UserConnections != AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке добавить подключение для пользователя. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
+                    }
                     if (!connectionId.HasValue || !userId.HasValue)
                     {
                         _logger.LogWarning($"Ошибка при запросе добавления подключения пользователю. Неверные аргументы.");
@@ -689,6 +772,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.UserConnections != AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке удалить подключение для пользователя. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
+                    }
                     if (!connectionId.HasValue || !userId.HasValue)
                     {
                         _logger.LogWarning($"Ошибка при запросе удаления подключения у пользователя. Неверные аргументы.");
@@ -764,6 +853,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.UserConnections != AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке удалить подключение для пользователя. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
+                    }
                     if (!connectionId.HasValue || !userId.HasValue)
                     {
                         _logger.LogWarning($"Ошибка при запросе удаления подключения у пользователя. Неверные аргументы.");
@@ -803,7 +898,7 @@ namespace ConnectorCenter.Controllers
                             }));
                     }
                     await DropConnection(connectionId.Value, user);
-                    return View("ShowConnections", new ShowConnectionsModel(user));
+                    return View("ShowConnections", new ShowConnectionsModel(user,accessSettings));
                 }
                 catch (Exception ex)
                 {

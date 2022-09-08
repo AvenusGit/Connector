@@ -1,0 +1,337 @@
+﻿@using ConnectorCenter.Models.Settings;
+@model ConnectorCenter.Views.Settings.AccessModel
+@{
+    Layout = "~/Views/Shared/ViewBase.cshtml";
+}
+@functions
+{
+    private string ModeToString(AccessSettings.AccessModes mode){
+        @switch (mode)
+        {
+            case AccessSettings.AccessModes.None:
+                return "Запрещено";
+            case AccessSettings.AccessModes.View:
+                return "Просмотр";
+            case AccessSettings.AccessModes.Edit:
+                 return "Редактирование";
+            default:
+                return mode.ToString();
+        }
+    }
+}
+
+    <div class="container panel" style="height:80vh;">
+        <form>
+            <!--Logo-->
+            <div class="row" style="margin:0px 3vw">
+                <div class="col-lg-auto">
+                    <h1 class="textLogo" style="margin:2vh 0px 2vh 0vw;">Настройки доступа</h1>
+                </div>
+                <div class="col">
+                    <div class="d-flex align-items-center justify-content-end h-100">
+                        <button class="iconButton mx-2" title="Назад" formaction="/settings" formmethod="get">
+                            <svg style="width:2vh;height:2vh" viewBox="0 0 24 24" >
+                                <path class="path" d="M20 13.5C20 17.09 17.09 20 13.5 20H6V18H13.5C16 18 18 16 18 13.5S16 9 13.5 9H7.83L10.91 12.09L9.5 13.5L4 8L9.5 2.5L10.92 3.91L7.83 7H13.5C17.09 7 20 9.91 20 13.5Z" />
+                            </svg>
+                        </button>
+                        <button class="iconButton mx-2" formaction="/dashboard" formmethod="get" title="На главную">
+                            <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                <path class="path" d="M21,16V4H3V16H21M21,2A2,2 0 0,1 23,4V16A2,2 0 0,1 21,18H14V20H16V22H8V20H10V18H3C1.89,18 1,17.1 1,16V4C1,2.89 1.89,2 3,2H21M5,6H14V11H5V6M15,6H19V8H15V6M19,9V14H15V9H19M5,12H9V14H5V12M10,12H14V14H10V12Z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <!--separator-->
+        <div class="row" style="margin:0px 3vw">
+            <div class="separator" style="height:1px;">
+
+            </div>
+        </div>
+        <!--menu-->
+        <div class="row" style=" height:70vh; overflow:auto; overflow-x:visible; overflow-y:visible;">
+                <form class="scrollDiv">
+                    <div class="d-flex justify-content-center">
+                        <div class="container" style="width:60%;">
+                            <div class="row">
+                                <h1 class="text text-center fw-bold" style="font-size:2vh; margin:2vh 0px;">Пользователи:</h1>
+                            </div>
+                            <div class="row">
+                                <h1 class="text text-center">В этой версии приложения пользователям запрещен доступ к ConnectorCenter.</h1>
+                            </div>
+                            <div class="row">
+                                <h1 class="text text-center fw-bold" style="font-size:2vh; margin:2vh 0px;">Техподдержка:</h1>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <p class="text">WEB доступ</p>
+                                </div>
+                                <div class="col">
+                                    <div class="select">
+                                    <select name="WebAccess">
+                                        @if (Model.SupportAccessSettings.WebAccess)
+                                            {
+                                                <option selected value="True">Разрешено</option>
+                                                <option value="False">Запрещен</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="True">Разрешено</option>
+                                                <option selected value="False">Запрещен</option>
+                                            }                                    
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <p class="text">Группы</p>
+                                </div>
+                                <div class="col">
+                                    <div class="select">
+                                        <select name="Groups">
+                                            <option selected value="@Model.SupportAccessSettings.Groups.ToString()">@ModeToString(Model.SupportAccessSettings.Groups)</option>
+                                            @foreach (AccessSettings.AccessModes mode in (AccessSettings.AccessModes[])Enum.GetValues(typeof(AccessSettings.AccessModes)))
+                                            {
+                                            if (Model.SupportAccessSettings.Groups != mode)
+                                                {
+                                                    <option value="@mode.ToString()">@ModeToString(mode)</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <p class="text">Подключения групп</p>
+                                </div>
+                                <div class="col">
+                                    <div class="select">
+                                        <select name="GroupConnections">
+                                            <option selected value="@Model.SupportAccessSettings.GroupConnections.ToString()">@ModeToString(Model.SupportAccessSettings.GroupConnections)</option>
+                                            @foreach (AccessSettings.AccessModes mode in (AccessSettings.AccessModes[])Enum.GetValues(typeof(AccessSettings.AccessModes)))
+                                            {
+                                                if (Model.SupportAccessSettings.GroupConnections != mode)
+                                                {
+                                                    <option value="@mode.ToString()">@ModeToString(mode)</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <p class="text">Пользователи групп</p>
+                                </div>
+                                <div class="col">
+                                    <div class="select">
+                                        <select name="GroupUsers">
+                                            <option selected value="@Model.SupportAccessSettings.GroupUsers.ToString()">@ModeToString(Model.SupportAccessSettings.GroupUsers)</option>
+                                            @foreach (AccessSettings.AccessModes mode in (AccessSettings.AccessModes[])Enum.GetValues(typeof(AccessSettings.AccessModes)))
+                                            {
+                                                if (Model.SupportAccessSettings.GroupUsers != mode)
+                                                {
+                                                    <option value="@mode.ToString()">@ModeToString(mode)</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <p class="text">Серверы</p>
+                                </div>
+                                <div class="col">
+                                    <div class="select">
+                                <select name="Servers">
+                                            <option selected value="@Model.SupportAccessSettings.Servers.ToString()">@ModeToString(Model.SupportAccessSettings.Servers)</option>
+                                            @foreach (AccessSettings.AccessModes mode in (AccessSettings.AccessModes[])Enum.GetValues(typeof(AccessSettings.AccessModes)))
+                                            {
+                                                if (Model.SupportAccessSettings.Servers != mode)
+                                                {
+                                                    <option value="@mode.ToString()">@ModeToString(mode)</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <p class="text">Подключения серверов</p>
+                                </div>
+                                <div class="col">
+                                    <div class="select">
+                                <select name="ServersConnections">
+                                    <option selected value="@Model.SupportAccessSettings.ServersConnections.ToString()">@ModeToString(Model.SupportAccessSettings.ServersConnections)</option>
+                                            @foreach (AccessSettings.AccessModes mode in (AccessSettings.AccessModes[])Enum.GetValues(typeof(AccessSettings.AccessModes)))
+                                            {
+                                                if (Model.SupportAccessSettings.ServersConnections != mode)
+                                                {
+                                                    <option value="@mode.ToString()">@ModeToString(mode)</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <p class="text">Пользователи</p>
+                                </div>
+                                <div class="col">
+                                    <div class="select">
+                                <select name="Users">
+                                    <option selected value="@Model.SupportAccessSettings.Users.ToString()">@ModeToString(Model.SupportAccessSettings.Users)</option>
+                                            @foreach (AccessSettings.AccessModes mode in (AccessSettings.AccessModes[])Enum.GetValues(typeof(AccessSettings.AccessModes)))
+                                            {
+                                        if (Model.SupportAccessSettings.Users != mode)
+                                                {
+                                                    <option value="@mode.ToString()">@ModeToString(mode)</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <p class="text">Подключения пользователей</p>
+                                </div>
+                                <div class="col">
+                                    <div class="select">
+                                    <select name="UserConnections">
+                                    <option selected value="@Model.SupportAccessSettings.UserConnections.ToString()">@ModeToString(Model.SupportAccessSettings.UserConnections)</option>
+                                            @foreach (AccessSettings.AccessModes mode in (AccessSettings.AccessModes[])Enum.GetValues(typeof(AccessSettings.AccessModes)))
+                                            {
+                                        if (Model.SupportAccessSettings.UserConnections != mode)
+                                                {
+                                                    <option value="@mode.ToString()">@ModeToString(mode)</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <p class="text">Статистика приложения</p>
+                                </div>
+                                <div class="col">
+                                    <div class="select">
+                                <select name="Statistics">
+                                        @if (Model.SupportAccessSettings.Statistics)
+                                            {
+                                                <option selected value="True">Разрешено</option>
+                                                <option value="False">Запрещен</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="True">Разрешено</option>
+                                                <option selected value="False">Запрещен</option>
+                                            }                                    
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <p class="text">Логи приложения</p>
+                                </div>
+                                <div class="col">
+                                    <div class="select">
+                                <select name="Logs">
+                                        @if (Model.SupportAccessSettings.Logs)
+                                            {
+                                                <option selected value="True">Разрешено</option>
+                                                <option value="False">Запрещен</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="True">Разрешено</option>
+                                                <option selected value="False">Запрещен</option>
+                                            }                                    
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <p class="text">Настройки API</p>
+                                </div>
+                                <div class="col">
+                                    <div class="select">
+                                <select name="SettingsAPI">
+                                    <option selected value="@Model.SupportAccessSettings.SettingsAPI.ToString()">@ModeToString(Model.SupportAccessSettings.SettingsAPI)</option>
+                                            @foreach (AccessSettings.AccessModes mode in (AccessSettings.AccessModes[])Enum.GetValues(typeof(AccessSettings.AccessModes)))
+                                            {
+                                        if (Model.SupportAccessSettings.SettingsAPI != mode)
+                                                {
+                                                    <option value="@mode.ToString()">@ModeToString(mode)</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <p class="text">Настройки логов</p>
+                                </div>
+                                <div class="col">
+                                    <div class="select">
+                                <select name="SettingsLogs">
+                                    <option selected value="@Model.SupportAccessSettings.SettingsLogs.ToString()">@ModeToString(Model.SupportAccessSettings.SettingsLogs)</option>
+                                            @foreach (AccessSettings.AccessModes mode in (AccessSettings.AccessModes[])Enum.GetValues(typeof(AccessSettings.AccessModes)))
+                                            {
+                                        if (Model.SupportAccessSettings.SettingsLogs != mode)
+                                                {
+                                                    <option value="@mode.ToString()">@ModeToString(mode)</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <p class="text">Другие настройки</p>
+                                </div>
+                                <div class="col">
+                                    <div class="select">
+                                <select name="SettingsOther">
+                                    <option selected value="@Model.SupportAccessSettings.SettingsOther.ToString()">@ModeToString(Model.SupportAccessSettings.SettingsOther)</option>
+                                            @foreach (AccessSettings.AccessModes mode in (AccessSettings.AccessModes[])Enum.GetValues(typeof(AccessSettings.AccessModes)))
+                                            {
+                                        if (Model.SupportAccessSettings.SettingsOther != mode)
+                                                {
+                                                    <option value="@mode.ToString()">@ModeToString(mode)</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--Save-->
+                            <div class="row" style="margin:3vh;">
+                                <div class="d-flex justify-content-center">
+                                    <button class="button" formaction="/settings/SaveSupportAccessSettings" formmethod="post">
+                                        <h1 class="text text-center fw-bold">Сохранить</h1>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <h1 class="text text-center fw-bold" style="font-size:2vh; margin:2vh 0px;">Администраторы:</h1>
+                            </div>
+                            <div class="row">
+                                <h1 class="text text-center">В администраторы имеют полный доступ во все разделы.</h1>
+                            </div>                            
+                        </div>
+                    </div>
+                </form>
+            </div>        
+    </div>

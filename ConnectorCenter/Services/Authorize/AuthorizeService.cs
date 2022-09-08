@@ -2,7 +2,9 @@
 using ConnectorCore.Models;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
-using ConnectorCore.Models.VisualModels.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+using System.Reflection;
+using ConnectorCenter.Models.Settings;
 
 namespace ConnectorCenter.Services.Authorize
 {
@@ -24,7 +26,7 @@ namespace ConnectorCenter.Services.Authorize
             }
             else
             {
-                if (!dbContext.Users.Any()
+                if (!dbContext.Users.Where(usr => usr.Role == AppUser.AppRoles.Administrator).Any()
                     && credentials.Login == AppUser.GetDefault().Credentials!.Login
                     && credentials.Password == AppUser.GetDefault().Credentials!.Password)
                 {
@@ -67,6 +69,34 @@ namespace ConnectorCenter.Services.Authorize
             return String.IsNullOrWhiteSpace(context.User.Identity?.Name)
                 ? "Unknow"
                 : context.User.Identity.Name;
+        }
+        public static IActionResult ForbiddenActionResult(ControllerBase controller, string backUrl)
+        {
+            return controller.RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = $"Нет прав для доступа к этой странице. Обратитесь к администратору.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"Назад",$"{backUrl}" }
+                                },
+                                errorCode = 403
+                            }));
+        }
+        public static AccessSettings GetAccessSettings(HttpContext context)
+        {
+            switch (GetUserRole(context))
+            {
+                case AppUser.AppRoles.User:
+                    return  ConnectorCenterApp.Instance.UserAccessSettings;
+                case AppUser.AppRoles.Support:
+                    return ConnectorCenterApp.Instance.SupportAccessSettings;
+                case AppUser.AppRoles.Administrator:
+                    return AccessSettings.GetAdminDefault();
+                default:
+                    throw new Exception("Ошибка при попытке проверить права доступа. Неопознанная роль.");
+            }
         }
     }
 }

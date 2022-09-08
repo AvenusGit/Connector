@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ConnectorCenter.Services.Logs;
 using Microsoft.AspNetCore.Authorization;
+using ConnectorCenter.Models.Settings;
 
 namespace ConnectorCenter.Controllers
 {
@@ -38,6 +39,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (!accessSettings.Logs)
+                    {
+                        _logger.LogWarning("Отказано в попытке запросить страницу с логами. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\dashboard");
+                    }
                     _logger.LogInformation("Запрошены логи в WEB форме.");
                     return View(new IndexModel(System.IO.File.ReadAllText(LogService.GetLastLogFilePath())));
                 }

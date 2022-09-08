@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Authorization;
 using ConnectorCenter.Data;
 using ConnectorCenter.Views.FirstStart;
+using ConnectorCenter.Views.DashBoard;
 using ConnectorCore.Models;
 using ConnectorCenter.Services.Authorize;
+using ConnectorCenter.Models.Settings;
 
 namespace ConnectorCenter.Controllers
 {
@@ -28,7 +30,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     _logger.LogInformation($"Запрос страницы главного меню.");
-                    return View();
+                    return View(new Views.DashBoard.IndexViewModel(AuthorizeService.GetAccessSettings(HttpContext)));
                 }
                 catch (Exception ex)
                 {

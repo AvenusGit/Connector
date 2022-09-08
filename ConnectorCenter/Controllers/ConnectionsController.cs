@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using log4net.Repository.Hierarchy;
 using ConnectorCenter.Services.Authorize;
+using ConnectorCenter.Models.Settings;
 
 namespace ConnectorCenter.Controllers
 {
@@ -45,6 +46,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.ServersConnections == AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке запросить страницу добавления подключения к серверу. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\servers");
+                    }
                     Server? server = await _context.Servers.FindAsync(serverId);
                     if (server is not null)
                     {
@@ -96,6 +103,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.ServersConnections == AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке запросить страницу изменения подключения к серверу. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\servers");
+                    }
                     if (connectionId == null)
                     {
                         _logger.LogWarning($"Ошибка при запросе страницы редактирования подключения. Не указан идентификатор подключения.");
@@ -165,6 +178,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.ServersConnections == AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке удаления подключения к серверу. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\servers");
+                    }
                     if (id == null)
                     {
                         _logger.LogWarning($"Ошибка при запросе удаления подключения. Не указан идентификатор.");
@@ -243,6 +262,12 @@ namespace ConnectorCenter.Controllers
                 {
                     try
                     {
+                        AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                        if (accessSettings.ServersConnections == AccessSettings.AccessModes.Edit)
+                        {
+                            _logger.LogWarning("Отказано в попытке добавления подключения к серверу. Недостаточно прав.");
+                            return AuthorizeService.ForbiddenActionResult(this, @"\servers");
+                        }
                         Server? server = await _context.Servers.FindAsync(serverId);
                         if (server is not null)
                         {
@@ -316,6 +341,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.ServersConnections == AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке изменения подключения к серверу. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\servers");
+                    }
                     if (!ConnectionExists(connection.Id))
                     {
                         _logger.LogWarning($"Ошибка при запросе изменения подключения. Указанного подключения не существует.");
@@ -385,6 +416,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.ServersConnections == AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке изменения статуса активности подключения к серверу. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\servers");
+                    }
                     if (id == null)
                     {
                         _logger.LogError($"Ошибка при запросе изменения статуса активности подключения. Неверные аргументы.");

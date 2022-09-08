@@ -1,4 +1,5 @@
 ﻿using ConnectorCore.Models;
+using ConnectorCenter.Models.Settings;
 namespace ConnectorCenter
 {
     public class ConnectorCenterApp
@@ -22,5 +23,7 @@ namespace ConnectorCenter
         }
 
         public ILogger Logger { get; set; }
+        public AccessSettings UserAccessSettings { get; set; } = AccessSettings.GetUserDefault();
+        public AccessSettings SupportAccessSettings { get; set; } = AccessSettings.GetSupportDefault();
     }
 }
