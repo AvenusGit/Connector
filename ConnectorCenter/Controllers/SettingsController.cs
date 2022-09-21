@@ -6,6 +6,9 @@ using ConnectorCenter.Data;
 using Microsoft.EntityFrameworkCore;
 using ConnectorCenter.Models.Settings;
 using ConnectorCenter.Services.Authorize;
+using ConnectorCenter.Services.Configurations;
+using ConnectorCore.Models;
+using ConnectorCenter.Services.Logs;
 
 namespace ConnectorCenter.Controllers
 {
@@ -60,8 +63,17 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     _logger.LogInformation($"Запрошена страница настроек доступа.");
-                    //TODO only admin acess there
-                    return View(new AccessModel(ConnectorCenterApp.Instance.SupportAccessSettings));
+                    if (AuthorizeService.GetUserRole(HttpContext) == AppUser.AppRoles.Administrator)
+                    {
+                        _logger.LogInformation($"Запрошена страница настроек доступа.");
+                        return View(new AccessModel(ConnectorCenterApp.Instance.SupportAccessSettings));
+                    }                        
+                    else
+                    {
+                        _logger.LogInformation($"Отказанов запросе страницы настроек доступа. Пользователь не является администратором.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\settings");
+                    }
+                        
                 }
                 catch (Exception ex)
                 {
@@ -81,6 +93,39 @@ namespace ConnectorCenter.Controllers
 
             }
         }
+        [HttpGet]
+        public IActionResult Logs()
+        {
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                try
+                {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.SettingsLogs == AccessSettings.AccessModes.None)
+                    {
+                        _logger.LogWarning("Отказано в попытке запросить страницу настроек логов. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\servers");
+                    }
+                    _logger.LogInformation($"Запрошена страница настроек логов.");
+                    return View(new LogsModel(ConnectorCenterApp.Instance.LogSettings, accessSettings.SettingsLogs == AccessSettings.AccessModes.Edit));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при запросе страницы настроек логов. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при запросе страницы настроек логов.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
+        }
         #endregion
         #region POST
         [HttpPost]
@@ -90,7 +135,12 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
-                    if(supportAccessSettings is null || !ModelState.IsValid)
+                    if (AuthorizeService.GetUserRole(HttpContext) != AppUser.AppRoles.Administrator)
+                    {
+                        _logger.LogWarning("Отказано в попытке изменить параметры доступа техподдержки. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\settings");
+                    }
+                    if (supportAccessSettings is null || !ModelState.IsValid)
                     {
                         _logger.LogError($"Ошибка при попытке сохранить настройки доступа техподдержки. Неверные аргументы.");
                         return RedirectToAction("Index", "Message", new RouteValueDictionary(
@@ -106,6 +156,7 @@ namespace ConnectorCenter.Controllers
                             }));
                     }
                     ConnectorCenterApp.Instance.SupportAccessSettings = supportAccessSettings;
+                    SettingsConfigurationService.SaveConfiguration(ConnectorCenterApp.Instance.SupportAccessSettings);
                     _logger.LogInformation($"Изменены настройки доступа техподдержки.");
                     return View("Index");                    
                 }
@@ -124,6 +175,58 @@ namespace ConnectorCenter.Controllers
                             errorCode = 500
                         }));
                 }                
+            }
+        }
+        [HttpPost]
+        public IActionResult SaveLogsSettings(LogSettings? logSettings)
+        {
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                try
+                {
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.SettingsLogs != AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке изменить параметры логгера. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\settings");
+                    }
+                    if (logSettings is null || !ModelState.IsValid)
+                    {
+                        _logger.LogError($"Ошибка при попытке сохранить настройки логгера. Неверные аргументы.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при попытке сохранить настройки логгера. Неверные аргументы.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 400
+                            }));
+                    }
+                    if (String.IsNullOrWhiteSpace(logSettings.LogPath))
+                        logSettings.LogPath = LogService.GetLastLogFilePath();
+                    ConnectorCenterApp.Instance.LogSettings = logSettings;
+                    ConnectorCenterApp.Instance.LogSettings.SaveConfiguration();
+                    _logger.LogInformation($"Изменены настройки логгера.");
+                    return View("Index");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при попытке сохранить логгера. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при попытке сохранить настройки логгера.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
             }
         }
         #endregion

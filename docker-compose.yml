@@ -1,0 +1,19 @@
+version: '3.9'
+
+services:
+  connectorcenter:
+    image: ${DOCKER_REGISTRY-}connectorcenter
+    build:
+        context: .
+        dockerfile: ConnectorCenter/Dockerfile
+    depends_on: 
+        "postgres":
+            condition: service_started
+    ports: 
+        - "80:80"
+
+  postgres:
+    container_name: 'postgres'
+    image: postgres
+    environment:
+        POSTGRES_PASSWORD: postgres

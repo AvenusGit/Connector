@@ -7,11 +7,13 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Net.Http.Headers;
 using ConnectorCenter;
 using ConnectorCenter.Services.Logs;
+using ConnectorCenter.Models.Settings;
 
 
 // Первоначальное задание на подгрузку конфигурации логгера. Это очень странная штука, которая то работает, то нет. Поэтому она дублирована ниже.
 // Watch = true ВАЖНО, т.к. таким образом обновляются параметры логгера!
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "Configurations/Log.config", Watch = true)]
+
 // Будет ли log4net логировать собственные ошибки. Стандартная политика log4net - проглатывать исключения.
 //TODO выключить этот параметр на проде.
 log4net.Util.LogLog.InternalDebugging = true;
@@ -23,8 +25,13 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Добавление консольного логгера .Net Core
 builder.Logging.Services.AddLogging();
+
 // Добавление log4net логгера
-builder.Logging.AddLog4Net(ConnectorCenterApp.Instance.LogConfPath);
+if(!File.Exists(LogSettings.ConfigurationPath))
+{
+    LogSettings.SaveDefaultConfiguration();
+}
+builder.Logging.AddLog4Net(LogSettings.ConfigurationPath);
 
 builder.Services.AddAuthentication(options =>
     {
@@ -95,9 +102,9 @@ builder.Services.AddAuthorization(options =>
 });
 
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("PostgresConnectionString");
 builder.Services.AddDbContext<DataBaseContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 // добавление MVC сервиса
@@ -112,13 +119,14 @@ var app = builder.Build();
 
 try
 {
-    log4net.Config.XmlConfigurator.Configure(new FileInfo(ConnectorCenterApp.Instance.LogConfPath));
-    ConnectorCenterApp.Instance.Logger = app.Logger;
+    log4net.Config.XmlConfigurator.Configure(new FileInfo(LogSettings.ConfigurationPath));
+    ConnectorCenterApp.CreateInstance(app.Logger);
+    ConnectorCenterApp.Instance.Initialize();
 }
 catch
 {
     // сообщение в консоль, что файловый логгер не применил конфиг
-    app.Logger.LogCritical($"Не удалось применить конфигурацию логгера {ConnectorCenterApp.Instance.LogConfPath}. " +
+    app.Logger.LogCritical($"Не удалось применить конфигурацию логгера {LogSettings.ConfigurationPath}. " +
         $"Проверьте существование и структуру файла.");
 }
 
@@ -154,7 +162,7 @@ app.UseMvc(routes =>
         template: "{controller=Home}/{action=Index}/{id?}");
 });
 // запуск
-using (var scope = app.Logger.BeginScope("APPLICATION CORE"))
+using (var scope = app.Logger.BeginScope(".NET CORE 6"))
 {
     app.Run();
 }

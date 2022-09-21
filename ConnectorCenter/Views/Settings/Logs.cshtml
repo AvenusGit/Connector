@@ -1,0 +1,132 @@
+﻿@using ConnectorCenter.Models.Settings;
+@model ConnectorCenter.Views.Settings.LogsModel
+@{
+    Layout = "~/Views/Shared/ViewBase.cshtml";
+}
+@functions
+{
+    private string LevelToString(LogSettings.LogLevels level){
+        @switch (level)
+        {
+            case LogSettings.LogLevels.ALL:
+                return "Все логи";
+            case LogSettings.LogLevels.DEBUG:
+                return "Отладка";
+            case LogSettings.LogLevels.WARN:
+                 return "Предупреждения";
+            case LogSettings.LogLevels.ERROR:
+                 return "Ошибки";
+            case LogSettings.LogLevels.FATAL:
+                 return "Критические";
+            case LogSettings.LogLevels.OFF:
+                 return "Выключено";
+            default:
+                return level.ToString();
+        }
+    }
+}
+
+    <div class="container panel" style="height:80vh;">
+        <form>
+            <!--Logo-->
+            <div class="row" style="margin:0px 3vw">
+                <div class="col-lg-auto">
+                    <h1 class="textLogo" style="margin:2vh 0px 2vh 0vw;">Настройки логирования</h1>
+                </div>
+                <div class="col">
+                    <div class="d-flex align-items-center justify-content-end h-100">
+                        <button class="iconButton mx-2" title="Назад" formaction="/settings" formmethod="get">
+                            <svg style="width:2vh;height:2vh" viewBox="0 0 24 24" >
+                                <path class="path" d="M20 13.5C20 17.09 17.09 20 13.5 20H6V18H13.5C16 18 18 16 18 13.5S16 9 13.5 9H7.83L10.91 12.09L9.5 13.5L4 8L9.5 2.5L10.92 3.91L7.83 7H13.5C17.09 7 20 9.91 20 13.5Z" />
+                            </svg>
+                        </button>
+                        <button class="iconButton mx-2" formaction="/dashboard" formmethod="get" title="На главную">
+                            <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                <path class="path" d="M21,16V4H3V16H21M21,2A2,2 0 0,1 23,4V16A2,2 0 0,1 21,18H14V20H16V22H8V20H10V18H3C1.89,18 1,17.1 1,16V4C1,2.89 1.89,2 3,2H21M5,6H14V11H5V6M15,6H19V8H15V6M19,9V14H15V9H19M5,12H9V14H5V12M10,12H14V14H10V12Z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <!--separator-->
+        <div class="row" style="margin:0px 3vw">
+            <div class="separator" style="height:1px;">
+
+            </div>
+        </div>
+        <!--menu-->
+        <div class="row" style=" height:70vh; overflow:auto; overflow-x:visible; overflow-y:visible;">
+                <form class="scrollDiv">
+                    <div class="d-flex justify-content-center">
+                        <div class="container" style="width:60%;">
+                            <div class="row">
+                                <h1 class="text text-center fw-bold" style="font-size:2vh; margin:2vh 0px;">Настройки логирования:</h1>
+                            </div>                            
+                            <div class="row">
+                                <div class="col">
+                                    <p class="text">Уровень логирования</p>
+                                </div>
+                                <div class="col">
+                                    <div class="select">
+                                        <select name="LogLevel">
+                                        <option selected value="@Model.LogSettings.LogLevel.ToString()">@LevelToString(Model.LogSettings.LogLevel)</option>
+                                            @foreach (LogSettings.LogLevels level in (LogSettings.LogLevels[])Enum.GetValues(typeof(LogSettings.LogLevels)))
+                                                    {
+                                                        if (Model.LogSettings.LogLevel != level)
+                                                        {
+                                                            <option value="@level.ToString()">@LevelToString(level)</option>
+                                                        }
+                                                    }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>                            
+                            <div class="row">
+                                <div class="col">
+                                    <p class="text">Путь к файлу лога</p>
+                                </div>
+                                <div class="col">
+                            <input type="text" class="textbox w-100" name="LogPath" value="@Model.LogSettings.LogPath" placeholder="example \var\logs\connectorCenter" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <p class="text">Количество файлов</p>
+                                </div>
+                                <div class="col">
+                            <input type="number" class="textbox w-100" name="LogFileCount" value="@Model.LogSettings.LogFileCount" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <p class="text">Максимальный размер файла</p>
+                                </div>
+                                <div class="col">
+                            <input type="text" class="textbox w-100" name="LogFileSize" value="@Model.LogSettings.LogFileSize" placeholder="example 10MB" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <p class="text">Паттерн</p>
+                                </div>
+                                <div class="col">
+                                    <input type="text" class="textbox w-100" name="Pattern" value="@Model.LogSettings.Pattern" placeholder="example 10MB" />
+                                </div>
+                            </div>
+                            <!--Save-->
+                            @if(Model.AllowEdit)
+                            {
+                                <div class="row" style="margin:3vh;">
+                                    <div class="d-flex justify-content-center">
+                                        <button class="button" formaction="/settings/SaveLogsSettings" formmethod="post">
+                                            <h1 class="text text-center fw-bold">Сохранить</h1>
+                                        </button>
+                                    </div>
+                                </div>
+                            }                                                                                  
+                        </div>
+                    </div>
+                </form>
+            </div>        
+    </div>

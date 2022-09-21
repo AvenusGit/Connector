@@ -1,7 +1,37 @@
-﻿namespace ConnectorCenter.Models.Settings
+﻿using ConnectorCore.Models;
+using System.Xml.Serialization;
+
+namespace ConnectorCenter.Models.Settings
 {
-    public class AccessSettings
+    public class AccessSettings : ISettingsConfiguration
     {
+        private AppUser.AppRoles _targetRole;
+        public AccessSettings()
+        {
+            _targetRole = AppUser.AppRoles.User;
+        }
+        public AccessSettings(AppUser.AppRoles targetRole)
+        {
+            _targetRole = targetRole;
+        }
+
+        public string ConfigurationPath 
+        {
+            get
+            {
+                switch (_targetRole)
+                {
+                    case AppUser.AppRoles.Administrator:
+                        return ConnectorCenterApp.Instance.ConfigurationFolderPath + @"\AdminAccess.config";
+                    case AppUser.AppRoles.Support:
+                        return ConnectorCenterApp.Instance.ConfigurationFolderPath + @"\SupportAccess.config";
+                    case AppUser.AppRoles.User:
+                        return ConnectorCenterApp.Instance.ConfigurationFolderPath + @"\UserAccess.config";
+                    default:
+                        throw new Exception("При запросе пути конфигурации обнаружена неопределенная роль пользователя.");
+                }
+            }
+        }
         public bool WebAccess { get; set; }
 
         public AccessModes Groups { get; set; }
@@ -20,9 +50,23 @@
         public AccessModes SettingsAPI { get; set; }
         public AccessModes SettingsLogs { get; set; }
         public AccessModes SettingsOther { get; set; }
+        public ISettingsConfiguration GetDefault()
+        {
+            switch (_targetRole)
+            {
+                case AppUser.AppRoles.User:
+                    return GetUserDefault();
+                case AppUser.AppRoles.Support:
+                    return GetSupportDefault();
+                case AppUser.AppRoles.Administrator:
+                    return GetAdminDefault();
+                default:
+                    throw new Exception("Ошибка при получении настроек по умолчанию. Нераспознанная роль пользователя.");
+            }
+        }
         public static AccessSettings GetUserDefault()
         {
-            return new AccessSettings()
+            return new AccessSettings(AppUser.AppRoles.User)
             {
                 WebAccess = false,
                 Groups = AccessModes.None,
@@ -41,7 +85,7 @@
         }
         public static AccessSettings GetSupportDefault()
         {
-            return new AccessSettings()
+            return new AccessSettings(AppUser.AppRoles.Support)
             {
                 WebAccess = true,
                 Groups = AccessModes.View,
@@ -60,7 +104,7 @@
         }
         public static AccessSettings GetAdminDefault()
         {
-            return new AccessSettings()
+            return new AccessSettings(AppUser.AppRoles.Administrator)
             {
                 WebAccess = true,
                 Groups = AccessModes.Edit,
