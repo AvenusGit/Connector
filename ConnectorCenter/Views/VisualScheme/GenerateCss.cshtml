@@ -110,6 +110,11 @@ body {
     font-family: @Model.Scheme.FontScheme.Font;
     font-size: 3vh;
 }
+.textMin{
+    color: @ToCssColor(Model.Scheme.ColorScheme.Text.Color);
+    font-family: @Model.Scheme.FontScheme.Font;
+    font-size: 1.5vh;
+}
 .textLogoMainMenu{
     font-size: 3vh;
 }
@@ -219,5 +224,26 @@ textarea {
     outline: none;
     overflow: auto;
     resize: none;
+}
+
+.switch-toggle {
+   font-size: 1.5vh;
+   border-radius: 10px;
+   border: 1px solid @ToCssColor(Model.Scheme.ColorScheme.Border.Color);
+   background: @ToCssColor(Model.Scheme.ColorScheme.Panel.Color);
+}
+.switch-toggle input {
+  position: absolute;
+  opacity: 0;
+}
+.switch-toggle input + label {
+  padding: 7px;
+  float:left;
+  color: @ToCssColor(Model.Scheme.ColorScheme.Text.Color);
+  cursor: pointer;
+}
+.switch-toggle input:checked + label {
+  border-radius: 10px;
+  border: 1px solid @ToCssColor(Model.Scheme.ColorScheme.SubAccent.Color);
 }
 

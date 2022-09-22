@@ -33,7 +33,7 @@ namespace ConnectorCenter.Controllers
             long userId;
             if(long.TryParse(HttpContext.User.FindFirstValue(ClaimTypes.Sid), out userId))
             {
-                // этот запрос не логируется ввиду его частоты
+                // этот запрос не логируется и не учитывается в статистике ввиду его частоты
                 try
                 {
                     AppUser? currentUser = await _dataBaseContext.Users.FirstOrDefaultAsync(user => user.Id == userId);

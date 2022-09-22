@@ -33,6 +33,7 @@ namespace ConnectorCenter.Controllers
         {
             using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
+                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
                     _logger.LogInformation($"Запрошена страница меню настроек.");
@@ -60,6 +61,7 @@ namespace ConnectorCenter.Controllers
         {
             using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
+                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
                     _logger.LogInformation($"Запрошена страница настроек доступа.");
@@ -98,6 +100,7 @@ namespace ConnectorCenter.Controllers
         {
             using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
+                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
                     AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
@@ -133,6 +136,7 @@ namespace ConnectorCenter.Controllers
         {
             using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
+                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
                     if (AuthorizeService.GetUserRole(HttpContext) != AppUser.AppRoles.Administrator)
@@ -182,6 +186,7 @@ namespace ConnectorCenter.Controllers
         {
             using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
+                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
                     AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);

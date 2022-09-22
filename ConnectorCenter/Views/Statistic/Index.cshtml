@@ -1,0 +1,97 @@
+﻿@using ConnectorCore.Models;
+@model ConnectorCenter.Views.Statistics.IndexModel
+@{
+    Layout = "~/Views/Shared/ViewBase.cshtml";
+}
+<form>
+    <div class="container panel" style="height:80vh;">
+        <!--Logo-->
+        <div class="row" style="margin:0px 3vw">
+            <div class="col-lg-auto">
+                <h1 class="textLogo" style="margin:2vh 0px 2vh 0vw;">Статистика</h1>
+            </div>
+            <div class="col">
+                <div class="d-flex align-items-center justify-content-end h-100">
+                    <div class="switch-toggle switch-3 switch-candy" style="margin-right:2vh;">
+                        <input id="min" name="state-d" type="radio" checked="checked" onclick="setDataMin()" />
+                        <label for="min" onclick="">MIN</label>
+
+                        <input id="hour" name="state-d" type="radio" onclick="setDataHour()" />
+                        <label for="hour" class="disabled" onclick="">HOUR</label>
+
+                        <input id="day" name="state-d" type="radio" onclick="setDataDay()" />
+                        <label for="day" onclick="">DAY</label>
+                    </div>
+                    <button class="iconButton mx-2" formaction="/statistic/clear" formmethod="get" title="Очистить">
+                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                            <path class="path" d="M19.36,2.72L20.78,4.14L15.06,9.85C16.13,11.39 16.28,13.24 15.38,14.44L9.06,8.12C10.26,7.22 12.11,7.37 13.65,8.44L19.36,2.72M5.93,17.57C3.92,15.56 2.69,13.16 2.35,10.92L7.23,8.83L14.67,16.27L12.58,21.15C10.34,20.81 7.94,19.58 5.93,17.57Z" />
+                        </svg>
+                    </button>
+                    <button class="iconButton" formaction="/statistic" formmethod="get" title="Обновить">
+                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                            <path class="path" d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z" />
+                        </svg>
+                    </button>
+                    <button class="iconButton mx-2" formaction="/dashboard" formmethod="get" title="На главную">
+                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                            <path class="path" d="M21,16V4H3V16H21M21,2A2,2 0 0,1 23,4V16A2,2 0 0,1 21,18H14V20H16V22H8V20H10V18H3C1.89,18 1,17.1 1,16V4C1,2.89 1.89,2 3,2H21M5,6H14V11H5V6M15,6H19V8H15V6M19,9V14H15V9H19M5,12H9V14H5V12M10,12H14V14H10V12Z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>  
+        <!--separator-->
+        <div class="row" style="margin:0px 3vw">
+            <div class="separator" style="height:1px;">
+
+            </div>
+        </div>
+        <!--List-->
+        <div class="row" style="margin:0px 3vw; height:70vh;">
+            <div class="container">
+                <div class="row" >
+                    <canvas class="text" id="myChart" style="margin:0px 3vw; height:50vh;"></canvas>
+                    <script src="~/js/chart.js"></script>
+                    <script type="text/javascript" src='~/js/statistic_graph.js'></script>                    
+                </div>
+                <div class="row d-flex justify-content-center" style="margin:3vh 3vw;">
+                    <div class="col-4">
+                        <div class="container">
+                            <div class="row d-flex justify-content-center">
+                                <label class="text text-center">Всего запросов: @Model.Statistic.Requests</label>
+                            </div>
+                            <div class="row d-flex justify-content-center">
+                                <label class="text text-center">Web запросов: @Model.Statistic.WebRequest</label>
+                            </div>
+                            <div class="row d-flex justify-content-center">
+                                <label class="text text-center">Api запросов: @Model.Statistic.ApiRequest</label>
+                            </div>
+                            <div class="row d-flex justify-content-center">
+                                <label class="text text-center">В среднем в секунду: @(Math.Round(Model.Statistic.AverageInMinute, 3))</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="container">
+                            <div class="row d-flex justify-content-center">
+                                <label class="text text-center">Групп пользователей: @Model.GroupCount</label>
+                            </div>
+                            <div class="row d-flex justify-content-center">
+                                <label class="text text-center">Пользователей: @Model.UserCount</label>
+                            </div>
+                            <div class="row d-flex justify-content-center">
+                                <label class="text text-center">Серверов: @Model.ServerCount</label>
+                            </div>
+                            <div class="row d-flex justify-content-center">
+                                <label class="text text-center">Подключений: @Model.ConnectionsCount</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row d-flex align-items-end" style="margin:3vh 3vw;">
+                    <label class="textMin text-center">С момента запуска @(Model.Statistic.UpTime.Days)д @(Model.Statistic.UpTime.Days)ч @(Model.Statistic.UpTime.Minutes)м @(Model.Statistic.UpTime.Seconds)с</label>
+                </div>
+            </div>
+        </div>
+</div>
+</form>

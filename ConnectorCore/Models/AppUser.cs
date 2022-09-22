@@ -33,7 +33,8 @@ namespace ConnectorCore.Models
                 Credentials = new Сredentials("connectorCenter", "connectorCenter"),
                 Connections = new List<Connection>(),
                 Role = AppUser.AppRoles.Administrator,
-                UserSettings = UserSettings.GetDefault()
+                UserSettings = UserSettings.GetDefault(),
+                IsEnabled = true
             };
         }
     }

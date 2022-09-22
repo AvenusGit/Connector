@@ -47,6 +47,7 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                     AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
                     if (accessSettings.Users == AccessSettings.AccessModes.None)
                     {
@@ -91,6 +92,7 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                     AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
                     if (accessSettings.Users != AccessSettings.AccessModes.Edit)
                     {
@@ -129,6 +131,7 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                     AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
                     if (accessSettings.Users != AccessSettings.AccessModes.Edit)
                     {
@@ -199,6 +202,7 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                     AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
                     if (accessSettings.UserConnections == AccessSettings.AccessModes.None)
                     {
@@ -276,6 +280,7 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                     AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
                     if (accessSettings.UserConnections != AccessSettings.AccessModes.Edit)
                     {
@@ -359,6 +364,7 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                     AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
                     if (accessSettings.Users != AccessSettings.AccessModes.Edit)
                     {
@@ -415,6 +421,7 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                     AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
                     if (accessSettings.Users != AccessSettings.AccessModes.Edit)
                     {
@@ -488,6 +495,7 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                     AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
                     if (accessSettings.Users != AccessSettings.AccessModes.Edit)
                     {
@@ -597,6 +605,7 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                     AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
                     if (accessSettings.Users != AccessSettings.AccessModes.Edit)
                     {
@@ -671,6 +680,7 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                     AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
                     if (accessSettings.UserConnections != AccessSettings.AccessModes.Edit)
                     {
@@ -772,6 +782,7 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                     AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
                     if (accessSettings.UserConnections != AccessSettings.AccessModes.Edit)
                     {
@@ -853,6 +864,7 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                     AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
                     if (accessSettings.UserConnections != AccessSettings.AccessModes.Edit)
                     {

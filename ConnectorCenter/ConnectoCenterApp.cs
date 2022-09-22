@@ -2,6 +2,7 @@
 using ConnectorCenter.Models.Settings;
 using ConnectorCenter.Services.Configurations;
 using ConnectorCenter.Services.Authorize;
+using ConnectorCenter.Models.Statistics;
 
 namespace ConnectorCenter
 {
@@ -39,6 +40,7 @@ namespace ConnectorCenter
         public AccessSettings UserAccessSettings { get; set; } = AccessSettings.GetUserDefault();
         public AccessSettings SupportAccessSettings { get; set; } = AccessSettings.GetSupportDefault();
         public LogSettings LogSettings { get; set; }
+        public Statistic Statistics { get; private set; } = new Statistic();
         #endregion
         #region Methods
         public void Initialize()

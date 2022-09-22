@@ -46,6 +46,7 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                     AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
                     if (accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
                     {
@@ -103,6 +104,7 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                     AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
                     if (accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
                     {
@@ -178,6 +180,7 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                     AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
                     if (accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
                     {
@@ -258,6 +261,7 @@ namespace ConnectorCenter.Controllers
         {
             using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
+                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 if (ModelState.IsValid)
                 {
                     try
@@ -341,6 +345,7 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                     AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
                     if (accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
                     {
@@ -416,6 +421,7 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
+                    ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                     AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
                     if (accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
                     {

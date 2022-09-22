@@ -17,6 +17,7 @@ namespace ConnectorCenter.Controllers
         /// <returns>Сгенерированная страница с сообщением</returns>
         public IActionResult Index(string message, string[] buttons, int? errorCode = null)
         {
+            ConnectorCenterApp.Instance.Statistics.IncWebRequest();
             // вызов генератора страницы с сообщением не логируется
             try
             {

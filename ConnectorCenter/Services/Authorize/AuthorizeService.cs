@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using System.Reflection;
 using ConnectorCenter.Models.Settings;
+using System.Net;
 
 namespace ConnectorCenter.Services.Authorize
 {
@@ -15,8 +16,7 @@ namespace ConnectorCenter.Services.Authorize
             List<AppUser> userList =
                 dbContext.Users.Where(user =>
                         user.Credentials.Login == credentials.Login
-                        && user.Credentials.Password == credentials.Password
-                        && user.IsEnabled == true)
+                        && user.Credentials.Password == credentials.Password)
                 .Include("Credentials")
                 .ToList();
             if (userList.Any())
@@ -84,12 +84,19 @@ namespace ConnectorCenter.Services.Authorize
                                 errorCode = 403
                             }));
         }
-        public static AccessSettings GetAccessSettings(HttpContext context)
+        public static AccessSettings? GetAccessSettings(HttpContext context)
         {
-            switch (GetUserRole(context))
+            AppUser.AppRoles? userRole = GetUserRole(context);
+            return GetAccessSettings(userRole);
+        }
+        public static AccessSettings? GetAccessSettings(AppUser.AppRoles? role)
+        {
+            switch (role)
             {
+                case null:
+                    return null!;
                 case AppUser.AppRoles.User:
-                    return  ConnectorCenterApp.Instance.UserAccessSettings;
+                    return ConnectorCenterApp.Instance.UserAccessSettings;
                 case AppUser.AppRoles.Support:
                     return ConnectorCenterApp.Instance.SupportAccessSettings;
                 case AppUser.AppRoles.Administrator:

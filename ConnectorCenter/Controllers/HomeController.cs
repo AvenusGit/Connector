@@ -26,6 +26,7 @@ namespace ConnectorCenter.Controllers
         {
             using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
+                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
                     if (HttpContext.User.Identity != null)

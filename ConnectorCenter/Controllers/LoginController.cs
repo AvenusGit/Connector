@@ -30,10 +30,11 @@ namespace ConnectorCenter.Controllers
         {
             using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
+                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
                     _logger.LogInformation($"Запрос страницы авторизации.");
-                    return View(new IndexModel(HttpContext.User.Identity?.Name, message));
+                    return View("Index",new IndexModel(HttpContext.User.Identity?.Name, message));
                 }
                 catch (Exception ex)
                 {
@@ -64,11 +65,12 @@ namespace ConnectorCenter.Controllers
         {
             using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
+                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
                     if (!ModelState.IsValid)
                     {
-                        _logger.LogError($"Ошибка при попытке авторизации в приложении через Cookies. Неверные аргументы.");
+                        _logger.LogWarning($"Ошибка при попытке авторизации в приложении через Cookies. Неверные аргументы.");
                         return RedirectToAction("Index", "Message", new RouteValueDictionary(
                             new
                             {
@@ -84,6 +86,35 @@ namespace ConnectorCenter.Controllers
                     AppUser? user;
                     if (AuthorizeService.IsAuthorized(_dataBaseContext, сredentials, out user))
                     {
+                        if( !AuthorizeService.GetAccessSettings(user.Role).WebAccess)
+                        {
+                            _logger.LogWarning($"Ошибка при попытке авторизации в приложении. Роли пользователя не разрешен веб доступ.");
+                            return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                                new
+                                {
+                                    message = "Ошибка при попытке авторизации в приложении. Роли пользователя не разрешен веб доступ.",
+                                    buttons = new Dictionary<string, string>()
+                                    {
+                                        {"Повторная авторизация",@"\login" }                                    
+                                    },
+                                    errorCode = 403
+                                }));
+                        }
+                        if(!user!.IsEnabled)
+                        {
+                            _logger.LogError($"Ошибка при попытке авторизации в приложении. Пользователь деактивирован.");
+                            return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                                new
+                                {
+                                    message = "Ошибка при попытке авторизации в приложении. Пользователь деактивирован.",
+                                    buttons = new Dictionary<string, string>()
+                                    {
+                                        {"Повторная авторизация",@"\login" }
+                                    },
+                                    errorCode = 403
+                                }));
+                        }
+
                         CookieAuthorizeService.SignIn(HttpContext, user);
                         _logger.LogInformation($"Авторизация пройдена успешно. Пользователь - {user.Name}.");
                         if (user.Credentials.IsIdentical(AppUser.GetDefault().Credentials))
