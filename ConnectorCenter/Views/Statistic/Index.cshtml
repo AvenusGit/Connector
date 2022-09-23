@@ -51,23 +51,23 @@
             <div class="container">
                 <div class="row" >
                     <canvas class="text" id="myChart" style="margin:0px 3vw; height:50vh;"></canvas>
-                    <script src="~/js/chart.js"></script>
-                    <script type="text/javascript" src='~/js/statistic_graph.js'></script>                    
+                    <script src="~/js/chart.js"></script> 
+                    <script type="text/javascript" src='@Url.ActionLink("StatisticJs","Js")'></script>
                 </div>
                 <div class="row d-flex justify-content-center" style="margin:3vh 3vw;">
                     <div class="col-4">
                         <div class="container">
                             <div class="row d-flex justify-content-center">
-                                <label class="text text-center">Всего запросов: @Model.Statistic.Requests</label>
+                                <label id="allCounter" class="text text-center">Всего запросов: @Model.Statistic.Requests</label>
                             </div>
                             <div class="row d-flex justify-content-center">
-                                <label class="text text-center">Web запросов: @Model.Statistic.WebRequest</label>
+                                <label id="webCounter" class="text text-center">Web запросов: @Model.Statistic.WebRequest</label>
                             </div>
                             <div class="row d-flex justify-content-center">
-                                <label class="text text-center">Api запросов: @Model.Statistic.ApiRequest</label>
+                                <label id="apiCounter" class="text text-center">Api запросов: @Model.Statistic.ApiRequest</label>
                             </div>
                             <div class="row d-flex justify-content-center">
-                                <label class="text text-center">В среднем в секунду: @(Math.Round(Model.Statistic.AverageInMinute, 3))</label>
+                                <label id="avrCounter" class="text text-center">В среднем в секунду: @(Math.Round(Model.Statistic.AverageInMinute, 3))</label>
                             </div>
                         </div>
                     </div>
@@ -89,7 +89,7 @@
                     </div>
                 </div>
                 <div class="row d-flex align-items-end" style="margin:3vh 3vw;">
-                    <label class="textMin text-center">С момента запуска @(Model.Statistic.UpTime.Days)д @(Model.Statistic.UpTime.Days)ч @(Model.Statistic.UpTime.Minutes)м @(Model.Statistic.UpTime.Seconds)с</label>
+                    <label id="upTime" class="textMin text-center">С момента запуска @(Model.Statistic.UpTime.Days)д @(Model.Statistic.UpTime.Days)ч @(Model.Statistic.UpTime.Minutes)м @(Model.Statistic.UpTime.Seconds)с</label>
                 </div>
             </div>
         </div>

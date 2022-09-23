@@ -36,7 +36,11 @@ namespace ConnectorCenter.Controllers
                 // этот запрос не логируется и не учитывается в статистике ввиду его частоты
                 try
                 {
-                    AppUser? currentUser = await _dataBaseContext.Users.FirstOrDefaultAsync(user => user.Id == userId);
+                    _dataBaseContext.Users
+                        .Where(user => user.Id == userId)
+                        .Load();
+                    AppUser? currentUser = await _dataBaseContext.Users                        
+                        .FirstOrDefaultAsync(user => user.Id == userId);
                     if (currentUser is not null)
                         if (currentUser.VisualScheme is not null)
                             return View(new GenerateCssModel(currentUser.VisualScheme));

@@ -1,0 +1,187 @@
+﻿@using System.Drawing;
+@using System.Globalization;
+@model ConnectorCenter.Views.Js.JsModel
+@{
+
+}
+@functions{
+    private string ToCssColor(string wpfColor){
+        string opacity = wpfColor.Substring(1,2);
+        wpfColor = wpfColor.Remove(1,2);
+        return wpfColor + opacity;
+    }
+    private string ToRGBA(string wpfColor){
+        int argb = Int32.Parse(wpfColor.Replace("#", ""), NumberStyles.HexNumber);
+        Color color = Color.FromArgb(argb);
+        return $"rgba({color.R}, {color.G}, {color.B}, {Math.Round((double)color.A / 255, 2)})";
+    }
+}
+
+const ctx = document.getElementById('myChart').getContext('2d');
+const myChart = new Chart(ctx,
+    {
+        type: 'line',
+        options: {
+            animation: false,
+            scales: {
+                x: {
+                    color: '@ToRGBA(Model.Scheme.ColorScheme.Border.Color)',
+                    display: true,
+                    text: 'Время',
+                    ticks: {
+                        family: '@Model.Scheme.FontScheme.Font',
+                        color: '@ToRGBA(Model.Scheme.ColorScheme.Text.Color)'
+                    }
+                },
+                y: {
+                    color: '@ToRGBA(Model.Scheme.ColorScheme.Border.Color)',
+                    beginAtZero: true,
+                    display: true,
+                    suggestedMax: 10,
+                    text: 'Количество запросов',
+                    ticks: {
+                        stepSize: 1,
+                        family: '@Model.Scheme.FontScheme.Font',
+                        color: '@ToRGBA(Model.Scheme.ColorScheme.Text.Color)'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        font: {
+                            family: '@Model.Scheme.FontScheme.Font'
+                        }
+                    }
+                }
+            }
+        }
+    }
+);
+function addData(chart, data) {
+    chart.data = data;
+    chart.update();
+}
+
+function removeData(chart) {
+    chart.data.labels.pop();
+    chart.data.datasets.forEach((dataset) => {
+        dataset.data.pop();
+    });
+    chart.update();
+}
+function getCheckedElementName() {
+    if (document.getElementById("min").checked) {
+        return "min";
+    }
+    if (document.getElementById("hour").checked) {
+        return "hour";
+    }
+    if (document.getElementById("day").checked) {
+        return "day";
+    }
+}
+
+async function SetData(datatype) {
+    let apiData = (await fetch('/api/statistic', {
+        method: 'GET',
+        mode: 'no-cors',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+    }))
+    let apiStatistic = await apiData.json();
+    updateCounters(apiStatistic);
+    let data;
+    switch (datatype) {
+        case 'min':
+            data = {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Статистика за минуту',
+                        data: apiStatistic.MinutesQueueWithCurrent,
+                        color: '@ToRGBA(Model.Scheme.ColorScheme.Text.Color)',
+                        borderColor: '@ToRGBA(Model.Scheme.ColorScheme.SubAccent.Color)',
+                        backgroundColor: '@ToRGBA(Model.Scheme.ColorScheme.Path.Color)',
+                        tension: 0.5
+                    }
+                ]
+            }
+            for (var i = 60; i >= 0; i--) {
+                data.labels.push(i);
+            }
+            break
+
+        case 'hour':
+            data = {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Статистика за час',
+                        data: apiStatistic.HourQueueWithCurrent,
+                        color: '@ToRGBA(Model.Scheme.ColorScheme.Text.Color)',
+                        borderColor: '@ToRGBA(Model.Scheme.ColorScheme.SubAccent.Color)',
+                        backgroundColor: '@ToRGBA(Model.Scheme.ColorScheme.Path.Color)',
+                        tension: 0.5
+                    }
+                ]
+            }
+            for (var i = 60; i >= 0; i--) {
+                data.labels.push(i);
+            }
+            break
+        case 'day':
+            data = {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Статистика за день',
+                        data: apiStatistic.DayQueueWithCurrent,
+                        color: '@ToRGBA(Model.Scheme.ColorScheme.Text.Color)',
+                        borderColor: '@ToRGBA(Model.Scheme.ColorScheme.SubAccent.Color)',
+                        backgroundColor: '@ToRGBA(Model.Scheme.ColorScheme.Path.Color)',
+                        tension: 0.5
+                    }
+                ]
+            }
+            for (var i = 24; i >= 0; i--) {
+                data.labels.push(i);
+            }
+            break            
+    }
+    removeData(myChart);
+    addData(myChart, data);
+    myChart.update();
+}
+function SetDataInChart(dataType) {
+    SetData(dataType);
+}
+
+function setDataMin() {
+    SetDataInChart("min");
+}
+function setDataHour() {
+    SetDataInChart("hour");
+}
+function setDataDay() {
+    SetDataInChart("day");
+}
+function updateCounters(statistics){
+    let counter = document.getElementById("allCounter");
+    counter.innerHTML = 'Всего запросов: ' + statistics.Requests;
+    counter = document.getElementById("webCounter");
+    counter.innerHTML = 'Web запросов: ' + statistics.WebRequest;
+    counter = document.getElementById("apiCounter");
+    counter.innerHTML = 'Api запросов: ' + statistics.ApiRequest;
+    counter = document.getElementById("avrCounter");
+    counter.innerHTML = 'В среднем в секунду: ' + statistics.AverageInMinute.toFixed(3);
+    counter = document.getElementById("upTime");
+    const timespan = statistics.JsUpTime.split(':');
+
+    counter.innerHTML = 'С момента запуска: ' + timespan[0] +
+        'д ' + timespan[1] + 'ч ' + timespan[2] +
+        'м ' + timespan[3] + 'c';
+}
+
+SetDataInChart("min");
+let timerId = window.setInterval(function () { SetDataInChart(getCheckedElementName()) }, 1000);

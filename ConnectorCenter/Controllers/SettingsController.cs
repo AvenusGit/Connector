@@ -37,7 +37,11 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     _logger.LogInformation($"Запрошена страница меню настроек.");
-                    return View("Index");
+                    return View("Index", 
+                        new IndexViewModel(
+                            AuthorizeService.GetAccessSettings(HttpContext),
+                            AuthorizeService.GetUserRole(HttpContext) ?? AppUser.AppRoles.User
+                        ));
                 }
                 catch (Exception ex)
                 {
@@ -162,7 +166,11 @@ namespace ConnectorCenter.Controllers
                     ConnectorCenterApp.Instance.SupportAccessSettings = supportAccessSettings;
                     SettingsConfigurationService.SaveConfiguration(ConnectorCenterApp.Instance.SupportAccessSettings);
                     _logger.LogInformation($"Изменены настройки доступа техподдержки.");
-                    return View("Index");                    
+                    return View("Index", 
+                        new IndexViewModel(
+                            AuthorizeService.GetAccessSettings(HttpContext),
+                            AuthorizeService.GetUserRole(HttpContext) ?? AppUser.AppRoles.User
+                        ));                    
                 }
                 catch (Exception ex)
                 {
@@ -215,7 +223,11 @@ namespace ConnectorCenter.Controllers
                     ConnectorCenterApp.Instance.LogSettings = logSettings;
                     ConnectorCenterApp.Instance.LogSettings.SaveConfiguration();
                     _logger.LogInformation($"Изменены настройки логгера.");
-                    return View("Index");
+                    return View("Index",
+                        new IndexViewModel(
+                            AuthorizeService.GetAccessSettings(HttpContext),
+                            AuthorizeService.GetUserRole(HttpContext) ?? AppUser.AppRoles.User
+                        ));
                 }
                 catch (Exception ex)
                 {

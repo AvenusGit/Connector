@@ -261,6 +261,27 @@
                             </div>
                             <div class="row">
                                 <div class="col">
+                                    <p class="text">Импорт и экспорт</p>
+                                </div>
+                                <div class="col">
+                                    <div class="select">
+                                    <select name="ImportAndExport">
+                                            @if (Model.SupportAccessSettings.ImportAndExport)
+                                            {
+                                                <option selected value="True">Разрешено</option>
+                                                <option value="False">Запрещен</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="True">Разрешено</option>
+                                                <option selected value="False">Запрещен</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
                                     <p class="text">Настройки API</p>
                                 </div>
                                 <div class="col">

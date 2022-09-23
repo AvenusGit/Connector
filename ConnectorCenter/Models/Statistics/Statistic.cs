@@ -76,6 +76,13 @@ namespace ConnectorCenter.Models.Statistics
                 return DateTime.Now - _appStarted;
             }
         }
+        public string JsUpTime
+        {
+            get
+            {
+                return $"{UpTime.Days}:{UpTime.Hours}:{UpTime.Minutes}:{UpTime.Seconds}";
+            }
+        }
         #endregion
         #region Methods
         public void IncWebRequest()

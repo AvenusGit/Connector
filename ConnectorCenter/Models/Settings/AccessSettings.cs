@@ -46,6 +46,7 @@ namespace ConnectorCenter.Models.Settings
 
         public bool Statistics { get; set; }
         public bool Logs { get; set; }
+        public bool ImportAndExport { get; set; }
 
         public AccessModes SettingsAPI { get; set; }
         public AccessModes SettingsLogs { get; set; }
@@ -78,6 +79,7 @@ namespace ConnectorCenter.Models.Settings
                 UserConnections = AccessModes.None,
                 Statistics = false,
                 Logs = false,
+                ImportAndExport = false,
                 SettingsAPI = AccessModes.None,
                 SettingsLogs = AccessModes.None,
                 SettingsOther = AccessModes.None
@@ -97,6 +99,7 @@ namespace ConnectorCenter.Models.Settings
                 UserConnections = AccessModes.Edit,
                 Statistics = true,
                 Logs = true,
+                ImportAndExport = false,
                 SettingsAPI = AccessModes.View,
                 SettingsLogs = AccessModes.View,
                 SettingsOther = AccessModes.View
@@ -116,6 +119,7 @@ namespace ConnectorCenter.Models.Settings
                 UserConnections = AccessModes.Edit,
                 Statistics = true,
                 Logs = true,
+                ImportAndExport = true,
                 SettingsAPI = AccessModes.Edit,
                 SettingsLogs = AccessModes.Edit,
                 SettingsOther = AccessModes.Edit

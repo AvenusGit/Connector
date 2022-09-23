@@ -3,6 +3,20 @@
 @{
     Layout = "~/Views/Shared/ViewBase.cshtml";
 }
+@functions{
+    private string RoleToString(AppUser.AppRoles role){
+        switch(role){
+            case AppUser.AppRoles.Administrator:
+                return "Администратор";
+            case AppUser.AppRoles.Support:
+                return "Поддержка";
+            case AppUser.AppRoles.User:
+                return "Пользователь";
+            default:
+                return "Неизвестная роль";
+        }
+    }
+}
 
 <div class="container panel" style="height:80vh;">
     <!--Logo-->
@@ -75,12 +89,12 @@
                         <div class="col">
                             <div class="select">
                                 <select name="Role">
-                                    <option selected value="@Model.User.Role.ToString()">@Model.User.Role.ToString()</option>
+                                    <option selected value="@Model.User.Role.ToString()">@RoleToString(Model.User.Role)</option>
                                     @foreach (AppUser.AppRoles role in (AppUser.AppRoles[])Enum.GetValues(typeof(AppUser.AppRoles)))
                                     {
                                         if (Model.User.Role != role)
                                         {
-                                            <option value="@role.ToString()">@role.ToString()</option>
+                                            <option value="@role.ToString()">@RoleToString(role)</option>
                                         }
                                     }
                                 </select>
