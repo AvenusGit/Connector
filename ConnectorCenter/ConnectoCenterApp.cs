@@ -9,11 +9,7 @@ namespace ConnectorCenter
     public class ConnectorCenterApp
     {
         #region Singletone
-        public readonly ApplicationVersion ApplicationVersion = new ApplicationVersion()
-        {
-            VersionSeries = "A",
-            VersionNumber = 0
-        };
+        public readonly ApplicationVersion ApplicationVersion = new ApplicationVersion("A", 0);
         public readonly string ConfigurationFolderPath = Environment.CurrentDirectory.ToString() + "\\Configurations";
 
         private static ConnectorCenterApp _connectorCenterApp;
