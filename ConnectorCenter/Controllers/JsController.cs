@@ -20,7 +20,7 @@ namespace ConnectorCenter.Controllers
         /// <summary>
         /// Запрос на генерацию скрипта статистики
         /// </summary>
-        /// <returns>JavaScript с цветами пользовательской схемы.</returns>
+        /// <returns>JavaScript с со скриптом запроса статистики.</returns>
         [HttpGet]
         public async Task<IActionResult> StatisticJS()
         {
@@ -29,6 +29,7 @@ namespace ConnectorCenter.Controllers
             if (long.TryParse(HttpContext.User.FindFirstValue(ClaimTypes.Sid), out userId))
             {
                 // этот запрос не логируется и не учитывается в статистике
+                // визуальная схема нужна для отрисовки стиля графика статистики
                 try
                 {
                     _dataBaseContext.Users

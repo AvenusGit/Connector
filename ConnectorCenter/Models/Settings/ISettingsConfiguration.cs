@@ -1,11 +1,13 @@
-﻿namespace ConnectorCenter.Models.Settings
+﻿using System.Xml.Serialization;
+
+namespace ConnectorCenter.Models.Settings
 {
     public interface ISettingsConfiguration
     {
+        [XmlIgnoreAttribute]
         public string ConfigurationPath
         {
             get;
         }
-        public ISettingsConfiguration GetDefault();
     }
 }

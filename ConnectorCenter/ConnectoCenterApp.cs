@@ -36,6 +36,8 @@ namespace ConnectorCenter
         public AccessSettings UserAccessSettings { get; set; } = AccessSettings.GetUserDefault();
         public AccessSettings SupportAccessSettings { get; set; } = AccessSettings.GetSupportDefault();
         public LogSettings LogSettings { get; set; }
+        public ApiSettings ApiSettings { get; set; } = ApiSettings.GetDefault();
+        public OtherSettings OtherSettings { get; set; } = OtherSettings.GetDefault();
         public Statistic Statistics { get; private set; } = new Statistic();
         #endregion
         #region Methods
@@ -46,7 +48,7 @@ namespace ConnectorCenter
             {
                 try
                 {
-                    configuration = SettingsConfigurationService.LoadConfiguration(AccessSettings.GetUserDefault());
+                    configuration = SettingsConfigurationService.LoadConfiguration(UserAccessSettings);
                     if (configuration is not null && configuration is AccessSettings)
                     {
                         UserAccessSettings = (AccessSettings)configuration;
@@ -69,7 +71,7 @@ namespace ConnectorCenter
 
                 try
                 {
-                    configuration = SettingsConfigurationService.LoadConfiguration(AccessSettings.GetSupportDefault());
+                    configuration = SettingsConfigurationService.LoadConfiguration(SupportAccessSettings);
                     if (configuration is not null && configuration is AccessSettings)
                     {
                         SupportAccessSettings = (AccessSettings)configuration;
@@ -90,12 +92,54 @@ namespace ConnectorCenter
 
                 try
                 {
-                    LogSettings = new LogSettings().LoadConfiguration();
+                    LogSettings = LogSettings.LoadConfiguration();
                 }
                 catch (Exception ex)
                 {
                     LogSettings = LogSettings.GetDefault();
                     Logger.LogError($"Не удалось обработать конфигурацию логгера. {ex.Message}. {ex.StackTrace}");
+                }
+
+                try
+                {
+                    configuration = SettingsConfigurationService.LoadConfiguration(ApiSettings);
+                    if (configuration is not null && configuration is ApiSettings)
+                    {
+                        ApiSettings = (ApiSettings)configuration;
+                        Logger.LogInformation("Конфигурация API успешно загружена.");
+                    }
+
+                    else
+                    {
+                        SettingsConfigurationService.SaveConfiguration(ApiSettings.GetDefault());
+                        Logger.LogError("Не удалось загрузить конфигурацию API. Конфигурация установлена и перезаписана по умолчанию.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ApiSettings = ApiSettings.GetDefault();
+                    Logger.LogError($"Не удалось обработать конфигурацию API. {ex.Message}. {ex.StackTrace}");
+                }
+
+                try
+                {
+                    configuration = SettingsConfigurationService.LoadConfiguration(OtherSettings);
+                    if (configuration is not null && configuration is OtherSettings)
+                    {
+                        OtherSettings = (OtherSettings)configuration;
+                        Logger.LogInformation("Конфигурация прочих настроек успешно загружена.");
+                    }
+
+                    else
+                    {
+                        SettingsConfigurationService.SaveConfiguration(OtherSettings.GetDefault());
+                        Logger.LogError("Не удалось загрузить конфигурацию прочих настроек. Конфигурация установлена и перезаписана по умолчанию.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    OtherSettings = OtherSettings.GetDefault();
+                    Logger.LogError($"Не удалось обработать конфигурацию прочих настроек. {ex.Message}. {ex.StackTrace}");
                 }
             }
         }

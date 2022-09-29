@@ -1,4 +1,5 @@
 ﻿@using ConnectorCore.Models;
+@using ConnectorCenter;
 @model ConnectorCenter.Views.Statistics.IndexModel
 @{
     Layout = "~/Views/Shared/ViewBase.cshtml";
@@ -13,13 +14,13 @@
             <div class="col">
                 <div class="d-flex align-items-center justify-content-end h-100">
                     <div class="switch-toggle switch-3 switch-candy" style="margin-right:2vh;">
-                        <input id="min" name="state-d" type="radio" checked="checked" onclick="setDataMin()" />
+                        <input id="min" name="state-d" type="radio" checked="checked" onclick="setDataEventHandler()" />
                         <label for="min" onclick="">MIN</label>
 
-                        <input id="hour" name="state-d" type="radio" onclick="setDataHour()" />
+                        <input id="hour" name="state-d" type="radio" onclick="setDataEventHandler()" />
                         <label for="hour" class="disabled" onclick="">HOUR</label>
 
-                        <input id="day" name="state-d" type="radio" onclick="setDataDay()" />
+                        <input id="day" name="state-d" type="radio" onclick="setDataEventHandler()" />
                         <label for="day" onclick="">DAY</label>
                     </div>
                     <button class="iconButton mx-2" formaction="/statistic/clear" formmethod="get" title="Очистить">
@@ -47,51 +48,66 @@
             </div>
         </div>
         <!--List-->
-        <div class="row" style="margin:0px 3vw; height:70vh;">
-            <div class="container">
-                <div class="row" >
-                    <canvas class="text" id="myChart" style="margin:0px 3vw; height:50vh;"></canvas>
-                    <script src="~/js/chart.js"></script> 
-                    <script type="text/javascript" src='@Url.ActionLink("StatisticJs","Js")'></script>
-                </div>
-                <div class="row d-flex justify-content-center" style="margin:3vh 3vw;">
-                    <div class="col-4">
-                        <div class="container">
-                            <div class="row d-flex justify-content-center">
-                                <label id="allCounter" class="text text-center">Всего запросов: @Model.Statistic.Requests</label>
+        @if(!ConnectorCenterApp.Instance.ApiSettings.ApiEnabled)
+        {
+            <div class="row" style="margin:0px 3vw">
+                <label class="text text-center fw-bold" style="margin:2vh">API глобально отключено в настройках приложения</label>
+            </div>
+        }
+        else if (!ConnectorCenterApp.Instance.ApiSettings.StatisticApiEnabled)
+        {
+            <div class="row" style="margin:0px 3vw">
+                <label class="text text-center fw-bold" style="margin:2vh">API статистики отключено в настройках приложения</label>
+            </div>
+        }
+        else{
+            <div class="row" style="margin:0px 3vw; height:70vh;">
+                <div class="container">
+                    <div class="row">
+                        <canvas class="text" id="myChart" style="margin:0px 3vw; height:50vh;"></canvas>
+                        <script src="~/js/chart.js"></script>
+                        <script type="text/javascript" src='@Url.ActionLink("StatisticJs","Js")'></script>
+                    </div>
+                    <div class="row d-flex justify-content-center" style="margin:3vh 3vw;">
+                        <div class="col-4">
+                            <div class="container">
+                                <div class="row d-flex justify-content-center">
+                                    <label id="allCounter" class="text text-center">Всего запросов: @Model.Statistic.Requests</label>
+                                </div>
+                                <div class="row d-flex justify-content-center">
+                                    <label id="webCounter" class="text text-center">Web запросов: @Model.Statistic.WebRequest</label>
+                                </div>
+                                <div class="row d-flex justify-content-center">
+                                    <label id="apiCounter" class="text text-center">Api запросов: @Model.Statistic.ApiRequest</label>
+                                </div>
+                                <div class="row d-flex justify-content-center">
+                                    <label id="avrCounter" class="text text-center">В среднем в секунду: @(Math.Round(Model.Statistic.AverageInMinute, 3))</label>
+                                </div>
                             </div>
-                            <div class="row d-flex justify-content-center">
-                                <label id="webCounter" class="text text-center">Web запросов: @Model.Statistic.WebRequest</label>
-                            </div>
-                            <div class="row d-flex justify-content-center">
-                                <label id="apiCounter" class="text text-center">Api запросов: @Model.Statistic.ApiRequest</label>
-                            </div>
-                            <div class="row d-flex justify-content-center">
-                                <label id="avrCounter" class="text text-center">В среднем в секунду: @(Math.Round(Model.Statistic.AverageInMinute, 3))</label>
+                        </div>
+                        <div class="col-4">
+                            <div class="container">
+                                <div class="row d-flex justify-content-center">
+                                    <label class="text text-center">Групп пользователей: @Model.GroupCount</label>
+                                </div>
+                                <div class="row d-flex justify-content-center">
+                                    <label class="text text-center">Пользователей: @Model.UserCount</label>
+                                </div>
+                                <div class="row d-flex justify-content-center">
+                                    <label class="text text-center">Серверов: @Model.ServerCount</label>
+                                </div>
+                                <div class="row d-flex justify-content-center">
+                                    <label class="text text-center">Подключений: @Model.ConnectionsCount</label>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-4">
-                        <div class="container">
-                            <div class="row d-flex justify-content-center">
-                                <label class="text text-center">Групп пользователей: @Model.GroupCount</label>
-                            </div>
-                            <div class="row d-flex justify-content-center">
-                                <label class="text text-center">Пользователей: @Model.UserCount</label>
-                            </div>
-                            <div class="row d-flex justify-content-center">
-                                <label class="text text-center">Серверов: @Model.ServerCount</label>
-                            </div>
-                            <div class="row d-flex justify-content-center">
-                                <label class="text text-center">Подключений: @Model.ConnectionsCount</label>
-                            </div>
-                        </div>
+                    <div class="row d-flex align-items-end" style="margin:3vh 3vw;">
+                        <label id="upTime" class="textMin text-center">С момента запуска @(Model.Statistic.UpTime.Days)д @(Model.Statistic.UpTime.Days)ч @(Model.Statistic.UpTime.Minutes)м @(Model.Statistic.UpTime.Seconds)с</label>
                     </div>
-                </div>
-                <div class="row d-flex align-items-end" style="margin:3vh 3vw;">
-                    <label id="upTime" class="textMin text-center">С момента запуска @(Model.Statistic.UpTime.Days)д @(Model.Statistic.UpTime.Days)ч @(Model.Statistic.UpTime.Minutes)м @(Model.Statistic.UpTime.Seconds)с</label>
                 </div>
             </div>
-        </div>
-</div>
+        }
+        
+    </div>
 </form>

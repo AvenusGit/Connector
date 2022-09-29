@@ -57,6 +57,13 @@ namespace ConnectorCenter.Services.Authorize
                 return true;
             else return false;
         }
+        public static long? GetUserId(HttpContext context)
+        {
+            long result;
+            if (long.TryParse(context.User.FindFirstValue(ClaimTypes.Sid), out result))
+                return result;
+            else return null;            
+        }
         public static AppUser.AppRoles? GetUserRole(HttpContext context)
         {
             object? role;

@@ -22,6 +22,18 @@ namespace ConnectorCenter.Controllers.Api
         [HttpGet]
         private async Task Index()
         {
+            if (!ConnectorCenterApp.Instance.ApiSettings.ApiEnabled)
+            {
+                HttpContext.Response.StatusCode = 403;
+                await HttpContext.Response.WriteAsync("API disabled in app settings.");
+                return;
+            }
+            if (!ConnectorCenterApp.Instance.ApiSettings.AuthorizeApiEnabled)
+            {
+                HttpContext.Response.StatusCode = 403;
+                await HttpContext.Response.WriteAsync("API JWT token authorization disabled in app settings.");
+                return;
+            }
             Response.StatusCode = 400;
             await HttpContext.Response.WriteAsync("JSON (Credentials{string Login, string Password}) in request body need!");
         }
@@ -32,8 +44,20 @@ namespace ConnectorCenter.Controllers.Api
         [HttpPost]
         public async Task GetToken([FromBody] Сredentials credentials)
         {
-            if(!ModelState.IsValid)
+            if (!ConnectorCenterApp.Instance.ApiSettings.ApiEnabled)
             {
+                HttpContext.Response.StatusCode = 403;
+                await HttpContext.Response.WriteAsync("API disabled in app settings.");
+                return;
+            }
+            if (!ConnectorCenterApp.Instance.ApiSettings.AuthorizeApiEnabled)
+            {
+                HttpContext.Response.StatusCode = 403;
+                await HttpContext.Response.WriteAsync("API JWT token authorization disabled in app settings.");
+                return;
+            }
+            if (!ModelState.IsValid)
+            {                
                 await HttpContext.Response.WriteAsync("Your model is not valid. Use {string Login, string Password}");
                 return;
             }

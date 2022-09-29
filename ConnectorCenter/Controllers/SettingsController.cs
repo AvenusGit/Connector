@@ -36,6 +36,7 @@ namespace ConnectorCenter.Controllers
                 ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
+                    // любой пользователь может попасть в свои настройки как минимум, проверка прав не требуется
                     _logger.LogInformation($"Запрошена страница меню настроек.");
                     return View("Index", 
                         new IndexViewModel(
@@ -68,7 +69,6 @@ namespace ConnectorCenter.Controllers
                 ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
-                    _logger.LogInformation($"Запрошена страница настроек доступа.");
                     if (AuthorizeService.GetUserRole(HttpContext) == AppUser.AppRoles.Administrator)
                     {
                         _logger.LogInformation($"Запрошена страница настроек доступа.");
@@ -76,7 +76,7 @@ namespace ConnectorCenter.Controllers
                     }                        
                     else
                     {
-                        _logger.LogInformation($"Отказанов запросе страницы настроек доступа. Пользователь не является администратором.");
+                        _logger.LogWarning($"Отказанов запросе страницы настроек доступа. Пользователь не является администратором.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\settings");
                     }
                         
@@ -126,6 +126,83 @@ namespace ConnectorCenter.Controllers
                             buttons = new Dictionary<string, string>()
                             {
                                 {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
+        }
+        [HttpGet]
+        public IActionResult Api()
+        {
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
+                try
+                {
+                    
+                    if (AuthorizeService.GetAccessSettings(HttpContext).SettingsAPI != AccessSettings.AccessModes.None)
+                    {
+                        _logger.LogInformation($"Запрошена страница настроек Api.");
+                        return View(new ApiModel(ConnectorCenterApp.Instance.ApiSettings, AuthorizeService.GetAccessSettings(HttpContext)));
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Отказанов запросе страницы настроек Api. Нет у роли пользователя нет доступа.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\settings");
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при запросе страницы настроек Api. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при запросе страницы настроек Api.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
+        }
+        [HttpGet]
+        public IActionResult IE()
+        {
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
+                try
+                {
+
+                    if (AuthorizeService.GetAccessSettings(HttpContext).ImportAndExport)
+                    {
+                        _logger.LogInformation($"Запрошена страница импорта и экспорта.");
+                        return View("ImportAndExport", new IEModel(AuthorizeService.GetAccessSettings(HttpContext),
+                            AuthorizeService.GetUserRole(HttpContext)));
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Отказано в запросе страницы импорта и экспорта. У роли пользователя нет доступа.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\settings");
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при запросе страницы импорта и экспорта. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при запросе страницы импорта и экспорта.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"Назад",@"\settings" },
                                 {"К логам",@"\logs" }
                             },
                             errorCode = 500
@@ -246,6 +323,61 @@ namespace ConnectorCenter.Controllers
                 }
             }
         }
+        [HttpPost]
+        public IActionResult SaveApiSettings(ApiSettings? apiSettings)
+        {
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
+                try
+                {
+                    if (AuthorizeService.GetAccessSettings(HttpContext).SettingsAPI != AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке изменить параметры API. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\settings");
+                    }
+                    if (apiSettings is null || !ModelState.IsValid)
+                    {
+                        _logger.LogError($"Ошибка при попытке сохранить настройки API. Неверные аргументы.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при попытке сохранить настройки API. Неверные аргументы.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 400
+                            }));
+                    }
+                    ConnectorCenterApp.Instance.ApiSettings = apiSettings;
+                    SettingsConfigurationService.SaveConfiguration(ConnectorCenterApp.Instance.ApiSettings);
+                    _logger.LogInformation($"Изменены настройки API.");
+                    return View("Index",
+                        new IndexViewModel(
+                            AuthorizeService.GetAccessSettings(HttpContext),
+                            AuthorizeService.GetUserRole(HttpContext) ?? AppUser.AppRoles.User
+                        ));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при попытке сохранить настройки API. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при попытке сохранить настройки API.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
+        }        
         #endregion
+        
     }
 }

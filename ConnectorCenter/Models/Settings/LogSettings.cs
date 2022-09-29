@@ -1,11 +1,13 @@
 ﻿using System.Xml.Linq;
 using System.Xml;
 using ConnectorCenter.Services.Logs;
+using System.Xml.Serialization;
 
 namespace ConnectorCenter.Models.Settings
 {
     public class LogSettings // не реализует ISettingsConfiguration из-за разной реализации чтения/записи
     {
+        [XmlIgnoreAttribute]
         public static string ConfigurationPath
         {
             get
@@ -52,7 +54,7 @@ namespace ConnectorCenter.Models.Settings
         {
             CreateOrChangeLoggerConfiguration(this);
         }
-        public LogSettings LoadConfiguration()
+        public static LogSettings LoadConfiguration()
         {
             try
             {
@@ -91,6 +93,13 @@ namespace ConnectorCenter.Models.Settings
             }
         }
         private static void CreateOrChangeLoggerConfiguration(LogSettings conf)
+        {
+            XDocument document = GenerateXmlDocument(conf);
+            Stream stream = new FileStream(ConfigurationPath, FileMode.OpenOrCreate);
+            document.Save(stream);
+            stream.Close();
+        }
+        private static XDocument GenerateXmlDocument(LogSettings conf)
         {
             XDocument document = new XDocument();
             XComment warning = new XComment("WARNING: not use RU char in comment!");
@@ -195,10 +204,11 @@ namespace ConnectorCenter.Models.Settings
             XAttribute layotParamValue = new XAttribute("value", conf.Pattern);
             layotParam.Add(layotParamValue);
             layot.Add(layotParam);
-
-            Stream stream = new FileStream(ConfigurationPath, FileMode.OpenOrCreate);
-            document.Save(stream);
-            stream.Close();
+            return document;
+        }
+        public override string ToString()
+        {
+            return GenerateXmlDocument(this).ToString();
         }
     }
 }

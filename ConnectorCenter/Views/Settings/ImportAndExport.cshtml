@@ -1,0 +1,221 @@
+﻿@using ConnectorCenter.Models.Settings;
+@using ConnectorCore.Models;
+@model ConnectorCenter.Views.Settings.IEModel
+@{
+    Layout = "~/Views/Shared/ViewBase.cshtml";
+}
+
+    <div class="container panel" style="height:80vh;">
+        <form>
+            <!--Logo-->
+            <div class="row" style="margin:0px 3vw">
+                <div class="col-lg-auto">
+                    <h1 class="textLogo" style="margin:2vh 0px 2vh 0vw;">Импорт и экспорт</h1>
+                </div>
+                <div class="col">
+                    <div class="d-flex align-items-center justify-content-end h-100">
+                        <button class="iconButton mx-2" title="Назад" formaction="/settings" formmethod="get">
+                            <svg style="width:2vh;height:2vh" viewBox="0 0 24 24" >
+                                <path class="path" d="M20 13.5C20 17.09 17.09 20 13.5 20H6V18H13.5C16 18 18 16 18 13.5S16 9 13.5 9H7.83L10.91 12.09L9.5 13.5L4 8L9.5 2.5L10.92 3.91L7.83 7H13.5C17.09 7 20 9.91 20 13.5Z" />
+                            </svg>
+                        </button>
+                        <button class="iconButton mx-2" formaction="/dashboard" formmethod="get" title="На главную">
+                            <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                <path class="path" d="M21,16V4H3V16H21M21,2A2,2 0 0,1 23,4V16A2,2 0 0,1 21,18H14V20H16V22H8V20H10V18H3C1.89,18 1,17.1 1,16V4C1,2.89 1.89,2 3,2H21M5,6H14V11H5V6M15,6H19V8H15V6M19,9V14H15V9H19M5,12H9V14H5V12M10,12H14V14H10V12Z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <!--separator-->
+        <div class="row" style="margin:0px 3vw">
+            <div class="separator" style="height:1px;">
+
+            </div>
+        </div>
+        <!--menu-->      
+        <div class="row" style=" height:70vh; overflow:auto; overflow-x:visible; overflow-y:visible;">
+            <form class="scrollDiv">
+                <div class="d-flex justify-content-center">
+                    <div class="container" style="width:60%;">
+                        <div class="row">
+                            <h1 class="text text-center fw-bold" style="font-size:2vh; margin:2vh 0px;">Доступные действия:</h1>
+                        </div>
+                        <!--user access settings-->
+                        <div class="row">
+                            <div class="col">
+                                <p class="text">Настройки доступов (пользователь)</p>
+                            </div>
+                            @if(Model.UserRole == AppUser.AppRoles.Administrator)
+                            {
+                                <div class="col">
+                                    <button class="button text" style="margin:3px" title="Импорт">
+                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                            <path class="path" d="M7.03 13.92H11.03V5L13.04 4.97V13.92H17.03L12.03 18.92Z" />
+                                        </svg>Импорт                                    
+                                    </button>
+                                    <button class="button text" style="margin:3px" title="Экспорт" formaction="\export\UserAccessSettings"
+                                        formmethod="get">
+                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                            <path class="path" d="M7.03 9.97H11.03V18.89L13.04 18.92V9.97H17.03L12.03 4.97Z" />
+                                        </svg>Экспорт
+
+                                    </button>
+                            </div>
+                            }
+                            else
+                            {
+                                <div class="col">
+                                    <label class="text text-center fst-italic">Нет доступа</label>
+                                </div>
+                            }
+                                
+                        </div>
+                        <!--support access settings-->
+                        <div class="row">
+                            <div class="col">
+                                <p class="text">Настройки доступов (поддержка)</p>
+                            </div>
+                            @if (Model.UserRole == AppUser.AppRoles.Administrator)
+                            {
+                                <div class="col">
+                                    <button class="button text" style="margin:3px" title="Импорт">
+                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                            <path class="path" d="M7.03 13.92H11.03V5L13.04 4.97V13.92H17.03L12.03 18.92Z" />
+                                        </svg>Импорт
+                                    </button>
+                                    <button class="button text" style="margin:3px" title="Экспорт" formaction="\export\SupportAccessSettings"
+                                        formmethod="get">
+                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                            <path class="path" d="M7.03 9.97H11.03V18.89L13.04 18.92V9.97H17.03L12.03 4.97Z" />
+                                        </svg>Экспорт
+
+                                    </button>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="col">
+                                    <label class="text text-center fst-italic">Нет доступа</label>
+                                </div>
+                            }
+
+                        </div>
+                        <!--api settings-->
+                        <div class="row">
+                            <div class="col">
+                                <p class="text">Настройки API</p>
+                            </div>
+                            @if (Model.AccessSettings.SettingsAPI != AccessSettings.AccessModes.None)
+                            {
+                                <div class="col">
+                                    @if(Model.AccessSettings.SettingsAPI == AccessSettings.AccessModes.Edit)
+                                    {
+                                        <button class="button text" style="margin:3px" title="Импорт">
+                                            <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                                <path class="path" d="M7.03 13.92H11.03V5L13.04 4.97V13.92H17.03L12.03 18.92Z" />
+                                            </svg>Импорт
+                                        </button>
+                                    }                                    
+                                    <button class="button text" style="margin:3px" title="Экспорт"
+                                            formaction="\export\ApiSettings" formmethod="get">
+                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                            <path class="path" d="M7.03 9.97H11.03V18.89L13.04 18.92V9.97H17.03L12.03 4.97Z" />
+                                        </svg>Экспорт
+                                    </button>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="col">
+                                    <label class="text text-center fst-italic">Нет доступа</label>
+                                </div>
+                            }
+                        </div>
+                        <!--logs settings-->
+                        <div class="row">
+                            <div class="col">
+                                <p class="text">Настройки логов</p>
+                            </div>
+                            @if (Model.AccessSettings.SettingsLogs != AccessSettings.AccessModes.None)
+                            {
+                                <div class="col">
+                                    @if (Model.AccessSettings.SettingsLogs == AccessSettings.AccessModes.Edit)
+                                    {
+                                        <button class="button text" style="margin:3px" title="Импорт">
+                                            <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                                <path class="path" d="M7.03 13.92H11.03V5L13.04 4.97V13.92H17.03L12.03 18.92Z" />
+                                            </svg>Импорт
+                                        </button>
+                                    }
+                                    <button class="button text" style="margin:3px" title="Экспорт"
+                                        formaction="\export\LogSettings" formmethod="get">
+                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                            <path class="path" d="M7.03 9.97H11.03V18.89L13.04 18.92V9.97H17.03L12.03 4.97Z" />
+                                        </svg>Экспорт
+                                    </button>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="col">
+                                    <label class="text text-center fst-italic">Нет доступа</label>
+                                </div>
+                            }
+                        </div>
+                        <!--other settings-->
+                        <div class="row">
+                            <div class="col">
+                                <p class="text">Прочие настройки</p>
+                            </div>
+                            @if (Model.AccessSettings.SettingsOther != AccessSettings.AccessModes.None)
+                            {
+                                <div class="col">
+                                    @if (Model.AccessSettings.SettingsOther == AccessSettings.AccessModes.Edit)
+                                    {
+                                        <button class="button text" style="margin:3px" title="Импорт">
+                                            <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                                <path class="path" d="M7.03 13.92H11.03V5L13.04 4.97V13.92H17.03L12.03 18.92Z" />
+                                            </svg>Импорт
+                                        </button>
+                                    }
+                                    <button class="button text" style="margin:3px" title="Экспорт"
+                                        formaction="\export\OtherSettings" formmethod="get">
+                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                            <path class="path" d="M7.03 9.97H11.03V18.89L13.04 18.92V9.97H17.03L12.03 4.97Z" />
+                                        </svg>Экспорт
+                                    </button>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="col">
+                                    <label class="text text-center fst-italic">Нет доступа</label>
+                                </div>
+                            }
+                        </div>
+                        <!--user settings-->
+                        <div class="row">
+                            <div class="col">
+                                <p class="text">Личные настройки</p>
+                            </div>
+                            <div class="col">
+                                <button class="button text" style="margin:3px" title="Импорт">
+                                    <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                        <path class="path" d="M7.03 13.92H11.03V5L13.04 4.97V13.92H17.03L12.03 18.92Z" />
+                                    </svg>Импорт
+                                </button>
+                                <button class="button text" style="margin:3px" title="Экспорт"
+                                    formaction="\export\MySettings" formmethod="get">
+                                    <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                        <path class="path" d="M7.03 9.97H11.03V18.89L13.04 18.92V9.97H17.03L12.03 4.97Z" />
+                                    </svg>Экспорт
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>

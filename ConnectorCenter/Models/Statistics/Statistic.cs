@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Diagnostics.Metrics;
+using static ConnectorCenter.Models.Statistics.StatisticPart;
 using time = System.Timers;
 namespace ConnectorCenter.Models.Statistics
 {
@@ -76,13 +77,6 @@ namespace ConnectorCenter.Models.Statistics
                 return DateTime.Now - _appStarted;
             }
         }
-        public string JsUpTime
-        {
-            get
-            {
-                return $"{UpTime.Days}:{UpTime.Hours}:{UpTime.Minutes}:{UpTime.Seconds}";
-            }
-        }
         #endregion
         #region Methods
         public void IncWebRequest()
@@ -112,6 +106,26 @@ namespace ConnectorCenter.Models.Statistics
             HourQueue = new Queue<int>(new int[60]);
             DayQueue = new Queue<int>(new int[24]);
         }
+        public StatisticPart GetPart(StatisticPart.StatisticMode mode)
+        {
+            return new StatisticPart()
+            {
+                Mode = mode,
+                Requests = Requests,
+                WebRequest = WebRequest,
+                ApiRequest = ApiRequest,
+                AverageInMinute = AverageInMinute,
+                StatisticQueue = GetQueueForMode(mode),
+                UpTime = $"{UpTime.Days}:{UpTime.Hours}:{UpTime.Minutes}:{UpTime.Seconds}"
+            };
+        }
+        public Queue<int> GetQueueForMode(StatisticMode mode) => mode switch
+        {
+            StatisticMode.Min => MinutesQueueWithCurrent,
+            StatisticMode.Hour => HourQueueWithCurrent,
+            StatisticMode.Day => DayQueueWithCurrent,
+            _ => throw new ArgumentOutOfRangeException(nameof(mode), $"Запрос части статистики не распознает режим. Текущий режим: {mode.ToString()}")
+        };
         #endregion
         #region Events
         private void OnTimerTick(Object source, time.ElapsedEventArgs e)

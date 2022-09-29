@@ -15,7 +15,7 @@ namespace ConnectorCore.Models
         public Сredentials? Credentials { get; set; }
         public List<AppUserGroup> Groups { get; set; } = new List<AppUserGroup>();
         public List<Connection> Connections { get; set; } = new List<Connection>();
-        public UserSettings? UserSettings { get; set; }
+        public UserSettings? UserSettings { get; set; } = new UserSettings();
         public AppRoles Role { get; set; }
         public VisualScheme VisualScheme { get; set; } = VisualScheme.GetDefaultVisualScheme();
         public bool IsEnabled { get; set; }

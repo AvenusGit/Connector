@@ -14,7 +14,7 @@ namespace ConnectorCenter.Models.Settings
         {
             _targetRole = targetRole;
         }
-
+        [XmlIgnoreAttribute]
         public string ConfigurationPath 
         {
             get
@@ -51,7 +51,7 @@ namespace ConnectorCenter.Models.Settings
         public AccessModes SettingsAPI { get; set; }
         public AccessModes SettingsLogs { get; set; }
         public AccessModes SettingsOther { get; set; }
-        public ISettingsConfiguration GetDefault()
+        public AccessSettings GetDefault()
         {
             switch (_targetRole)
             {
@@ -125,7 +125,6 @@ namespace ConnectorCenter.Models.Settings
                 SettingsOther = AccessModes.Edit
             };
         }
-
         public enum AccessModes
         {
             None,

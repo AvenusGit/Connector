@@ -83,7 +83,7 @@ function getCheckedElementName() {
 }
 
 async function SetData(datatype) {
-    let apiData = (await fetch('/api/statistic', {
+    let apiData = (await fetch('/api/statistic/' + datatype, {
         method: 'GET',
         mode: 'no-cors',
         cache: 'no-cache',
@@ -92,62 +92,34 @@ async function SetData(datatype) {
     let apiStatistic = await apiData.json();
     updateCounters(apiStatistic);
     let data;
-    switch (datatype) {
-        case 'min':
-            data = {
-                labels: [],
-                datasets: [
-                    {
-                        label: 'Статистика за минуту',
-                        data: apiStatistic.MinutesQueueWithCurrent,
-                        color: '@ToRGBA(Model.Scheme.ColorScheme.Text.Color)',
-                        borderColor: '@ToRGBA(Model.Scheme.ColorScheme.SubAccent.Color)',
-                        backgroundColor: '@ToRGBA(Model.Scheme.ColorScheme.Path.Color)',
-                        tension: 0.5
-                    }
-                ]
-            }
-            for (var i = 60; i >= 0; i--) {
-                data.labels.push(i);
-            }
-            break
 
+    data = {
+        labels: [],
+        datasets: [
+            {
+                label: 'Статистика за минуту',
+                data: apiStatistic.StatisticQueue,
+                color: '@ToRGBA(Model.Scheme.ColorScheme.Text.Color)',
+                borderColor: '@ToRGBA(Model.Scheme.ColorScheme.SubAccent.Color)',
+                backgroundColor: '@ToRGBA(Model.Scheme.ColorScheme.Path.Color)',
+                tension: 0.5
+            }
+        ]
+    }
+    for (var i = apiStatistic.StatisticQueue.length - 1; i >= 0; i--) {
+            data.labels.push(i);    
+        }  
+
+    switch (datatype) {
+        case 'min':            
+            data.datasets[0].label = 'Статистика за минуту';
+            break;
         case 'hour':
-            data = {
-                labels: [],
-                datasets: [
-                    {
-                        label: 'Статистика за час',
-                        data: apiStatistic.HourQueueWithCurrent,
-                        color: '@ToRGBA(Model.Scheme.ColorScheme.Text.Color)',
-                        borderColor: '@ToRGBA(Model.Scheme.ColorScheme.SubAccent.Color)',
-                        backgroundColor: '@ToRGBA(Model.Scheme.ColorScheme.Path.Color)',
-                        tension: 0.5
-                    }
-                ]
-            }
-            for (var i = 60; i >= 0; i--) {
-                data.labels.push(i);
-            }
-            break
+            data.datasets[0].label = 'Статистика за час';
+            break;
         case 'day':
-            data = {
-                labels: [],
-                datasets: [
-                    {
-                        label: 'Статистика за день',
-                        data: apiStatistic.DayQueueWithCurrent,
-                        color: '@ToRGBA(Model.Scheme.ColorScheme.Text.Color)',
-                        borderColor: '@ToRGBA(Model.Scheme.ColorScheme.SubAccent.Color)',
-                        backgroundColor: '@ToRGBA(Model.Scheme.ColorScheme.Path.Color)',
-                        tension: 0.5
-                    }
-                ]
-            }
-            for (var i = 24; i >= 0; i--) {
-                data.labels.push(i);
-            }
-            break            
+            data.datasets[0].label = 'Статистика за день';
+            break;
     }
     removeData(myChart);
     addData(myChart, data);
@@ -157,14 +129,8 @@ function SetDataInChart(dataType) {
     SetData(dataType);
 }
 
-function setDataMin() {
-    SetDataInChart("min");
-}
-function setDataHour() {
-    SetDataInChart("hour");
-}
-function setDataDay() {
-    SetDataInChart("day");
+function setDataEventHandler() {
+    SetDataInChart(getCheckedElementName());
 }
 function updateCounters(statistics){
     let counter = document.getElementById("allCounter");
@@ -176,8 +142,7 @@ function updateCounters(statistics){
     counter = document.getElementById("avrCounter");
     counter.innerHTML = 'В среднем в секунду: ' + statistics.AverageInMinute.toFixed(3);
     counter = document.getElementById("upTime");
-    const timespan = statistics.JsUpTime.split(':');
-
+    const timespan = statistics.UpTime.split(':');
     counter.innerHTML = 'С момента запуска: ' + timespan[0] +
         'д ' + timespan[1] + 'ч ' + timespan[2] +
         'м ' + timespan[3] + 'c';
