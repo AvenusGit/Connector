@@ -2,11 +2,13 @@
 using ConnectorCore.Models;
 using ConnectorCenter.Models.Settings;
 using ConnectorCenter.Services.Configurations;
+using ConnectorCenter.Services.Archive;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using ConnectorCenter.Services.Authorize;
 using ConnectorCenter.Data;
 using Microsoft.EntityFrameworkCore;
+using ConnectorCenter.Services.Archive;
 
 namespace ConnectorCenter.Controllers
 {
@@ -27,7 +29,6 @@ namespace ConnectorCenter.Controllers
         {
             using (var scope = _logger.BeginScope($"FILE({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
-                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
@@ -67,7 +68,6 @@ namespace ConnectorCenter.Controllers
         {
             using (var scope = _logger.BeginScope($"FILE({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
-                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
@@ -107,7 +107,6 @@ namespace ConnectorCenter.Controllers
         {
             using (var scope = _logger.BeginScope($"FILE({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
-                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
@@ -147,7 +146,6 @@ namespace ConnectorCenter.Controllers
         {
             using (var scope = _logger.BeginScope($"FILE({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
-                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
@@ -186,7 +184,6 @@ namespace ConnectorCenter.Controllers
         {
             using (var scope = _logger.BeginScope($"FILE({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
-                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
@@ -226,7 +223,6 @@ namespace ConnectorCenter.Controllers
         {
             using (var scope = _logger.BeginScope($"FILE({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
-                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();                    
@@ -288,6 +284,80 @@ namespace ConnectorCenter.Controllers
                             buttons = new Dictionary<string, string>()
                             {
                                 {"Назад",@"\ie" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
+        }
+        [HttpGet]
+        public IActionResult AllSettings()
+        {
+            using (var scope = _logger.BeginScope($"FILE({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                try
+                {
+                    ConnectorCenterApp.Instance.Statistics.IncWebRequest();
+                    if (AuthorizeService.GetUserRole(HttpContext) == AppUser.AppRoles.Administrator)
+                    {
+                        _logger.LogInformation($"Запрошен экспорт всех настроек.");
+                        return SendFile(
+                            ArchiveService.GetArchive(
+                                new Services.Archive.File[]
+                                {
+                                    new Services.Archive.File()
+                                    {
+                                        Name = "UserAccessSettings.conf",
+                                        Data = Encoding.UTF8.GetBytes(SettingsConfigurationService
+                                            .XmlSerialize(ConnectorCenterApp.Instance.UserAccessSettings))
+                                    },
+                                    new Services.Archive.File()
+                                    {
+                                        Name = "SupportAccessSettings.conf",
+                                        Data = Encoding.UTF8.GetBytes(SettingsConfigurationService
+                                            .XmlSerialize(ConnectorCenterApp.Instance.SupportAccessSettings))
+                                    },
+                                    new Services.Archive.File()
+                                    {
+                                        Name = "OtherSettings.conf",
+                                        Data = Encoding.UTF8.GetBytes(SettingsConfigurationService
+                                            .XmlSerialize(ConnectorCenterApp.Instance.OtherSettings))
+                                    },
+                                    new Services.Archive.File()
+                                    {
+                                        Name = "ApiSettings.conf",
+                                        Data = Encoding.UTF8.GetBytes(SettingsConfigurationService
+                                            .XmlSerialize(ConnectorCenterApp.Instance.ApiSettings))
+                                    },
+                                    new Services.Archive.File()
+                                    {
+                                        Name = "LogSettings.conf",
+                                        Data =  Encoding.UTF8.GetBytes(ConnectorCenterApp.Instance.LogSettings.ToString())
+                                    }
+                                })
+                            ,"ConnectorCenterSettings.zip");
+                        //return SendFile(
+                        //    Encoding.UTF8.GetBytes(SettingsConfigurationService
+                        //                    .XmlSerialize(ConnectorCenterApp.Instance.OtherSettings))
+                        //            , "OtherSettings.conf");
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Отказано в запросе экспорта всех настроек. У роли пользователя нет доступа.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\ie");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при запросе экспорта всех настроек. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при запросе экспорта прочих настроек.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"Назад",@"\settings\ie" },
                                 {"К логам",@"\logs" }
                             },
                             errorCode = 500

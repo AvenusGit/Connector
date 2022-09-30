@@ -35,95 +35,45 @@
             </div>
         </div>
         <!--menu-->      
-        <div class="row" style=" height:70vh; overflow:auto; overflow-x:visible; overflow-y:visible;">
-            <form class="scrollDiv">
+        <div class="row" style=" height:50vh; overflow:auto; overflow-x:visible; overflow-y:visible;">
+            <div class="scrollDiv">
                 <div class="d-flex justify-content-center">
-                    <div class="container" style="width:60%;">
+                    <div class="container" style="width:80%;">
                         <div class="row">
                             <h1 class="text text-center fw-bold" style="font-size:2vh; margin:2vh 0px;">Доступные действия:</h1>
-                        </div>
-                        <!--user access settings-->
+                        </div>                       
+                        <!--api settings-->
                         <div class="row">
                             <div class="col">
-                                <p class="text">Настройки доступов (пользователь)</p>
-                            </div>
-                            @if(Model.UserRole == AppUser.AppRoles.Administrator)
-                            {
-                                <div class="col">
-                                    <button class="button text" style="margin:3px" title="Импорт">
-                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
-                                            <path class="path" d="M7.03 13.92H11.03V5L13.04 4.97V13.92H17.03L12.03 18.92Z" />
-                                        </svg>Импорт                                    
-                                    </button>
-                                    <button class="button text" style="margin:3px" title="Экспорт" formaction="\export\UserAccessSettings"
-                                        formmethod="get">
-                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
-                                            <path class="path" d="M7.03 9.97H11.03V18.89L13.04 18.92V9.97H17.03L12.03 4.97Z" />
-                                        </svg>Экспорт
-
-                                    </button>
-                            </div>
-                            }
-                            else
-                            {
-                                <div class="col">
-                                    <label class="text text-center fst-italic">Нет доступа</label>
-                                </div>
-                            }
-                                
-                        </div>
-                        <!--support access settings-->
-                        <div class="row">
-                            <div class="col">
-                                <p class="text">Настройки доступов (поддержка)</p>
+                                <p class="text text-center">Настройки API</p>
                             </div>
                             @if (Model.UserRole == AppUser.AppRoles.Administrator)
                             {
                                 <div class="col">
-                                    <button class="button text" style="margin:3px" title="Импорт">
-                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
-                                            <path class="path" d="M7.03 13.92H11.03V5L13.04 4.97V13.92H17.03L12.03 18.92Z" />
-                                        </svg>Импорт
-                                    </button>
-                                    <button class="button text" style="margin:3px" title="Экспорт" formaction="\export\SupportAccessSettings"
-                                        formmethod="get">
-                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
-                                            <path class="path" d="M7.03 9.97H11.03V18.89L13.04 18.92V9.97H17.03L12.03 4.97Z" />
-                                        </svg>Экспорт
-
-                                    </button>
-                                </div>
-                            }
-                            else
-                            {
-                                <div class="col">
-                                    <label class="text text-center fst-italic">Нет доступа</label>
-                                </div>
-                            }
-
-                        </div>
-                        <!--api settings-->
-                        <div class="row">
-                            <div class="col">
-                                <p class="text">Настройки API</p>
-                            </div>
-                            @if (Model.AccessSettings.SettingsAPI != AccessSettings.AccessModes.None)
-                            {
-                                <div class="col">
-                                    @if(Model.AccessSettings.SettingsAPI == AccessSettings.AccessModes.Edit)
-                                    {
-                                        <button class="button text" style="margin:3px" title="Импорт">
-                                            <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
-                                                <path class="path" d="M7.03 13.92H11.03V5L13.04 4.97V13.92H17.03L12.03 18.92Z" />
-                                            </svg>Импорт
-                                        </button>
-                                    }                                    
-                                    <button class="button text" style="margin:3px" title="Экспорт"
-                                            formaction="\export\ApiSettings" formmethod="get">
-                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
-                                            <path class="path" d="M7.03 9.97H11.03V18.89L13.04 18.92V9.97H17.03L12.03 4.97Z" />
-                                        </svg>Экспорт
-                                    </button>
+                                    <div class="row">
+                                        <div class="col-md-auto">
+                                            <form enctype="multipart/form-data" action="\import\ApiSettings" method="post">
+                                                <div>
+                                                <input type="file" id="uploader_ie" name="file" onchange="this.form.submit()" hidden />
+                                                    <label for="uploader_ie" class="button text" style="margin:3px;cursor:pointer;" title="Импорт">
+                                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                                            <path class="path" d="M7.03 13.92H11.03V5L13.04 4.97V13.92H17.03L12.03 18.92Z" />
+                                                        </svg>Импорт
+                                                    </label>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="col-md-auto m-0">
+                                            <form>
+                                                <button class="button text" style="margin:3px" title="Экспорт" formaction="\export\ApiSettings"
+                                                    formmethod="get">
+                                                    <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                                        <path class="path" d="M7.03 9.97H11.03V18.89L13.04 18.92V9.97H17.03L12.03 4.97Z" />
+                                                    </svg>Экспорт
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
                             }
                             else
@@ -136,25 +86,35 @@
                         <!--logs settings-->
                         <div class="row">
                             <div class="col">
-                                <p class="text">Настройки логов</p>
+                                <p class="text text-center">Настройки логов</p>
                             </div>
-                            @if (Model.AccessSettings.SettingsLogs != AccessSettings.AccessModes.None)
+                            @if (Model.UserRole == AppUser.AppRoles.Administrator)
                             {
                                 <div class="col">
-                                    @if (Model.AccessSettings.SettingsLogs == AccessSettings.AccessModes.Edit)
-                                    {
-                                        <button class="button text" style="margin:3px" title="Импорт">
-                                            <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
-                                                <path class="path" d="M7.03 13.92H11.03V5L13.04 4.97V13.92H17.03L12.03 18.92Z" />
-                                            </svg>Импорт
-                                        </button>
-                                    }
-                                    <button class="button text" style="margin:3px" title="Экспорт"
-                                        formaction="\export\LogSettings" formmethod="get">
-                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
-                                            <path class="path" d="M7.03 9.97H11.03V18.89L13.04 18.92V9.97H17.03L12.03 4.97Z" />
-                                        </svg>Экспорт
-                                    </button>
+                                    <div class="row">
+                                        <div class="col-md-auto">
+                                            <form enctype="multipart/form-data" action="\import\LogSettings" method="post">
+                                                <div>
+                                                    <input type="file" id="uploader_log" name="file" onchange="this.form.submit()" hidden />
+                                                    <label for="uploader_log" class="button text" style="margin:3px;cursor:pointer;" title="Импорт">
+                                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                                            <path class="path" d="M7.03 13.92H11.03V5L13.04 4.97V13.92H17.03L12.03 18.92Z" />
+                                                        </svg>Импорт
+                                                    </label>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="col-md-auto m-0">
+                                            <form>
+                                                <button class="button text" style="margin:3px" title="Экспорт" formaction="\export\LogSettings"
+                                                    formmethod="get">
+                                                    <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                                        <path class="path" d="M7.03 9.97H11.03V18.89L13.04 18.92V9.97H17.03L12.03 4.97Z" />
+                                                    </svg>Экспорт
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
                             }
                             else
@@ -167,25 +127,35 @@
                         <!--other settings-->
                         <div class="row">
                             <div class="col">
-                                <p class="text">Прочие настройки</p>
+                                <p class="text text-center">Настройки прочие</p>
                             </div>
-                            @if (Model.AccessSettings.SettingsOther != AccessSettings.AccessModes.None)
+                            @if (Model.UserRole == AppUser.AppRoles.Administrator)
                             {
                                 <div class="col">
-                                    @if (Model.AccessSettings.SettingsOther == AccessSettings.AccessModes.Edit)
-                                    {
-                                        <button class="button text" style="margin:3px" title="Импорт">
-                                            <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
-                                                <path class="path" d="M7.03 13.92H11.03V5L13.04 4.97V13.92H17.03L12.03 18.92Z" />
-                                            </svg>Импорт
-                                        </button>
-                                    }
-                                    <button class="button text" style="margin:3px" title="Экспорт"
-                                        formaction="\export\OtherSettings" formmethod="get">
-                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
-                                            <path class="path" d="M7.03 9.97H11.03V18.89L13.04 18.92V9.97H17.03L12.03 4.97Z" />
-                                        </svg>Экспорт
-                                    </button>
+                                    <div class="row">
+                                        <div class="col-md-auto">
+                                            <form enctype="multipart/form-data" action="\import\OtherSettings" method="post">
+                                                <div>
+                                                    <input type="file" id="uploader_oth" name="file" onchange="this.form.submit()" hidden />
+                                                    <label for="uploader_oth" class="button text" style="margin:3px;cursor:pointer;" title="Импорт">
+                                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                                            <path class="path" d="M7.03 13.92H11.03V5L13.04 4.97V13.92H17.03L12.03 18.92Z" />
+                                                        </svg>Импорт
+                                                    </label>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="col-md-auto m-0">
+                                            <form>
+                                                <button class="button text" style="margin:3px" title="Экспорт" formaction="\export\OtherSettings"
+                                                    formmethod="get">
+                                                    <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                                        <path class="path" d="M7.03 9.97H11.03V18.89L13.04 18.92V9.97H17.03L12.03 4.97Z" />
+                                                    </svg>Экспорт
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
                             }
                             else
@@ -198,24 +168,142 @@
                         <!--user settings-->
                         <div class="row">
                             <div class="col">
-                                <p class="text">Личные настройки</p>
+                                <p class="text text-center">Личные настройки</p>
                             </div>
+                            @if (Model.UserRole == AppUser.AppRoles.Administrator)
+                            {
+                                <div class="col">
+                                    <div class="row">
+                                        <div class="col-md-auto">
+                                            <form enctype="multipart/form-data" action="\import\MySettings" method="post">
+                                                <div>
+                                                    <input type="file" id="uploader_my" name="file" onchange="this.form.submit()" hidden />
+                                                <label for="uploader_my" class="button text" style="margin:3px;cursor:pointer;" title="Импорт">
+                                                        <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                                            <path class="path" d="M7.03 13.92H11.03V5L13.04 4.97V13.92H17.03L12.03 18.92Z" />
+                                                        </svg>Импорт
+                                                    </label>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="col-md-auto m-0">
+                                            <form>
+                                                <button class="button text" style="margin:3px" title="Экспорт" formaction="\export\MySettings"
+                                                    formmethod="get">
+                                                    <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                                        <path class="path" d="M7.03 9.97H11.03V18.89L13.04 18.92V9.97H17.03L12.03 4.97Z" />
+                                                    </svg>Экспорт
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="col">
+                                    <label class="text text-center fst-italic">Нет доступа</label>
+                                </div>
+                            }
+                        </div>                        
+                        <!--support access settings-->
+                        <div class="row">
+                        <div class="col">
+                            <p class="text text-center">Настройки доступов (поддержка)</p>
+                        </div>
+                        @if (Model.UserRole == AppUser.AppRoles.Administrator)
+                        {
                             <div class="col">
-                                <button class="button text" style="margin:3px" title="Импорт">
-                                    <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
-                                        <path class="path" d="M7.03 13.92H11.03V5L13.04 4.97V13.92H17.03L12.03 18.92Z" />
-                                    </svg>Импорт
-                                </button>
-                                <button class="button text" style="margin:3px" title="Экспорт"
-                                    formaction="\export\MySettings" formmethod="get">
-                                    <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
-                                        <path class="path" d="M7.03 9.97H11.03V18.89L13.04 18.92V9.97H17.03L12.03 4.97Z" />
-                                    </svg>Экспорт
-                                </button>
+                                <div class="row">
+                                    <div class="col-md-auto">
+                                        <form enctype="multipart/form-data" action="\import\SupportAccessSettings" method="post">
+                                            <div>
+                                                <input type="file" id="uploader_sup" name="file" onchange="this.form.submit()" hidden />
+                                                <label for="uploader_sup" class="button text" style="margin:3px;cursor:pointer;" title="Импорт">
+                                                    <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                                        <path class="path" d="M7.03 13.92H11.03V5L13.04 4.97V13.92H17.03L12.03 18.92Z" />
+                                                    </svg>Импорт
+                                                </label>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="col-md-auto m-0">
+                                        <form>
+                                            <button class="button text" style="margin:3px" title="Экспорт" formaction="\export\SupportAccessSettings"
+                                                formmethod="get">
+                                                <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                                    <path class="path" d="M7.03 9.97H11.03V18.89L13.04 18.92V9.97H17.03L12.03 4.97Z" />
+                                                </svg>Экспорт
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col">
+                                <label class="text text-center fst-italic">Нет доступа</label>
+                            </div>
+                        }
+                    </div>
+                        <!--user access settings-->
+                        <div class="row">
+                        <div class="col">
+                            <p class="text text-center">Настройки доступов (пользователь)</p>
+                        </div>
+                        @if (Model.UserRole == AppUser.AppRoles.Administrator)
+                        {
+                            <div class="col">
+                                <div class="row">
+                                    <div class="col-md-auto">
+                                        <form enctype="multipart/form-data" action="\import\UserAccessSettings" method="post">
+                                            <div>
+                                                <input type="file" id="uploader_uas" name="file" onchange="this.form.submit()" hidden />
+                                                <label for="uploader_uas" class="button text" style="margin:3px;cursor:pointer;" title="Импорт">
+                                                    <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                                        <path class="path" d="M7.03 13.92H11.03V5L13.04 4.97V13.92H17.03L12.03 18.92Z" />
+                                                    </svg>Импорт
+                                                </label>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="col-md-auto m-0">
+                                        <form>
+                                            <button class="button text" style="margin:3px" title="Экспорт" formaction="\export\UserAccessSettings"
+                                                formmethod="get">
+                                                <svg style="width:2vh;height:2vh" viewBox="0 0 24 24">
+                                                    <path class="path" d="M7.03 9.97H11.03V18.89L13.04 18.92V9.97H17.03L12.03 4.97Z" />
+                                                </svg>Экспорт
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col">
+                                <label class="text text-center fst-italic">Нет доступа</label>
+                            </div>
+                        }
+
+                    </div>
+                        <!--all system-->
+                        <div class="row d-flex justify-content-center" style="margin:2vh;">
+                            <div class="col">
+
+                            </div>
+                            <div class="col-auto">
+                                <form>
+                                    <button class="button" formaction="\export\AllSettings" formmethod="get">Экспорт всех настроек</button>
+                                </form>
+                            </div>                            
+                            <div class="col">
                             </div>
                         </div>
-                    </div>
                 </div>
-            </form>
+                </div>
+            </div>
         </div>
     </div>

@@ -61,7 +61,6 @@ namespace ConnectorCenter.Models.Settings
                 LogSettings configuration = new LogSettings();
                 XmlDocument doc = new XmlDocument();
                 doc.Load(ConfigurationPath);
-                bool result;
 
                 XmlNode node = doc.SelectSingleNode("/log4net/root/level");
                 configuration.LogLevel = (LogLevels)Enum.Parse(typeof(LogLevels), node.Attributes["value"].Value);
@@ -90,6 +89,38 @@ namespace ConnectorCenter.Models.Settings
             {
                 SaveDefaultConfiguration();
                 return GetDefault();
+            }
+        }
+        public static LogSettings? LoadConfiguration(string xml)
+        {
+            try
+            {
+                LogSettings configuration = new LogSettings();
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(xml);
+
+                XmlNode node = doc.SelectSingleNode("/log4net/root/level");
+                configuration.LogLevel = (LogLevels)Enum.Parse(typeof(LogLevels), node.Attributes["value"].Value);
+
+                node = doc.SelectSingleNode("/log4net/appender/param[@name='File']");
+                configuration.LogPath = node.Attributes["value"].Value;
+
+                int res;
+                node = doc.SelectSingleNode("/log4net/appender/maxSizeRollBackups");
+                if (int.TryParse(node.Attributes["value"].Value, out res))
+                    configuration.LogFileCount = res;
+
+                node = doc.SelectSingleNode("/log4net/appender/maximumFileSize");
+                configuration.LogFileSize = node.Attributes["value"].Value;
+
+                node = doc.SelectSingleNode("/log4net/appender/layout/param");
+                configuration.Pattern = node.Attributes["value"].Value;
+
+                return configuration;
+            }
+            catch
+            {
+                return null;
             }
         }
         private static void CreateOrChangeLoggerConfiguration(LogSettings conf)

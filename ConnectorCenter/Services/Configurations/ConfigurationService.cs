@@ -19,37 +19,50 @@ namespace ConnectorCenter.Services.Configurations
             else
             {
                 string xml = ReadConfiguration(configuration.ConfigurationPath).Result;
-                return XmlDeserialize(xml, configuration.GetType());
+                return XmlDeserialize<ISettingsConfiguration>(xml);
             }
         }
 
         public static string XmlSerialize(object obj)
         {
-            Type type = obj.GetType();
-            IExtendedXmlSerializer serializer = new ConfigurationContainer()
-                .UseOptimizedNamespaces()
-                .EnableImplicitTyping(type)
-                .Create();
-            return serializer.Serialize(obj);
+            try
+            {
+                Type type = obj.GetType();
+                IExtendedXmlSerializer serializer = new ConfigurationContainer()
+                    .UseOptimizedNamespaces()
+                    .EnableImplicitTyping(type)
+                    .Create();
+                return serializer.Serialize(obj);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Ошибка при попытке сериализации объекта {obj.GetType().Name}", ex);
+            }
         }
 
-        public static ISettingsConfiguration XmlDeserialize(string xml, Type type)
+        public static ObjectType XmlDeserialize<ObjectType>(string xml)
         {
-            IExtendedXmlSerializer serializer = new ConfigurationContainer()
-                .EnableImplicitTyping(new Type[]
-                {
-                    type,
-                    typeof(AppUser)
-                })
-                .Create();
-            return serializer.Deserialize<ISettingsConfiguration>(xml);
+            try
+            {
+                IExtendedXmlSerializer serializer = new ConfigurationContainer()
+                                .EnableImplicitTyping(new Type[]
+                                {
+                                    typeof(ObjectType)
+                                })
+                                .Create();
+                return serializer.Deserialize<ObjectType>(xml);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Ошибка при попытке десериализации", ex);
+            }            
         }
 
         private static async Task<string> ReadConfiguration(string path)
         {
             return await File.ReadAllTextAsync(path);
         }
-        private static async void WriteConfiguration(string xml, string path)
+        private static void WriteConfiguration(string xml, string path)
         {
             using StreamWriter writer = new StreamWriter(path);
             {

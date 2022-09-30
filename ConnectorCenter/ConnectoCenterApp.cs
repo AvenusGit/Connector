@@ -92,7 +92,7 @@ namespace ConnectorCenter
 
                 try
                 {
-                    LogSettings = LogSettings.LoadConfiguration();
+                    LogSettings = LogSettings.LoadConfiguration()!;
                 }
                 catch (Exception ex)
                 {
