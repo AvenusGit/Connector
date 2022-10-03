@@ -9,6 +9,7 @@ using ConnectorCenter.Services.Authorize;
 using ConnectorCenter.Services.Configurations;
 using ConnectorCore.Models;
 using ConnectorCenter.Services.Logs;
+using ConnectorCore.Models.VisualModels;
 
 namespace ConnectorCenter.Controllers
 {
@@ -20,11 +21,13 @@ namespace ConnectorCenter.Controllers
     {
         #region Fields
         private readonly ILogger _logger;
+        private readonly DataBaseContext _context;
         #endregion
         #region Constructors
-        public SettingsController(ILogger<AppUserGroupsController> logger)
+        public SettingsController(ILogger<AppUserGroupsController> logger, DataBaseContext context)
         {
             _logger = logger;
+            _context = context;
         }
         #endregion
         #region GET
@@ -41,7 +44,7 @@ namespace ConnectorCenter.Controllers
                     return View("Index", 
                         new IndexViewModel(
                             AuthorizeService.GetAccessSettings(HttpContext),
-                            AuthorizeService.GetUserRole(HttpContext) ?? AppUser.AppRoles.User
+                            AuthorizeService.GetUserRole(HttpContext)
                         ));
                 }
                 catch (Exception ex)
@@ -210,6 +213,151 @@ namespace ConnectorCenter.Controllers
                 }
             }
         }
+        [HttpGet]
+        public IActionResult Other()
+        {
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
+                try
+                {
+                    AccessSettings? accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if(accessSettings is null)
+                    {
+                        _logger.LogWarning($"Отказанов запросе страницы прочих настроек. Роль пользователя не определена.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\settings");
+                    }
+                    if (accessSettings?.SettingsOther != AccessSettings.AccessModes.None)
+                    {
+                        _logger.LogInformation($"Запрошена страница прочих настроек.");
+                        return View(new OtherSettingsModel(ConnectorCenterApp.Instance.OtherSettings, accessSettings!));
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Отказанов запросе страницы прочих настроек. Нет у роли пользователя нет доступа.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\settings");
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при запросе страницы прочих настроек. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при запросе страницы прочих настроек.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
+        }
+        [HttpGet]
+        public async Task<IActionResult> My()
+        {
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
+                try
+                {
+                    _logger.LogInformation($"Запрошена страница личных настроек.");
+
+                    List<AppUser> users = await _context.Users
+                       .Include(user => user.UserSettings)
+                       .Include(user => user.VisualScheme)
+                           .ThenInclude(vs => vs.ColorScheme)
+                                   .ThenInclude(cs => cs.Fone)
+                       .Include(user => user.VisualScheme)
+                           .ThenInclude(vs => vs.ColorScheme)
+                               .ThenInclude(cs => cs.Accent)
+                       .Include(user => user.VisualScheme)
+                           .ThenInclude(vs => vs.ColorScheme)
+                                   .ThenInclude(cs => cs.SubAccent)                       
+                       .Include(user => user.VisualScheme)
+                           .ThenInclude(vs => vs.ColorScheme)
+                                   .ThenInclude(cs => cs.Panel)
+                       .Include(user => user.VisualScheme)
+                           .ThenInclude(vs => vs.ColorScheme)
+                                   .ThenInclude(cs => cs.Border)
+                       .Include(user => user.VisualScheme)
+                           .ThenInclude(vs => vs.ColorScheme)
+                                   .ThenInclude(cs => cs.Path)
+                        .Include(user => user.VisualScheme)
+                           .ThenInclude(vs => vs.ColorScheme)
+                                   .ThenInclude(cs => cs.Text)
+                        .Include(user => user.VisualScheme)
+                           .ThenInclude(vs => vs.ColorScheme)
+                                   .ThenInclude(cs => cs.Select)
+                        .Include(user => user.VisualScheme)
+                           .ThenInclude(vs => vs.ColorScheme)
+                                   .ThenInclude(cs => cs.Error)
+                        .Include(user => user.VisualScheme)
+                           .ThenInclude(vs => vs.ColorScheme)
+                                   .ThenInclude(cs => cs.Disable)
+                        .Include(user => user.VisualScheme)
+                            .ThenInclude(vs => vs.FontScheme)
+                       .Where(user => user.Id == AuthorizeService.GetUserId(HttpContext))
+                       .ToListAsync();
+
+                    AppUser? currentUser = users.FirstOrDefault(user => user.Id == AuthorizeService.GetUserId(HttpContext));
+
+
+                    if (currentUser is null)
+                    {
+                        _logger.LogError($"Ошибка при запросе страницы личных настроек. Пользователь не найден в БД.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при запросе страницы личных настроек. Пользователь не найден.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                    {"На главную",@"\settings" },
+                                    {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                    }
+                    if(currentUser.UserSettings is null)
+                    {
+                        _logger.LogError($"Ошибка при запросе страницы личных настроек. Настройки пользователя не найдены. Будут применены стандартные настройки.");
+                        currentUser.UserSettings = UserSettings.GetDefault();
+                        _context.Update(currentUser);
+                        _logger.LogError($"Стандартные личные настройки успешно установлены пользователю {currentUser.Name}.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе страницы личных настроек. Настройки пользователя не найдены и установлены по умолчанию.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\settings" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 500
+                            }));
+                    }
+                    return View(new MySettingsModel(currentUser));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при запросе страницы личных настроек. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при запросе страницы личных настроек.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
+        }
         #endregion
         #region POST
         [HttpPost]
@@ -246,7 +394,7 @@ namespace ConnectorCenter.Controllers
                     return View("Index", 
                         new IndexViewModel(
                             AuthorizeService.GetAccessSettings(HttpContext),
-                            AuthorizeService.GetUserRole(HttpContext) ?? AppUser.AppRoles.User
+                            AuthorizeService.GetUserRole(HttpContext)
                         ));                    
                 }
                 catch (Exception ex)
@@ -303,7 +451,7 @@ namespace ConnectorCenter.Controllers
                     return View("Index",
                         new IndexViewModel(
                             AuthorizeService.GetAccessSettings(HttpContext),
-                            AuthorizeService.GetUserRole(HttpContext) ?? AppUser.AppRoles.User
+                            AuthorizeService.GetUserRole(HttpContext)
                         ));
                 }
                 catch (Exception ex)
@@ -357,7 +505,7 @@ namespace ConnectorCenter.Controllers
                     return View("Index",
                         new IndexViewModel(
                             AuthorizeService.GetAccessSettings(HttpContext),
-                            AuthorizeService.GetUserRole(HttpContext) ?? AppUser.AppRoles.User
+                            AuthorizeService.GetUserRole(HttpContext)
                         ));
                 }
                 catch (Exception ex)
@@ -376,8 +524,169 @@ namespace ConnectorCenter.Controllers
                         }));
                 }
             }
-        }        
+        }
+        [HttpPost]
+        public IActionResult SaveOtherSettings(OtherSettings? otherSettings)
+        {
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
+                try
+                {
+                    if (AuthorizeService.GetAccessSettings(HttpContext).SettingsOther != AccessSettings.AccessModes.Edit)
+                    {
+                        _logger.LogWarning("Отказано в попытке изменить параметры прочих настроек. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\settings");
+                    }
+                    if (otherSettings is null || !ModelState.IsValid)
+                    {
+                        _logger.LogError($"Ошибка при попытке сохранить прочие настройки. Неверные аргументы.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при попытке сохранить прочие настройки. Неверные аргументы.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 400
+                            }));
+                    }
+                    ConnectorCenterApp.Instance.OtherSettings = otherSettings;
+                    SettingsConfigurationService.SaveConfiguration(ConnectorCenterApp.Instance.OtherSettings);
+                    _logger.LogInformation($"Изменены прочие настройки.");
+                    return View("Index",
+                        new IndexViewModel(
+                            AuthorizeService.GetAccessSettings(HttpContext),
+                            AuthorizeService.GetUserRole(HttpContext)
+                        ));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при попытке сохранить прочие настройки. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при попытке сохранить прочие настройки.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
+        }
+        [HttpPost]
+        public async Task<IActionResult> SaveMyUserSettings(UserSettings? userSettings)
+        {
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
+                try
+                {
+                    if (userSettings is null || !ModelState.IsValid || userSettings.Id == 0 || userSettings.AppUserId == 0)
+                    {
+                        _logger.LogError($"Ошибка при попытке сохранить личные настройки. Неверные аргументы.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при попытке сохранить личные настройки. Неверные аргументы.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"Назад",@"\settings\my" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 400
+                            }));
+                    }
+                    
+                    userSettings.AppUserId = AuthorizeService.GetUserId(HttpContext);
+                    _context.Update(userSettings);
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation($"Личные настройки пользователя успешно изменены.");
+                    return View("Index",
+                        new IndexViewModel(
+                            AuthorizeService.GetAccessSettings(HttpContext),
+                            AuthorizeService.GetUserRole(HttpContext)
+                        ));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при попытке сохранить личные настройки. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при попытке сохранить личные настройки.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"Назад",@"\settings\my" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
+        }
+        [HttpPost]
+        public async Task<IActionResult> SaveMyColorScheme(ColorScheme? colorScheme)
+        {
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
+                try
+                {
+                    if (colorScheme is null || !ModelState.IsValid || colorScheme.Id == 0)
+                    {
+                        _logger.LogError($"Ошибка при попытке сохранить цветовую схему. Неверные аргументы.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при попытке сохранить цветовую схему. Неверные аргументы.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"Назад",@"\settings\my" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 400
+                            }));
+                    }
+                    //_context.Users
+                    //    .Where(user => user.Id == AuthorizeService.GetUserId(HttpContext))
+                    //    .Load();
+                    AppUser? user = await _context.Users
+                        .Where(user => user.Id == AuthorizeService.GetUserId(HttpContext))
+                        .FirstOrDefaultAsync();
+                    user.VisualScheme.ColorScheme = colorScheme;
+                    _context.Update(user);
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation($"Личные настройки пользователя успешно изменены.");
+                    return View("Index",
+                        new IndexViewModel(
+                            AuthorizeService.GetAccessSettings(HttpContext),
+                            AuthorizeService.GetUserRole(HttpContext)
+                        ));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при попытке сохранить личные настройки. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при попытке сохранить личные настройки.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"Назад",@"\settings\my" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
+        }
         #endregion
-        
+
     }
 }

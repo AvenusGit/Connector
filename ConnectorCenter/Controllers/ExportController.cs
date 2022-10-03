@@ -226,53 +226,36 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();                    
-                    long? userId = AuthorizeService.GetUserId(HttpContext);
-                    if (userId.HasValue)
+                    long userId = AuthorizeService.GetUserId(HttpContext);
+
+                    UserSettings? mySettings = await _context.UserSettings
+                        .FirstOrDefaultAsync(us => us.AppUserId == userId);
+                    if(mySettings is not null)
                     {
-                        UserSettings? mySettings = await _context.UserSettings
-                            .FirstOrDefaultAsync(us => us.AppUserId == userId);
-                        if(mySettings is not null)
-                        {
-                            _logger.LogInformation($"Запрошен экспорт личных настроек.");
-                            return SendFile(
-                            Encoding.UTF8.GetBytes(SettingsConfigurationService
-                                            .XmlSerialize(mySettings))
-                                    , "MySettings.conf");
-                        }
-                        else
-                        {
-                            mySettings = UserSettings.GetDefault();
-                            _context.Update(mySettings);
-                            _context.SaveChanges();
-                            _logger.LogWarning($"Ошибка при запросе экспорта личных настроек. У пользователя не найдены настройки. Будут назначены по умолчанию.");
-                            return RedirectToAction("Index", "Message", new RouteValueDictionary(
-                                new
-                                {
-                                    message = "Ошибка при запросе экспорта личных настроек. Настройки не найдены. Назначены по умолчанию.",
-                                    buttons = new Dictionary<string, string>()
-                                    {
-                                        {"Назад",@"\settings\ie" },
-                                        {"К логам",@"\logs" }
-                                    },
-                                    errorCode = 500
-                                }));
-                        }                        
+                        _logger.LogInformation($"Запрошен экспорт личных настроек.");
+                        return SendFile(
+                        Encoding.UTF8.GetBytes(SettingsConfigurationService
+                                        .XmlSerialize(mySettings))
+                                , "MySettings.conf");
                     }
                     else
                     {
-                        _logger.LogError($"Ошибка при запросе экспорта личных настроек. Не удалось установить идентификатор пользователя.");
+                        mySettings = UserSettings.GetDefault();
+                        _context.Update(mySettings);
+                        _context.SaveChanges();
+                        _logger.LogWarning($"Ошибка при запросе экспорта личных настроек. У пользователя не найдены настройки. Будут назначены по умолчанию.");
                         return RedirectToAction("Index", "Message", new RouteValueDictionary(
                             new
                             {
-                                message = "Ошибка при запросе экспорта личных настроек. Нет ID пользователя.",
+                                message = "Ошибка при запросе экспорта личных настроек. Настройки не найдены. Назначены по умолчанию.",
                                 buttons = new Dictionary<string, string>()
                                 {
-                                    {"Назад",@"\ie" },
+                                    {"Назад",@"\settings\ie" },
                                     {"К логам",@"\logs" }
                                 },
                                 errorCode = 500
                             }));
-                    }                    
+                    }                                     
                 }
                 catch (Exception ex)
                 {

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Reflection;
 using ConnectorCenter.Models.Settings;
 using System.Net;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ConnectorCenter.Services.Authorize
 {
@@ -57,19 +58,19 @@ namespace ConnectorCenter.Services.Authorize
                 return true;
             else return false;
         }
-        public static long? GetUserId(HttpContext context)
+        public static long GetUserId(HttpContext context)
         {
             long result;
             if (long.TryParse(context.User.FindFirstValue(ClaimTypes.Sid), out result))
                 return result;
-            else return null;            
+            else throw new Exception("Не удалось определить Id пользователя в запросе.");            
         }
-        public static AppUser.AppRoles? GetUserRole(HttpContext context)
+        public static AppUser.AppRoles GetUserRole(HttpContext context)
         {
             object? role;
             if (Enum.TryParse(typeof(AppUser.AppRoles), context.User.FindFirstValue(ClaimTypes.GroupSid), true, out role))
                 return (AppUser.AppRoles)role!;
-            else return null;
+            else throw new Exception("Не удалось определить роль пользователя в запросе.");
         }
         public static string GetUserName(HttpContext context)
         {
@@ -91,17 +92,17 @@ namespace ConnectorCenter.Services.Authorize
                                 errorCode = 403
                             }));
         }
-        public static AccessSettings? GetAccessSettings(HttpContext context)
+        public static AccessSettings GetAccessSettings(HttpContext context)
         {
-            AppUser.AppRoles? userRole = GetUserRole(context);
+            AppUser.AppRoles userRole = GetUserRole(context);
             return GetAccessSettings(userRole);
         }
-        public static AccessSettings? GetAccessSettings(AppUser.AppRoles? role)
+        public static AccessSettings GetAccessSettings(AppUser.AppRoles? role)
         {
             switch (role)
             {
                 case null:
-                    return null!;
+                    throw new Exception("Ошибка при попытке проверить права доступа. Не указана роль.");
                 case AppUser.AppRoles.User:
                     return ConnectorCenterApp.Instance.UserAccessSettings;
                 case AppUser.AppRoles.Support:

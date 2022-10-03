@@ -75,7 +75,7 @@ body {
     padding:  5px 20px 5px 20px;
     box-shadow: none;
     max-height: 5vh;
-    font-size: 2vh;
+    font-size: calc(2vh * @Model.Scheme.FontScheme.FontMultiplierPercent / 100);
     font-family: @Model.Scheme.FontScheme.Font;
     color: @ToCssColor(Model.Scheme.ColorScheme.Text.Color);
 }
@@ -103,27 +103,27 @@ body {
 .text{
     color: @ToCssColor(Model.Scheme.ColorScheme.Text.Color);
     font-family: @Model.Scheme.FontScheme.Font;
-    font-size: 2vh;
+    font-size: calc(2vh * @Model.Scheme.FontScheme.FontMultiplierPercent / 100);
 }
 .textLogo{
     color: @ToCssColor(Model.Scheme.ColorScheme.Text.Color);
     font-family: @Model.Scheme.FontScheme.Font;
-    font-size: 3vh;
+    font-size: calc(3vh * @Model.Scheme.FontScheme.FontMultiplierPercent / 100);
 }
 .textMin{
     color: @ToCssColor(Model.Scheme.ColorScheme.Text.Color);
     font-family: @Model.Scheme.FontScheme.Font;
-    font-size: 1.5vh;
+    font-size: calc(1.5vh * @Model.Scheme.FontScheme.FontMultiplierPercent / 100);
 }
 .textLogoMainMenu{
-    font-size: 3vh;
+    font-size: calc(3vh * @Model.Scheme.FontScheme.FontMultiplierPercent / 100);
 }
 .textbox{
     background: @ToCssColor(Model.Scheme.ColorScheme.Panel.Color);
     border-width: 0 0 1px 0;
     border-color: @ToCssColor(Model.Scheme.ColorScheme.Border.Color);
     font-family: @Model.Scheme.FontScheme.Font;
-    font-size: 2vh;
+    font-size: calc(2vh * @Model.Scheme.FontScheme.FontMultiplierPercent / 100);
 }
 .textbox:focus{
     outline: none;
@@ -153,7 +153,7 @@ select {
     padding: 0 .5em;
     color: @ToCssColor(Model.Scheme.ColorScheme.Text.Color);
     cursor: pointer;
-    font-size: 2vh;
+    font-size: calc(2vh * @Model.Scheme.FontScheme.FontMultiplierPercent / 100);
     font-family: @Model.Scheme.FontScheme.Font;
 }
 
@@ -168,7 +168,7 @@ select {
     overflow: hidden;
     background: @ToCssColor(Model.Scheme.ColorScheme.Border.Color);
     padding: 1px;
-    font-size: 2vh;
+    font-size: calc(2vh * @Model.Scheme.FontScheme.FontMultiplierPercent / 100);
     text-align:center;
     border-radius: 4px;
     border: 0px 0px 1px 0px solid @ToCssColor(Model.Scheme.ColorScheme.Border.Color);
@@ -218,7 +218,7 @@ select {
 }
 textarea {
     color: @ToCssColor(Model.Scheme.ColorScheme.Text.Color);
-    font-size: 1.5vh;
+    font-size: calc(1.5vh * @Model.Scheme.FontScheme.FontMultiplierPercent / 100);
     background: @ToCssColor(Model.Scheme.ColorScheme.Panel.Color);
     border: 0px solid @ToCssColor(Model.Scheme.ColorScheme.Border.Color);
     outline: none;
@@ -227,7 +227,7 @@ textarea {
 }
 
 .switch-toggle {
-   font-size: 1.5vh;
+   font-size: calc(1.5vh * @Model.Scheme.FontScheme.FontMultiplierPercent / 100);
    border-radius: 10px;
    border: 1px solid @ToCssColor(Model.Scheme.ColorScheme.Border.Color);
    background: @ToCssColor(Model.Scheme.ColorScheme.Panel.Color);
@@ -246,7 +246,11 @@ textarea {
   border-radius: 10px;
   border: 1px solid @ToCssColor(Model.Scheme.ColorScheme.SubAccent.Color);
 }
-.fileUploadButton{
-
+.colorPicker{
+    border-radius: 10px;
+    border: 2px solid @ToCssColor(Model.Scheme.ColorScheme.Border.Color);
+    color: @ToCssColor(Model.Scheme.ColorScheme.Text.Color);
+    font-size: calc(1.7vh * @Model.Scheme.FontScheme.FontMultiplierPercent / 100);
+    font-family: @Model.Scheme.FontScheme.Font;
 }
 

@@ -15,16 +15,18 @@ namespace ConnectorCore.Models.VisualModels
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
-        public ColorProperty? Fone { get; set; }
-        public ColorProperty? Accent { get; set; }
-        public ColorProperty? SubAccent { get; set; }
-        public ColorProperty? Panel { get; set; }
-        public ColorProperty? Border { get; set; }
-        public ColorProperty? Path { get; set; }
-        public ColorProperty? Text { get; set; }
-        public ColorProperty? Select { get; set; }
-        public ColorProperty? Error { get; set; }
-        public ColorProperty? Disable { get; set; }
+        public long VisualSchemeId { get; set; }
+        public VisualScheme VisualScheme { get; set; }
+        public ColorProperty Fone { get; set; }
+        public ColorProperty Accent { get; set; }
+        public ColorProperty SubAccent { get; set; }
+        public ColorProperty Panel { get; set; }
+        public ColorProperty Border { get; set; }
+        public ColorProperty Path { get; set; }
+        public ColorProperty Text { get; set; }
+        public ColorProperty Select { get; set; }
+        public ColorProperty Error { get; set; }
+        public ColorProperty Disable { get; set; }
 
         public Dictionary<string, IColorProperty> GetColorProperties()
         {
@@ -40,6 +42,34 @@ namespace ConnectorCore.Models.VisualModels
             result.Add("Error", Error!);
             result.Add("Disable", Disable!);
             return result;
+        }
+        public static string ColorFieldName(KeyValuePair<string, IColorProperty> dictionaryRecord)
+        {
+            switch (dictionaryRecord.Key)
+            {
+                case "Fone":
+                    return "Фон";
+                case "Accent":
+                    return "Акцент";
+                case "SubAccent":
+                    return "Субакцент";
+                case "Panel":
+                    return "Панели";
+                case "Border":
+                    return "Границы";
+                case "Path":
+                    return "Иконки";
+                case "Text":
+                    return "Текст";
+                case "Select":
+                    return "Выделение";
+                case "Error":
+                    return "Ошибка";
+                case "Disable":
+                    return "Выключено";
+                default:
+                    return string.Empty;
+            }
         }
         public ColorScheme Clone()
         {
