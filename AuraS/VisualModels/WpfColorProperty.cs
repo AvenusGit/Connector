@@ -8,37 +8,43 @@ using ConnectorCore.Models.VisualModels;
 
 namespace AuraS.VisualModels
 {
-    public class WpfColorProperty : ColorProperty
+    public class WpfColorProperty
     {
         public WpfColorProperty(string name)
         {
-            Name = name;
+            ColorKeyName = name;
+            Color = GetColorFromString("#FFFFFFFF");
+        }
+        public WpfColorProperty(string name, Color color)
+        {
+            ColorKeyName = name;
+            Color = color;
         }
         public WpfColorProperty(string name, string color)
         {
-            Name = name;
-            Color = color;
+            ColorKeyName = name;
+            Color = GetColorFromString(color);
         }
-        public Color? ColorValue
+        public string ColorKeyName { get; set; }
+        private Color _color;
+        public Color Color
         {
             get
             {
-                return (Color)ColorConverter.ConvertFromString(Color); ;
+                return _color;
             }
             set
             {
-                Color = value is null ? "#FFFFFF" : value.ToString();
+                Color = value;
                 Apply();
             }
         }
-        public string BrushKeyName { get { return Name + "Brush"; } }
+        public string BrushKeyName { get { return ColorKeyName + "Brush"; } }
         public Brush? BrushValue
         {
             get
             {
-                if (ColorValue.HasValue)
-                    return new SolidColorBrush(ColorValue.Value);
-                else return null;
+                    return new SolidColorBrush(Color);
             }
         }
 
@@ -48,10 +54,10 @@ namespace AuraS.VisualModels
             {
                 var resource = Application.Current.Resources[ColorKeyName];
                 if (resource is Color)
-                    ColorValue = (Color)resource;
+                    Color = (Color)resource;
             }
             else
-                ColorValue = null;
+                Color = GetColorFromString("#FFFFFFFF");
         }
         public static WpfColorProperty GetColorProperty(string name)
         {
@@ -62,14 +68,18 @@ namespace AuraS.VisualModels
         public void Apply()
         {
             if (Application.Current.Resources.Contains(ColorKeyName))
-                Application.Current.Resources[ColorKeyName] = ColorValue;
+                Application.Current.Resources[ColorKeyName] = Color;
             else
-                Application.Current.Resources.Add(ColorKeyName, ColorValue);
+                Application.Current.Resources.Add(ColorKeyName, Color);
 
             if (Application.Current.Resources.Contains(BrushKeyName))
                 Application.Current.Resources[BrushKeyName] = BrushValue;
             else
                 Application.Current.Resources.Add(BrushKeyName, BrushValue);
+        }
+        public static Color GetColorFromString(string color)
+        {
+            return (Color)ColorConverter.ConvertFromString(color);
         }
     }
 }

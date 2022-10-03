@@ -4,18 +4,6 @@
 @{
 
 }
-@functions{
-    private string ToCssColor(string wpfColor){
-        string opacity = wpfColor.Substring(1,2);
-        wpfColor = wpfColor.Remove(1,2);
-        return wpfColor + opacity;
-    }
-    private string ToRGBA(string wpfColor){
-        int argb = Int32.Parse(wpfColor.Replace("#", ""), NumberStyles.HexNumber);
-        Color color = Color.FromArgb(argb);
-        return $"rgba({color.R}, {color.G}, {color.B}, {Math.Round((double)color.A / 255, 2)})";
-    }
-}
 
 const ctx = document.getElementById('myChart').getContext('2d');
 const myChart = new Chart(ctx,
@@ -25,16 +13,16 @@ const myChart = new Chart(ctx,
             animation: false,
             scales: {
                 x: {
-                    color: '@ToRGBA(Model.Scheme.ColorScheme.Border.Color)',
+                    color: 'Model.Scheme.ColorScheme.Border',
                     display: true,
                     text: 'Время',
                     ticks: {
                         family: '@Model.Scheme.FontScheme.Font',
-                        color: '@ToRGBA(Model.Scheme.ColorScheme.Text.Color)'
+                        color: '@Model.Scheme.ColorScheme.Text'
                     }
                 },
                 y: {
-                    color: '@ToRGBA(Model.Scheme.ColorScheme.Border.Color)',
+                    color: '@Model.Scheme.ColorScheme.Text',
                     beginAtZero: true,
                     display: true,
                     suggestedMax: 10,
@@ -42,7 +30,7 @@ const myChart = new Chart(ctx,
                     ticks: {
                         stepSize: 1,
                         family: '@Model.Scheme.FontScheme.Font',
-                        color: '@ToRGBA(Model.Scheme.ColorScheme.Text.Color)'
+                        color: '@Model.Scheme.ColorScheme.Text'
                     }
                 }
             },
@@ -99,9 +87,9 @@ async function SetData(datatype) {
             {
                 label: 'Статистика за минуту',
                 data: apiStatistic.StatisticQueue,
-                color: '@ToRGBA(Model.Scheme.ColorScheme.Text.Color)',
-                borderColor: '@ToRGBA(Model.Scheme.ColorScheme.SubAccent.Color)',
-                backgroundColor: '@ToRGBA(Model.Scheme.ColorScheme.Path.Color)',
+                color: '@Model.Scheme.ColorScheme.Text',
+                borderColor: '@Model.Scheme.ColorScheme.SubAccent',
+                backgroundColor: '@Model.Scheme.ColorScheme.Path',
                 tension: 0.5
             }
         ]

@@ -6,14 +6,6 @@
 @{
     Layout = "~/Views/Shared/ViewBase.cshtml";
 }
-@functions {
-    private string ToCssColor(string wpfColor)
-    {
-        string opacity = wpfColor.Substring(1, 2);
-        wpfColor = wpfColor.Remove(1, 2);
-        return wpfColor + opacity;
-    }
-}
     <script src="/js/jscolor/jscolor.js"></script>
     <div class="container panel" style="height:80vh;">
         <form>
@@ -85,32 +77,35 @@
                                 <div class="row">
                                     <h1 class="text text-center fw-bold" style="font-size:2vh; margin:2vh 0px;">Цветовая схема:</h1>
                                     <input type="number" name="Id" hidden
-                                           value="@Model.CurrentUser.VisualScheme.ColorScheme.Id" />                                  
+                                           value="@Model.CurrentUser.VisualScheme.ColorScheme.Id" />
+                                    <input type="number" name="VisualSchemeId" hidden
+                                            value="@Model.CurrentUser.VisualScheme.ColorScheme.VisualSchemeId" />
                                 </div>
 
-                                @foreach (KeyValuePair<string, IColorProperty> color in Model.CurrentUser.VisualScheme.ColorScheme.GetColorProperties())
+                                @foreach (KeyValuePair<string, string> color in Model.CurrentUser.VisualScheme.ColorScheme.GetColorProperties())
                                 {
                                     <div class="row">
                                         <div class="col">
-                                            <p class="text">@ColorScheme.ColorFieldName(color)</p>
+                                            <p class="text">@IColorScheme.ColorFieldName(color.Key)</p>
                                         </div>
-                                        <div class="col">
-                                            <input type="text" name="@(color.Key).Name" hidden
-                                                value="@(color.Value.Name)" />                                          
-                                            <input type="text" name="@(color.Key).Color" style="max-width:100%;max-height:2vh;" class="colorPicker" 
-                                                   value="@ToCssColor(color.Value.Color)" data-jscolor="{}">
-                                            @*<input style="max-width:2vh;max-height:2vh;" type="color" pattern=" #[a-f0-9]{8}" 
-                                                   name="@(color.Key).Color" class="textbox text-center w-100"
-                                                   value="@ToCssColor(color.Value.Color)" />
-                                            @*<label class="text">@ToCssColor(color.Value.Color)</label>*@
-
+                                        <div class="col">                                        
+                                            <input type="text" name="@(color.Key)" style="max-width:100%;max-height:2vh;" class="text colorPicker"
+                                                   value="@color.Value" data-jscolor="{
+                                                                    backgroundColor: '@Model.CurrentUser.VisualScheme.ColorScheme.Panel',
+                                                                    borderColor:'@Model.CurrentUser.VisualScheme.ColorScheme.Border',
+                                                                    borderRadius:10
+                                                            }">
                                 </div>
                                     </div>
                                 }                                
                                 <!--Save-->
                                 <div class="row" style="margin:3vh;">
                                     <div class="d-flex justify-content-center">
-                                <button class="button" formaction="/settings/SaveMyColorScheme" formmethod="post">
+                                        <button class="button" formaction="/settings/DefaultMyColorScheme" formmethod="post"
+                                                style="margin: 0px 2vw;">
+                                                <h1 class="text text-center fw-bold">Сбросить</h1>
+                                        </button>
+                                        <button class="button" formaction="/settings/SaveMyColorScheme" formmethod="post">
                                             <h1 class="text text-center fw-bold">Сохранить</h1>
                                         </button>
                                     </div>
@@ -124,12 +119,16 @@
                             <form>
                             <div class="row">
                                 <h1 class="text text-center fw-bold" style="font-size:2vh; margin:2vh 0px;">Шрифты:</h1>
+                                <input type="number" name="Id" hidden
+                                       value="@Model.CurrentUser.VisualScheme.FontScheme.Id" />
+                                <input type="number" name="VisualSchemeId" hidden
+                                        value="@Model.CurrentUser.VisualScheme.FontScheme.VisualSchemeId" />
                             </div>    
                             <div class="row">
                                 <div class="col">
                                     <p class="text">Основной шрифт</p>
                                 </div>
-                                <div class="col">
+                                <div class="col">                                    
                                     <input type="text" name="Font" class="textbox text-center w-100"
                                            value="@Model.CurrentUser.VisualScheme.FontScheme.Font" />
                                 </div>
@@ -139,14 +138,14 @@
                                     <p class="text">Множитель размера(%)</p>
                                 </div>
                                 <div class="col">
-                                    <input type="number" name="Font" class="textbox text-center w-100"
+                                    <input type="number" name="FontMultiplierPercent" class="textbox text-center w-100"
                                            value="@Model.CurrentUser.VisualScheme.FontScheme.FontMultiplierPercent" />
                                 </div>
                             </div>
                         <!--Save-->
                         <div class="row" style="margin:3vh;">
                             <div class="d-flex justify-content-center">
-                                <button class="button" formaction="/settings/SaveMyFontSettings" formmethod="post">
+                                <button class="button" formaction="/settings/SaveMyFontScheme" formmethod="post">
                                     <h1 class="text text-center fw-bold">Сохранить</h1>
                                 </button>
                             </div>

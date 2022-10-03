@@ -9,7 +9,7 @@ namespace ConnectorCenter.Data
     public class DataBaseContext : IdentityDbContext
     {
         protected readonly IConfiguration Configuration;
-        public DataBaseContext(DbContextOptions<DataBaseContext> options) : base(options) => Database.EnsureDeleted();
+        public DataBaseContext(DbContextOptions<DataBaseContext> options) : base(options) => Database.EnsureCreated();
             
         public DbSet<AppUser> Users { get; set; }
         public DbSet<UserSettings> UserSettings { get; set; }
@@ -19,6 +19,5 @@ namespace ConnectorCenter.Data
         public DbSet<VisualScheme> VisualSchemes { get; set; }
         public DbSet<ColorScheme> ColorSchemes { get; set; }
         public DbSet<FontScheme> FontSchemes { get; set; }
-        public DbSet<ColorProperty> ColorProperties { get; set; }
     }
 }

@@ -17,20 +17,52 @@ namespace ConnectorCore.Models.VisualModels
         public long Id { get; set; }
         public long VisualSchemeId { get; set; }
         public VisualScheme VisualScheme { get; set; }
-        public ColorProperty Fone { get; set; }
-        public ColorProperty Accent { get; set; }
-        public ColorProperty SubAccent { get; set; }
-        public ColorProperty Panel { get; set; }
-        public ColorProperty Border { get; set; }
-        public ColorProperty Path { get; set; }
-        public ColorProperty Text { get; set; }
-        public ColorProperty Select { get; set; }
-        public ColorProperty Error { get; set; }
-        public ColorProperty Disable { get; set; }
-
-        public Dictionary<string, IColorProperty> GetColorProperties()
+        public string Fone { get; set; }
+        public string Accent { get; set; }
+        public string SubAccent { get; set; }
+        public string Panel { get; set; }
+        public string Border { get; set; }
+        public string Path { get; set; }
+        public string Text { get; set; }
+        public string Select { get; set; }
+        public string Error { get; set; }
+        public string Disable { get; set; }
+        public static ColorScheme GetDefault()
         {
-            Dictionary<string, IColorProperty> result = new Dictionary<string, IColorProperty>();
+            return new ColorScheme()
+            {
+                Accent = "#363636FF",
+                Fone = "#FFFFFFFF",
+                SubAccent = "#ADADADFF",
+                Panel = "#FFFFFFFF",
+                Border = "#DEDEDEFF",
+                Path = "#3B3B3BFF",
+                Text = "#3B3B3BFF",
+                Select = "#A0A0A0FF",
+                Error = "#FF0000AA",
+                Disable = "#F2F2F2FF"
+            };
+        }
+        private string WpfToCssColor(string colorName, string wpfColor)
+        {
+            if (!IColorScheme.IsValueCorrect(wpfColor))
+                throw new Exception($"Ошибка при попытке перевода WPF цвета <{colorName}> в HEX. Строка цвета не валидна");
+            string opacity = wpfColor.Substring(1, 2);
+            wpfColor = wpfColor.Remove(1, 2);
+            return wpfColor + opacity;
+        }
+        private string CssToWpfColor(string colorName, string wpfColor)
+        {
+            if (!IColorScheme.IsValueCorrect(wpfColor))
+                throw new Exception($"Ошибка при попытке перевода HEX цвета <{colorName}> в WPF. Строка цвета не валидна");
+            string opacity = wpfColor.Substring(wpfColor.Length - 2, 2);
+            wpfColor = wpfColor.Remove(wpfColor.Length - 2, 2);
+            wpfColor = wpfColor.Insert(1, opacity);
+            return wpfColor + opacity;
+        }
+        public Dictionary<string, string> GetColorProperties()
+        {
+            Dictionary<string, string> result = new Dictionary<string, string>();
             result.Add("Fone", Fone!);
             result.Add("Accent", Accent!);
             result.Add("SubAccent", SubAccent!);
@@ -42,35 +74,7 @@ namespace ConnectorCore.Models.VisualModels
             result.Add("Error", Error!);
             result.Add("Disable", Disable!);
             return result;
-        }
-        public static string ColorFieldName(KeyValuePair<string, IColorProperty> dictionaryRecord)
-        {
-            switch (dictionaryRecord.Key)
-            {
-                case "Fone":
-                    return "Фон";
-                case "Accent":
-                    return "Акцент";
-                case "SubAccent":
-                    return "Субакцент";
-                case "Panel":
-                    return "Панели";
-                case "Border":
-                    return "Границы";
-                case "Path":
-                    return "Иконки";
-                case "Text":
-                    return "Текст";
-                case "Select":
-                    return "Выделение";
-                case "Error":
-                    return "Ошибка";
-                case "Disable":
-                    return "Выключено";
-                default:
-                    return string.Empty;
-            }
-        }
+        }        
         public ColorScheme Clone()
         {
             return new ColorScheme()

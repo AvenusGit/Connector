@@ -266,45 +266,13 @@ namespace ConnectorCenter.Controllers
                 {
                     _logger.LogInformation($"Запрошена страница личных настроек.");
 
-                    List<AppUser> users = await _context.Users
+                    AppUser? currentUser = await _context.Users
                        .Include(user => user.UserSettings)
                        .Include(user => user.VisualScheme)
                            .ThenInclude(vs => vs.ColorScheme)
-                                   .ThenInclude(cs => cs.Fone)
-                       .Include(user => user.VisualScheme)
-                           .ThenInclude(vs => vs.ColorScheme)
-                               .ThenInclude(cs => cs.Accent)
-                       .Include(user => user.VisualScheme)
-                           .ThenInclude(vs => vs.ColorScheme)
-                                   .ThenInclude(cs => cs.SubAccent)                       
-                       .Include(user => user.VisualScheme)
-                           .ThenInclude(vs => vs.ColorScheme)
-                                   .ThenInclude(cs => cs.Panel)
-                       .Include(user => user.VisualScheme)
-                           .ThenInclude(vs => vs.ColorScheme)
-                                   .ThenInclude(cs => cs.Border)
-                       .Include(user => user.VisualScheme)
-                           .ThenInclude(vs => vs.ColorScheme)
-                                   .ThenInclude(cs => cs.Path)
-                        .Include(user => user.VisualScheme)
-                           .ThenInclude(vs => vs.ColorScheme)
-                                   .ThenInclude(cs => cs.Text)
-                        .Include(user => user.VisualScheme)
-                           .ThenInclude(vs => vs.ColorScheme)
-                                   .ThenInclude(cs => cs.Select)
-                        .Include(user => user.VisualScheme)
-                           .ThenInclude(vs => vs.ColorScheme)
-                                   .ThenInclude(cs => cs.Error)
-                        .Include(user => user.VisualScheme)
-                           .ThenInclude(vs => vs.ColorScheme)
-                                   .ThenInclude(cs => cs.Disable)
                         .Include(user => user.VisualScheme)
                             .ThenInclude(vs => vs.FontScheme)
-                       .Where(user => user.Id == AuthorizeService.GetUserId(HttpContext))
-                       .ToListAsync();
-
-                    AppUser? currentUser = users.FirstOrDefault(user => user.Id == AuthorizeService.GetUserId(HttpContext));
-
+                       .FirstOrDefaultAsync(user => user.Id == AuthorizeService.GetUserId(HttpContext));
 
                     if (currentUser is null)
                     {
@@ -331,6 +299,24 @@ namespace ConnectorCenter.Controllers
                             new
                             {
                                 message = "Ошибка при запросе страницы личных настроек. Настройки пользователя не найдены и установлены по умолчанию.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\settings" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 500
+                            }));
+                    }
+                    if (currentUser.VisualScheme is null || currentUser.VisualScheme.ColorScheme is null || currentUser.VisualScheme.FontScheme is null)
+                    {
+                        _logger.LogError($"Ошибка при запросе страницы визуальных настроек. Настройки пользователя не найдены. Будут применены стандартные настройки.");
+                        currentUser.VisualScheme = VisualScheme.GetDefaultVisualScheme();
+                        _context.Update(currentUser);
+                        _logger.LogError($"Стандартные визуальные настройки успешно установлены пользователю {currentUser.Name}.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе страницы визуальных настроек. Настройки пользователя не найдены и установлены по умолчанию.",
                                 buttons = new Dictionary<string, string>()
                                 {
                                     {"На главную",@"\settings" },
@@ -653,16 +639,9 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 400
                             }));
                     }
-                    //_context.Users
-                    //    .Where(user => user.Id == AuthorizeService.GetUserId(HttpContext))
-                    //    .Load();
-                    AppUser? user = await _context.Users
-                        .Where(user => user.Id == AuthorizeService.GetUserId(HttpContext))
-                        .FirstOrDefaultAsync();
-                    user.VisualScheme.ColorScheme = colorScheme;
-                    _context.Update(user);
+                    _context.Update(colorScheme);
                     await _context.SaveChangesAsync();
-                    _logger.LogInformation($"Личные настройки пользователя успешно изменены.");
+                    _logger.LogInformation($"Цветовая схема пользователя успешно сохранена.");
                     return View("Index",
                         new IndexViewModel(
                             AuthorizeService.GetAccessSettings(HttpContext),
@@ -671,11 +650,114 @@ namespace ConnectorCenter.Controllers
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"Ошибка при попытке сохранить личные настройки. {ex.Message}. {ex.StackTrace}");
+                    _logger.LogError($"Ошибка при попытке сохранить цветовую схему. {ex.Message}. {ex.StackTrace}");
                     return RedirectToAction("Index", "Message", new RouteValueDictionary(
                         new
                         {
-                            message = "Ошибка при попытке сохранить личные настройки.",
+                            message = "Ошибка при попытке сохранить цветовую схему.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"Назад",@"\settings\my" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
+        }
+        [HttpPost]
+        public async Task<IActionResult> DefaultMyColorScheme(long Id)
+        {
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
+                try
+                {
+                    ColorScheme? currentColorScheme = _context.ColorSchemes.Find(Id);
+                    if (currentColorScheme is null)
+                    {
+                        _logger.LogWarning($"Ошибка при попытке сбросить цветовую схему. Не найдено в БД. Будет установлено по умолчанию");
+                        currentColorScheme = ColorScheme.GetDefault();
+                    }
+                    else
+                    {
+                        ColorScheme defaultColorScheme = ColorScheme.GetDefault();
+                        currentColorScheme.Fone = defaultColorScheme.Fone;
+                        currentColorScheme.Accent = defaultColorScheme.Accent;
+                        currentColorScheme.SubAccent = defaultColorScheme.SubAccent;
+                        currentColorScheme.Panel = defaultColorScheme.Panel;
+                        currentColorScheme.Border = defaultColorScheme.Border;
+                        currentColorScheme.Path = defaultColorScheme.Path;
+                        currentColorScheme.Text = defaultColorScheme.Text;
+                        currentColorScheme.Select = defaultColorScheme.Select;
+                        currentColorScheme.Error = defaultColorScheme.Error;
+                        currentColorScheme.Disable = defaultColorScheme.Disable;
+                    }                    
+                    _context.Update(currentColorScheme);
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation($"Визуальные настройки пользователя успешно сброшены.");
+                    return View("Index",
+                        new IndexViewModel(
+                            AuthorizeService.GetAccessSettings(HttpContext),
+                            AuthorizeService.GetUserRole(HttpContext)
+                        ));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при попытке сбросить цветовую схему. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при попытке сбросить цветовую схему.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"Назад",@"\settings\my" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
+        }
+        [HttpPost]
+        public async Task<IActionResult> SaveMyFontScheme(FontScheme? fontScheme)
+        {
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
+                try
+                {
+                    if (fontScheme is null || !ModelState.IsValid || fontScheme.Id == 0)
+                    {
+                        _logger.LogError($"Ошибка при попытке сохранить схему шрифтов. Неверные аргументы.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при попытке сохранить схему . Неверные аргументы.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"Назад",@"\settings\my" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 400
+                            }));
+                    }
+                    _context.Update(fontScheme);
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation($"Cхема шрифтов пользователя успешно сохранена.");
+                    return View("Index",
+                        new IndexViewModel(
+                            AuthorizeService.GetAccessSettings(HttpContext),
+                            AuthorizeService.GetUserRole(HttpContext)
+                        ));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при попытке сохранить схему шрифтов. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при попытке сохранить схему шрифтов.",
                             buttons = new Dictionary<string, string>()
                             {
                                 {"Назад",@"\settings\my" },

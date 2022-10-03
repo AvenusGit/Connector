@@ -13,6 +13,8 @@ namespace ConnectorCore.Models.VisualModels
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
         public string Font { get; set; }
+        public long VisualSchemeId { get; set; }
+        public VisualScheme VisualScheme { get; set; }
         public double? FontMultiplierPercent { get; set; }
        
         public IFontScheme Clone()

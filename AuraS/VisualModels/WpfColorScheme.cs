@@ -9,8 +9,22 @@ using ConnectorCore.Models.VisualModels;
 
 namespace AuraS.VisualModels
 {
-    public class WpfColorScheme : ColorScheme
+    public class WpfColorScheme
     {
+        public WpfColorScheme() { }
+        public WpfColorScheme(ColorScheme colorScheme)
+        {
+            Fone = new WpfColorProperty("Fone", colorScheme.Fone);
+            Accent = new WpfColorProperty("Accent", colorScheme.Accent);
+            SubAccent = new WpfColorProperty("SubAccent", colorScheme.SubAccent);
+            Panel = new WpfColorProperty("Panel", colorScheme.Panel);
+            Border = new WpfColorProperty("Border", colorScheme.Border);
+            Path = new WpfColorProperty("Path", colorScheme.Path);
+            Text = new WpfColorProperty("Text", colorScheme.Text);
+            Select = new WpfColorProperty("Select", colorScheme.Select);
+            Error = new WpfColorProperty("Error", colorScheme.Error);
+            Disable = new WpfColorProperty("Disable", colorScheme.Disable);
+        }
         public new WpfColorProperty? Fone { get; set; }
         public new WpfColorProperty? Accent { get; set; }
         public new WpfColorProperty? SubAccent { get; set; }
@@ -24,12 +38,29 @@ namespace AuraS.VisualModels
 
         public void Apply()
         {
-            foreach (KeyValuePair<string, IColorProperty> property in GetColorProperties())
+            foreach (KeyValuePair<string, WpfColorProperty> property in GetColorProperties())
             {
                 if (property.Value is WpfColorProperty)
-                    (property.Value as WpfColorProperty).Apply();
+                    (property.Value).Apply();
             }
         }
+
+        public Dictionary<string, WpfColorProperty> GetColorProperties()
+        {
+            Dictionary<string, WpfColorProperty> result = new Dictionary<string, WpfColorProperty>();
+            result.Add("Fone", Fone!);
+            result.Add("Accent", Accent!);
+            result.Add("SubAccent", SubAccent!);
+            result.Add("Panel", Panel!);
+            result.Add("Border", Border!);
+            result.Add("Path", Path!);
+            result.Add("Text", Text!);
+            result.Add("Select", Select!);
+            result.Add("Error", Error!);
+            result.Add("Disable", Disable!);
+            return result;
+        }
+
         public WpfColorScheme GetCurrent()
         {
             WpfColorScheme colorScheme = new WpfColorScheme();
