@@ -14,10 +14,12 @@ namespace ConnectorCenter.Controllers.Api
     public class TokenApi : ControllerBase
     {
         private readonly DataBaseContext _dataBaseContext;
-        public TokenApi(DataBaseContext context)
+        private readonly ILogger _logger;
+        public TokenApi(DataBaseContext context, ILogger logger)
         {
             _dataBaseContext = context;
-        }
+            _logger = logger;
+    }
 
         [HttpGet]
         private async Task Index()
@@ -44,45 +46,62 @@ namespace ConnectorCenter.Controllers.Api
         [HttpPost]
         public async Task GetToken([FromBody] Сredentials credentials)
         {
-            if (!ConnectorCenterApp.Instance.ApiSettings.ApiEnabled)
+            using (var scope = _logger.BeginScope($"API({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
-                HttpContext.Response.StatusCode = 403;
-                await HttpContext.Response.WriteAsync("API disabled in app settings.");
-                return;
-            }
-            if (!ConnectorCenterApp.Instance.ApiSettings.AuthorizeApiEnabled)
-            {
-                HttpContext.Response.StatusCode = 403;
-                await HttpContext.Response.WriteAsync("API JWT token authorization disabled in app settings.");
-                return;
-            }
-            if (!ModelState.IsValid)
-            {                
-                await HttpContext.Response.WriteAsync("Your model is not valid. Use {string Login, string Password}");
-                return;
-            }
-            using (DataBaseContext db = _dataBaseContext)
-            {
-                AppUser? user;
-                if (AuthorizeService.IsAuthorized(_dataBaseContext, credentials, out user))
+                try
                 {
-                    JwtSecurityToken jwt = JwtAuthorizeService.GetJwtToken(user!);
-                    Response.StatusCode = 200;
-                    JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
-                    var json = new
+                    if (!ConnectorCenterApp.Instance.ApiSettings.ApiEnabled)
                     {
-                        token = handler.WriteToken(jwt),
-                        user = user!.Name
-                    };
-                    await HttpContext.Response.WriteAsJsonAsync(json);
-                    return;
+                        HttpContext.Response.StatusCode = 403;
+                        _logger.LogWarning($"Попытка авторизации при выключенном API. Отказано. Логин:{credentials.Login}");
+                        await HttpContext.Response.WriteAsync("API disabled in app settings.");
+                        return;
+                    }
+                    if (!ConnectorCenterApp.Instance.ApiSettings.AuthorizeApiEnabled)
+                    {
+                        HttpContext.Response.StatusCode = 403;
+                        _logger.LogWarning($"Попытка авторизации при выключенном API авторизации. Отказано. Логин:{credentials.Login}");
+                        await HttpContext.Response.WriteAsync("API JWT token authorization disabled in app settings.");
+                        return;
+                    }
+                    if (!ModelState.IsValid)
+                    {
+                        _logger.LogWarning($"Попытка авторизации с некорректными аргументами. Логин:{credentials.Login}");
+                        await HttpContext.Response.WriteAsync("Your model is not valid. Use {string Login, string Password}");
+                        return;
+                    }
+                    using (DataBaseContext db = _dataBaseContext)
+                    {
+                        AppUser? user;
+                        if (AuthorizeService.IsAuthorized(_dataBaseContext, credentials, out user))
+                        {
+                            JwtSecurityToken jwt = JwtAuthorizeService.GetJwtToken(user!);
+                            Response.StatusCode = 200;
+                            JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+                            var json = new
+                            {
+                                token = handler.WriteToken(jwt),
+                                user = user!.Name
+                            };
+                            _logger.LogWarning($"Успешная API авторизация. Логин:{credentials.Login}.");
+                            await HttpContext.Response.WriteAsJsonAsync(json);
+                            return;
+                        }
+                        else
+                        {
+                            Response.StatusCode = 401;
+                            _logger.LogWarning($"Отказ в API авторизации. Неверные учетные данные. Логин:{credentials.Login}.");
+                            await HttpContext.Response.WriteAsync("Wrong login or password");
+                            return;
+                        }
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    Response.StatusCode = 401;
-                    await HttpContext.Response.WriteAsync("Wrong login or password");
-                    return;
-                }                
+                    Response.StatusCode = 500;
+                    _logger.LogWarning($"Ошибка при попытке API авторизации. {ex.Message} {ex.StackTrace}. Логин:{credentials.Login}.");
+                    await HttpContext.Response.WriteAsync("500: Server internal error");
+                }
             }
         }
     }

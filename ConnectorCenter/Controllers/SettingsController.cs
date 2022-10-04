@@ -10,6 +10,7 @@ using ConnectorCenter.Services.Configurations;
 using ConnectorCore.Models;
 using ConnectorCenter.Services.Logs;
 using ConnectorCore.Models.VisualModels;
+using System.Text;
 
 namespace ConnectorCenter.Controllers
 {

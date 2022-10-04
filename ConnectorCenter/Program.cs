@@ -8,6 +8,7 @@ using Microsoft.Net.Http.Headers;
 using ConnectorCenter;
 using ConnectorCenter.Services.Logs;
 using ConnectorCenter.Models.Settings;
+using ConnectorCenter.Services.Authorize;
 
 
 // Первоначальное задание на подгрузку конфигурации логгера. Это очень странная штука, которая то работает, то нет. Поэтому она дублирована ниже.
@@ -56,15 +57,15 @@ builder.Services.AddAuthentication(options =>
                 // указывает, будет ли валидироваться издатель при валидации токена
                 ValidateIssuer = true,
                 // строка, представляющая издателя
-                ValidIssuer = AuthOptions.ISSUER,
+                ValidIssuer = JwtAuthorizeService.AuthOptions.ISSUER,
                 // будет ли валидироваться потребитель токена
                 ValidateAudience = true,
                 // установка потребителя токена
-                ValidAudience = AuthOptions.AUDIENCE,
+                ValidAudience = JwtAuthorizeService.AuthOptions.AUDIENCE,
                 // будет ли валидироваться время существования
                 ValidateLifetime = true,
                 // установка ключа безопасности
-                IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
+                IssuerSigningKey = JwtAuthorizeService.AuthOptions.GetSymmetricSecurityKey(),
                 // валидация ключа безопасности
                 ValidateIssuerSigningKey = true,
             };
@@ -167,11 +168,4 @@ using (var scope = app.Logger.BeginScope(".NET CORE 6"))
     app.Run();
 }
 
-public static class AuthOptions
-{
-    public const string ISSUER = "ConnectorCenter"; // издатель токена
-    public const string AUDIENCE = "ConnectorClient"; // потребитель токена
-    const string KEY = "ExtremeUltraSuperLoooongSecretKey";   // ключ для шифрации
-    public static SymmetricSecurityKey GetSymmetricSecurityKey() =>
-        new SymmetricSecurityKey(Encoding.UTF8.GetBytes(KEY));
-}
+

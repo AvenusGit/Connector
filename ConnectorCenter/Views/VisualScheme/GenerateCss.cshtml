@@ -129,6 +129,7 @@ body {
 }
 .isDisable{
     backGround: @Model.Scheme.ColorScheme.Disable;
+    border: 0px 0px 0px 0px solid @Model.Scheme.ColorScheme.Border;
 }
 .separator{
     background: @Model.Scheme.ColorScheme.Border;
@@ -142,7 +143,6 @@ select {
     outline: 0;
     border: 0 !important;
     background: @Model.Scheme.ColorScheme.Panel;
-    background-image: none;
     flex: 1;
     padding: 0 .5em;
     color: @Model.Scheme.ColorScheme.Text;
@@ -153,14 +153,14 @@ select {
 
     select::-ms-expand {
         display: none;
-    }
+}
 
 .select {
     position: relative;
     display: flex;
     line-height: 4vh;
     overflow: hidden;
-    background: @Model.Scheme.ColorScheme.Border;
+    background: @Model.Scheme.ColorScheme.Panel;
     padding: 1px;
     font-size: calc(2vh * @Model.Scheme.FontScheme.FontMultiplierPercent / 100);
     text-align:center;
@@ -184,6 +184,11 @@ select {
     .select:hover::after {
         color: @Model.Scheme.ColorScheme.SubAccent;
     }
+
+    select option{
+        color: @Model.Scheme.ColorScheme.Text;
+        background-color: @Model.Scheme.ColorScheme.Fone;
+}
 
     ::-webkit-scrollbar {
     width: 5px;
@@ -247,5 +252,11 @@ textarea {
     color: @Model.Scheme.ColorScheme.Text;
     font-size: calc(1.7vh * @Model.Scheme.FontScheme.FontMultiplierPercent / 100);
     font-family: @Model.Scheme.FontScheme.Font;
+}
+.tableBorderHead {
+  border-bottom: 2px solid @Model.Scheme.ColorScheme.Border;
+}
+.tableBorder {
+  border-bottom: 1px solid @Model.Scheme.ColorScheme.Border;
 }
 
