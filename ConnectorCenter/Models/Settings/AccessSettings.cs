@@ -1,5 +1,6 @@
 ﻿using ConnectorCore.Models;
 using System.Xml.Serialization;
+using Newtonsoft.Json;
 
 namespace ConnectorCenter.Models.Settings
 {
@@ -14,7 +15,8 @@ namespace ConnectorCenter.Models.Settings
         {
             _targetRole = targetRole;
         }
-        [XmlIgnoreAttribute]
+        [XmlIgnore]
+        [JsonIgnore]
         public string ConfigurationPath 
         {
             get

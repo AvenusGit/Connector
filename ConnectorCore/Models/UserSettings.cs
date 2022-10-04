@@ -6,18 +6,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using Newtonsoft.Json;
 
 namespace ConnectorCore.Models
 {
     public class UserSettings
     {
-        [XmlIgnoreAttribute]
+        [XmlIgnore]
+        [JsonIgnore]
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
-        [XmlIgnoreAttribute]
+        [XmlIgnore]
+        [ JsonIgnore]
         public long AppUserId { get; set; }
-        [XmlIgnoreAttribute]
+        [XmlIgnore]
+        [JsonIgnore]
         public AppUser AppUser { get; set; }
         // some user settings
         public string HelloText { get; set; } = "Hello!";

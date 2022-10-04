@@ -5,6 +5,8 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
+using Newtonsoft.Json;
 
 namespace ConnectorCore.Models
 {
@@ -17,6 +19,8 @@ namespace ConnectorCore.Models
             Login = login;
             Password = password;
         }
+        [XmlIgnore]
+        [JsonIgnore]
         public long Id { get; set; }
         public string? Login { get; set; }
         public string? Password { get; set; }

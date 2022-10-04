@@ -6,11 +6,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ConnectorCore.Models.Connections;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 
 namespace ConnectorCore.Models
 {
     public class Server
     {
+        [XmlIgnore]
+        [JsonIgnore]
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }

@@ -15,7 +15,7 @@ namespace ConnectorCenter.Controllers.Api
     {
         private readonly DataBaseContext _dataBaseContext;
         private readonly ILogger _logger;
-        public TokenApi(DataBaseContext context, ILogger logger)
+        public TokenApi(DataBaseContext context, ILogger<TokenApi> logger)
         {
             _dataBaseContext = context;
             _logger = logger;
@@ -46,7 +46,7 @@ namespace ConnectorCenter.Controllers.Api
         [HttpPost]
         public async Task GetToken([FromBody] Сredentials credentials)
         {
-            using (var scope = _logger.BeginScope($"API({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            using (var scope = _logger.BeginScope($"API({JwtAuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
                 try
                 {

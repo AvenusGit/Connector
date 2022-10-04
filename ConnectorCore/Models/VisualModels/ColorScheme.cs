@@ -7,15 +7,23 @@ using System.Reflection;
 using ConnectorCore.Models.VisualModels.Interfaces;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
+using System.Xml.Serialization;
 
 namespace ConnectorCore.Models.VisualModels
 {
     public class ColorScheme : IColorScheme
     {
+        [XmlIgnore]
+        [JsonIgnore]
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
+        [XmlIgnore]
+        [JsonIgnore]
         public long VisualSchemeId { get; set; }
+        [XmlIgnore]
+        [JsonIgnore]
         public VisualScheme VisualScheme { get; set; }
         public string Fone { get; set; }
         public string Accent { get; set; }
