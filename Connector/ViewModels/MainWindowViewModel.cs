@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows;
 using Connector.Models.Commands;
+using Connector.View;
 
 namespace Connector.ViewModels
 {
@@ -24,6 +25,7 @@ namespace Connector.ViewModels
 
         private Command _closeCommand;
         private Command _minimizeCommand;
+        private Command _settingsCommand;
         private UserControl userControl;
         #endregion
         #region Commands
@@ -46,6 +48,17 @@ namespace Connector.ViewModels
                   (_minimizeCommand = new Command(obj =>
                   {
                       MinimizeApplication();
+                  }));
+            }
+        }
+        public Command ToSettingsCommand
+        {
+            get
+            {
+                return _minimizeCommand ??
+                  (_minimizeCommand = new Command(obj =>
+                  {
+                      GoToSettings();
                   }));
             }
         }
@@ -83,6 +96,10 @@ namespace Connector.ViewModels
         private void MinimizeApplication()
         {
             MainWindow.WindowState = WindowState.Minimized;
+        }
+        private async void GoToSettings()
+        {
+            await ChangeUIControl(new AppSettingsControl(CurrentUserControl), true);
         }
         #endregion
         #region Properties

@@ -9,6 +9,7 @@ using Connector.Models.Commands;
 using ConnectorCore.Models.Connections;
 using Connector.Models.Authorization;
 using Connector.View;
+using Connector.Models.REST;
 
 namespace Connector.ViewModels
 {
@@ -30,12 +31,12 @@ namespace Connector.ViewModels
                 return null;
             }
         }
-        public ObservableCollection<Connection> RdpConnections
+        public ObservableCollection<Connection> Connections
         {
             get
             {
                 if(CurrentUser is not null)
-                    return new ObservableCollection<Connection>(CurrentUser.Connections);
+                    return new ObservableCollection<Connection>(CurrentUser.AllConnections);
                 return new ObservableCollection<Connection>();
             }
         }
@@ -48,11 +49,13 @@ namespace Connector.ViewModels
         //        return _updateConnectionsList ??
         //          (_updateConnectionsList = new Command(async obj =>
         //          {
+        //             
+        //              Conn Connections = await restService.GetConnectionListAsync();
         //              await ConnectorApp.Instance.CurrentUser.UpdateConnections(
         //                  new Action(() =>
         //                  {
         //                      ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Обновление подключений...");
-        //                  }), 
+        //                  }),
         //                  new Action(() => ConnectorApp.Instance.WindowViewModel.HideBusyScreen()));
         //          }));
         //    }

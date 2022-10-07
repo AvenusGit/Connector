@@ -1,0 +1,46 @@
+﻿<UserControl x:Class="Connector.View.AppSettingsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Connector.View"
+             mc:Ignorable="d">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <!--logo and name-->
+        <TextBlock Style="{DynamicResource AuraDefaultText}"
+                   FontSize="{DynamicResource FontSize18}"
+                   HorizontalAlignment="Center"
+                   Text="Настройки приложения"></TextBlock>
+        <Grid Grid.Row="1" Margin="20" HorizontalAlignment="Center">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Style="{DynamicResource AuraDefaultText}"
+                       Grid.Row="0"
+                   HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                   Text="Адрес сервера"></TextBlock>
+            <TextBox Style="{DynamicResource AuraTextBoxDefaultStyle}" 
+                     Text="{Binding ConnectorCenterUrl}"
+                     Grid.Row="0"
+                     Grid.Column="1"></TextBox>
+        </Grid>
+        <Button Style="{DynamicResource AuraDefaultButtonStyle}" Grid.Row="2"
+                HorizontalAlignment="Center"
+                Margin="20"
+                Click="OnSave">
+            <TextBlock Style="{DynamicResource AuraDefaultText}" Text="Сохранить" IsHitTestVisible="False"
+                       ></TextBlock>
+        </Button>
+    </Grid>
+</UserControl>

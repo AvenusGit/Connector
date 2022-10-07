@@ -34,7 +34,7 @@ namespace Connector.Models.REST
         private async Task<HttpResponseMessage> RequestAsync(string request, HttpMethod method, HttpContent? content = null)
         {
             HttpClient = new HttpClient();
-            HttpRequestMessage message = new HttpRequestMessage(method, ConnectorApp.ConnectorCenterUrl + request);
+            HttpRequestMessage message = new HttpRequestMessage(method, ConnectorApp.Instance.ConnectorCenterUrl + request);
             if (content is not null)
                 message.Content = content;
                 

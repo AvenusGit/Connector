@@ -19,6 +19,21 @@ namespace ConnectorCore.Models
         public Сredentials Credentials { get; set; }
         public List<AppUserGroup> Groups { get; set; } = new List<AppUserGroup>();
         public List<Connection> Connections { get; set; } = new List<Connection>();
+        [XmlIgnore]
+        [JsonIgnore]
+        [NotMapped]
+        public List<Connection> AllConnections
+        {
+            get
+            {
+                List<Connection> groupConnections = new List<Connection>();
+                foreach (AppUserGroup group in Groups)
+                {
+                    groupConnections.AddRange(group.Connections);
+                }
+                return groupConnections.Concat(Connections).Distinct().ToList();
+            }
+        }
         public UserSettings? UserSettings { get; set; } = new UserSettings();
         public AppRoles Role { get; set; }
         public VisualScheme VisualScheme { get; set; } = VisualScheme.GetDefaultVisualScheme();

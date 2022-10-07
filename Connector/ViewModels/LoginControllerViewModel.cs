@@ -4,7 +4,7 @@ using Connector.Models.REST;
 using Connector.Models.Authorization;
 using Connector.View;
 using ConnectorCore.Models;
-using Aura;
+using Aura.VisualModels;
 using System.Windows;
 using System.Collections.Generic;
 using ConnectorCore.Models.Connections;
@@ -77,6 +77,8 @@ namespace Connector.ViewModels
                 newSession.User = user;
 
                 ConnectorApp.Instance.Session = newSession;
+                ConnectorApp.Instance.VisualScheme = new WpfVisualScheme(ConnectorApp.Instance.Session.User.VisualScheme);
+                ConnectorApp.Instance.VisualScheme.Apply();
                 ServerListControlViewModel serversVm = new ServerListControlViewModel();
                 ConnectorApp.Instance.WindowViewModel.CurrentUserControl = new ServerListControl(serversVm);
                 ConnectorApp.Instance.WindowViewModel.HideBusyScreen();

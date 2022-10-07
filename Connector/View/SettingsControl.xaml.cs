@@ -19,8 +19,8 @@ namespace Connector.View
         {
             InitializeComponent();
             this.DataContext = new SettingsControlViewModel();
-            //iAuraSettingsControl.DataContext = 
-            //    new AuraSettingControlViewModel(ConnectorApp.Instance.CurrentUser.VisualScheme);
+            iAuraSettingsControl.DataContext = 
+                new AuraSettingControlViewModel(ConnectorApp.Instance.VisualScheme);
         }
     }
 }

@@ -35,7 +35,7 @@ namespace Aura.VisualModels
             }
             set
             {
-                Color = value;
+                _color = value;
                 Apply();
             }
         }
@@ -77,9 +77,17 @@ namespace Aura.VisualModels
             else
                 Application.Current.Resources.Add(BrushKeyName, BrushValue);
         }
+        private static string CssToWpfColor(string wpfColor, string? colorName = null)
+        {
+            if (!IColorScheme<string>.IsValueCorrect(wpfColor))
+                throw new Exception($"Ошибка при попытке перевода HEX цвета {colorName ?? "<" + colorName +">"} в WPF. Строка цвета не валидна");
+            string opacity = wpfColor.Substring(wpfColor.Length - 2, 2);
+            wpfColor = wpfColor.Remove(wpfColor.Length - 2, 2);
+            return wpfColor.Insert(1, opacity);
+        }
         public static Color GetColorFromString(string color)
         {
-            return (Color)ColorConverter.ConvertFromString(color);
+            return (Color)ColorConverter.ConvertFromString(CssToWpfColor(color));
         }
     }
 }

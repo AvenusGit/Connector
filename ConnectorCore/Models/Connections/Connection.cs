@@ -24,8 +24,7 @@ namespace ConnectorCore.Models.Connections
         {
             get
             {
-                return $"{ConnectionType.ToString()} (TODO_HOST:TODO_PORT)/{ServerUser?.Name}";
-                //return $"{ConnectionType.ToString()} ({Server.Host}:{Port})/{ServerUser?.Name}";
+                return $"{ConnectionType.ToString()} ({Server.Name})/{ServerUser?.Name}";
             }
         }
         public bool IsAvailable { get; set; }

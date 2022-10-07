@@ -17,6 +17,11 @@ namespace Aura.VisualModels
             ColorScheme = new WpfColorScheme(scheme.ColorScheme);
             FontScheme = new WpfFontScheme(scheme.FontScheme);
         }
+        public WpfVisualScheme(VisualScheme scheme)
+        {
+            ColorScheme = new WpfColorScheme(scheme.ColorScheme);
+            FontScheme = new WpfFontScheme(scheme.FontScheme);
+        }
         public new WpfColorScheme ColorScheme { get; set; }
         public new WpfFontScheme FontScheme { get; set; }
 

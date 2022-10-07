@@ -16,4 +16,17 @@
     <Folder Include="Models\Visual\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="View\AppSettingsControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="View\AppSettingsControl.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+
 </Project>
