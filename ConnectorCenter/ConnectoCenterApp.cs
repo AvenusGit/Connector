@@ -132,7 +132,7 @@ namespace ConnectorCenter
 
                     else
                     {
-                        SettingsConfigurationService.SaveConfiguration(OtherSettings.GetDefault());
+                        SettingsConfigurationService.SaveConfiguration((OtherSettings)OtherSettings.GetDefault());
                         Logger.LogError("Не удалось загрузить конфигурацию прочих настроек. Конфигурация установлена и перезаписана по умолчанию.");
                     }
                 }

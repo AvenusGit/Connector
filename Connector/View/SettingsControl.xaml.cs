@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using AuraS.VisualModels;
 using AuraS.Controls.ControlsViewModels;
 using Connector.ViewModels;
 
@@ -20,8 +19,8 @@ namespace Connector.View
         {
             InitializeComponent();
             this.DataContext = new SettingsControlViewModel();
-            iAuraSettingsControl.DataContext = 
-                new AuraSettingControlViewModel(ConnectorApp.Instance.CurrentUser.VisualScheme);
+            //iAuraSettingsControl.DataContext = 
+            //    new AuraSettingControlViewModel(ConnectorApp.Instance.CurrentUser.VisualScheme);
         }
     }
 }

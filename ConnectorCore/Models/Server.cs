@@ -20,6 +20,8 @@ namespace ConnectorCore.Models
         public long Id { get; set; }
         public string? Name { get; set; }
         public string Host { get; set; }
+        public int RdpPort { get; set; } = 3389;
+        public int SshPort { get; set; } = 22;
         public bool IsAvailable { get; set; }
         public List<Connection> Connections { get; set; } = new List<Connection>();
     }

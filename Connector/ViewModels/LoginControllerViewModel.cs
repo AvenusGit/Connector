@@ -4,6 +4,11 @@ using Connector.Models.REST;
 using Connector.Models.Authorization;
 using Connector.View;
 using ConnectorCore.Models;
+using Aura;
+using System.Windows;
+using System.Collections.Generic;
+using ConnectorCore.Models.Connections;
+using System.Linq;
 
 namespace Connector.ViewModels
 {
@@ -48,48 +53,83 @@ namespace Connector.ViewModels
         #region Methods
         private async void Authorize()
         {
-            ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Авторизация...");
-            RestService restService = new RestService();
-            AppUser? user =  await restService.AuthorizeAsync(Сredentials);
-            if (user is not null)
+            try
             {
-                ConnectorApp.Instance.CurrentUser = new ConnectorUser(
-                    user.Name,
-                    user.Credentials);
-                await ConnectorApp.Instance.CurrentUser.UpdateConnections(
-                    new Action(() =>
-                    {
-                        ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Получение доступов...");
-                    }),
-                    new Action(() =>
-                    {
-                        ServerListControlViewModel serversVm = new ServerListControlViewModel();
-                        ConnectorApp.Instance.WindowViewModel.CurrentUserControl = new ServerListControl(serversVm);
-                    }));
-                await ConnectorApp.Instance.CurrentUser.UpdateUserSettings(
-                    new Action(() =>
-                    {
-                        ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Получение настроек...");
-                    }), null!
-                    );
-                await ConnectorApp.Instance.CurrentUser.UpdateVisualSettings(
-                    new Action(() =>
-                    {
-                        ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Получение темы...");
-                    }), 
-                    new Action(() =>
-                    {
-                        ConnectorApp.Instance.WindowViewModel.HideBusyScreen();
-                    }));
-            }
-            else
-            {
-                //TODO Message
-                //AuraMessageWindow message = new AuraMessageWindow("Авторизация","Неверный логин/пароль",
-                //    "Ok", AuraMessageWindow.MessageTypes.WarningType);
-                //message.ShowDialog();
+                ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Авторизация...");
+                RestService restService = new RestService();
+                Session newSession = new Session();
+                TokenInfo? tokenInfo = await restService.GetTokenInfoAsync(Сredentials);
+                if (tokenInfo is null)
+                    throw new Exception("Ошибка при авторизации. Не удалось десериализовать данные авторизации.");
+                newSession.Token = tokenInfo;
+                restService.Token = tokenInfo.Token;
+
+                ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Получение настроек...");
+                UnitedSettings? unitedSettings =  await restService.GetUnitedSettingsAsync();
+                if(unitedSettings is null)
+                    throw new Exception("Ошибка при авторизации. Не удалось десериализовать данные общих настроек.");
+                newSession.UnitedSettings = unitedSettings;
+
+                ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Получение пользователя...");
+                AppUser? user = await restService.GetUserFullAsync();
+                if (user is null)
+                    throw new Exception("Ошибка при авторизации. Не удалось десериализовать данные пользователя.");
+                newSession.User = user;
+
+                ConnectorApp.Instance.Session = newSession;
+                ServerListControlViewModel serversVm = new ServerListControlViewModel();
+                ConnectorApp.Instance.WindowViewModel.CurrentUserControl = new ServerListControl(serversVm);
                 ConnectorApp.Instance.WindowViewModel.HideBusyScreen();
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                //AuraMessageWindow message = new AuraMessageWindow("Авторизация", "Неверный логин/пароль",
+                //        "Ok", AuraMessageWindow.MessageTypes.WarningType);
+                //    message.ShowDialog();
+
+                ConnectorApp.Instance.WindowViewModel.HideBusyScreen();
+                //TODO AuraMessageWindow
+            }
+
+
+
+            //if (ConnectorApp.Instance.Session is not null)
+            //{
+            //    await ConnectorApp.Instance.Session.UpdateConnections(
+            //        new Action(() =>
+            //        {
+            //            ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Получение доступов...");
+            //        }),
+            //        new Action(() =>
+            //        {
+            //            ServerListControlViewModel serversVm = new ServerListControlViewModel();
+            //            ConnectorApp.Instance.WindowViewModel.CurrentUserControl = new ServerListControl(serversVm);
+            //        }));
+            //    await ConnectorApp.Instance.CurrentUser.UpdateUserSettings(
+            //        new Action(() =>
+            //        {
+            //            ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Получение настроек...");
+            //        }), null!
+            //        );
+            //    await ConnectorApp.Instance.CurrentUser.UpdateVisualSettings(
+            //        new Action(() =>
+            //        {
+            //            ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Получение темы...");
+            //        }), 
+            //        new Action(() =>
+            //        {
+            //            ConnectorApp.Instance.WindowViewModel.HideBusyScreen();
+            //        }));
+            //}
+            //else
+            //{
+            //    //TODO Message
+            //    //AuraMessageWindow message = new AuraMessageWindow("Авторизация","Неверный логин/пароль",
+            //    //    "Ok", AuraMessageWindow.MessageTypes.WarningType);
+            //    //message.ShowDialog();
+            //    ConnectorApp.Instance.WindowViewModel.HideBusyScreen();
+            //}
 
         }
         #endregion

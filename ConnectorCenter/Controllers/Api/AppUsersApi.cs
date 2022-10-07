@@ -48,9 +48,14 @@ namespace ConnectorCenter.Controllers.Api
                             .ThenInclude(gr => gr.Connections)
                                 .ThenInclude(conn => conn.ServerUser)
                                     .ThenInclude(suser => suser.Credentials)
+                        .Include(user => user.Groups)
+                            .ThenInclude(gr => gr.Connections)
+                                .ThenInclude(conn => conn.Server)
                         .Include(user => user.Connections)
                             .ThenInclude(conn => conn.ServerUser)
                                     .ThenInclude(suser => suser.Credentials)
+                        .Include(user => user.Connections)
+                            .ThenInclude(conn => conn.Server)
                         .Include(user => user.UserSettings)
                         .Include(user => user.VisualScheme)
                             .ThenInclude(vs => vs.ColorScheme)
@@ -64,7 +69,8 @@ namespace ConnectorCenter.Controllers.Api
                         HttpContext.Response.ContentType = "application/json";
                         await HttpContext.Response.WriteAsync(JsonConvert.SerializeObject(user, new JsonSerializerSettings
                         {
-                            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                            PreserveReferencesHandling = PreserveReferencesHandling.Objects//,
+                            //ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                         }));
                         _logger.LogWarning($"Выполнен API запрос данных пользователя. Пользователь {user.Name}.");
                     }

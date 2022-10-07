@@ -224,6 +224,8 @@ namespace ConnectorCenter.Controllers
                         .Include(usr => usr.Connections)
                             .ThenInclude(conn => conn.ServerUser)
                                 .ThenInclude(usr => usr!.Credentials)
+                        .Include(usr => usr.Connections)
+                            .ThenInclude(conn => conn.Server)
                         .FirstOrDefaultAsync(usr => usr.Id == groupId);
                     if (userGroup != null)
                     {
@@ -294,7 +296,10 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 400
                             }));
                     }
-                    AppUserGroup? group = await _context.UserGroups.FindAsync(groupId);
+                    AppUserGroup? group = await _context.UserGroups
+                        .Include(userGroup => userGroup.Connections)
+                            .ThenInclude(conn => conn.Server)
+                        .FirstOrDefaultAsync(group => group.Id == groupId);
                     List<Server> servers = _context.Servers
                         .Include(srv => srv.Connections)
                             .ThenInclude(conn => conn.ServerUser)
@@ -792,6 +797,7 @@ namespace ConnectorCenter.Controllers
 
                     AppUserGroup? group = await _context.UserGroups
                         .Include(usr => usr.Connections)
+                            .ThenInclude(conn => conn.Server)
                         .Where(usr => usr.Id == groupId)
                         .FirstOrDefaultAsync();
 

@@ -7,24 +7,24 @@ using System.Threading.Tasks;
 
 namespace ConnectorCore.Models.VisualModels.Interfaces
 {
-    public interface IColorScheme
+    public interface IColorScheme<colorType>
     {
-        public string Fone { get; set; }
-        public string Accent { get; set; }
-        public string SubAccent { get; set; }
-        public string Panel { get; set; }
-        public string Border { get; set; }
-        public string Path { get; set; }
-        public string Text { get; set; }
-        public string Select { get; set; }
-        public string Error { get; set; }
-        public string Disable { get; set; }
+        public colorType Fone { get; set; }
+        public colorType Accent { get; set; }
+        public colorType SubAccent { get; set; }
+        public colorType Panel { get; set; }
+        public colorType Border { get; set; }
+        public colorType Path { get; set; }
+        public colorType Text { get; set; }
+        public colorType Select { get; set; }
+        public colorType Error { get; set; }
+        public colorType Disable { get; set; }
 
         public static bool IsValueCorrect(string color)
         {
             return !String.IsNullOrWhiteSpace(color) || Regex.IsMatch(color, "#[0-9a-fA-F]{8}");
         }
-        public Dictionary<string, string> GetColorProperties();
+        public Dictionary<string, colorType> GetColorProperties();
         public static string ColorFieldName(string colorName)
         {
             switch (colorName)

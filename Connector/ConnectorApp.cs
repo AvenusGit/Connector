@@ -6,13 +6,15 @@ using System.Windows.Controls;
 using Connector.Models.Authorization;
 using ConnectorCore.Models;
 using Connector.ViewModels;
+using Connector.Models;
 
 namespace Connector
 {
     public class ConnectorApp : Notifier
     {
         public const string AppName = "Connector";
-        public const string AppVersion = "A0";
+        public static readonly ApplicationVersion AppVersion = new ApplicationVersion("A", 0, string.Empty);
+        public const string ConnectorCenterUrl = "https://localhost:51531"; 
 
         #region Singletone
         private static ConnectorApp _connectorApp;
@@ -31,40 +33,29 @@ namespace Connector
         }
         #endregion
         #region Fields
-        private ConnectorUser _currentUser;
-        private UserSettings _connectorSettings;
+        private Session? _session;
         #endregion
         #region Properties
         public MainWindowViewModel WindowViewModel { get; set; }
-        public ConnectorUser CurrentUser
+        public Session? Session
         {
             get
             {
-                return _currentUser;
+                if(_session is null)
+                    _session = new Session();
+                return _session;
             }
             set
             {
-                _currentUser = value;
-                OnPropertyChanged("CurrentUser");
-            }
-        }
-        public UserSettings AppSettings
-        {
-            get
-            {
-                return _connectorSettings;
-            }
-            set
-            {
-                _connectorSettings = value;
-                OnPropertyChanged("ConnectorSettings");
+                _session = value;
+                OnPropertyChanged("Session");
             }
         }
         #endregion
         #region Methods
         private void Initialize()
         {
-            AppSettings = new UserSettings();
+            Session = null;
         }
         #endregion
 

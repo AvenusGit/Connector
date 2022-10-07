@@ -12,7 +12,7 @@ using System.Xml.Serialization;
 
 namespace ConnectorCore.Models.VisualModels
 {
-    public class ColorScheme : IColorScheme
+    public class ColorScheme : IColorScheme<string>
     {
         [XmlIgnore]
         [JsonIgnore]
@@ -53,7 +53,7 @@ namespace ConnectorCore.Models.VisualModels
         }
         private string WpfToCssColor(string colorName, string wpfColor)
         {
-            if (!IColorScheme.IsValueCorrect(wpfColor))
+            if (!IColorScheme<string>.IsValueCorrect(wpfColor))
                 throw new Exception($"Ошибка при попытке перевода WPF цвета <{colorName}> в HEX. Строка цвета не валидна");
             string opacity = wpfColor.Substring(1, 2);
             wpfColor = wpfColor.Remove(1, 2);
@@ -61,7 +61,7 @@ namespace ConnectorCore.Models.VisualModels
         }
         private string CssToWpfColor(string colorName, string wpfColor)
         {
-            if (!IColorScheme.IsValueCorrect(wpfColor))
+            if (!IColorScheme<string>.IsValueCorrect(wpfColor))
                 throw new Exception($"Ошибка при попытке перевода HEX цвета <{colorName}> в WPF. Строка цвета не валидна");
             string opacity = wpfColor.Substring(wpfColor.Length - 2, 2);
             wpfColor = wpfColor.Remove(wpfColor.Length - 2, 2);

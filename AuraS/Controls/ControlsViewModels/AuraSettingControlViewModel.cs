@@ -4,7 +4,7 @@ using System.Linq;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Media;
-using AuraS.VisualModels;
+using Aura.VisualModels;
 using ConnectorCore.Models.VisualModels.Interfaces;
 
 namespace AuraS.Controls.ControlsViewModels

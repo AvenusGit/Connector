@@ -229,9 +229,14 @@ namespace ConnectorCenter.Controllers
                             .ThenInclude(gr => gr.Connections)
                                 .ThenInclude(conn => conn.ServerUser)
                                     .ThenInclude(usr => usr!.Credentials)
+                        .Include(usr => usr.Groups)
+                            .ThenInclude(gr => gr.Connections)
+                                .ThenInclude(conn => conn.Server)
                         .Include(usr => usr.Connections)
                             .ThenInclude(conn => conn.ServerUser)
                                 .ThenInclude(usr => usr!.Credentials)
+                        .Include(usr => usr.Connections)
+                            .ThenInclude(conn => conn.Server)
                         .FirstOrDefaultAsync(usr => usr.Id == userId);
                     if (user != null)
                         return View(new ShowConnectionsModel(user,accessSettings));
@@ -307,6 +312,11 @@ namespace ConnectorCenter.Controllers
                             .ThenInclude(gr => gr.Connections)
                                 .ThenInclude(conn => conn.ServerUser)
                                     .ThenInclude(usr => usr!.Credentials)
+                        .Include(usr => usr.Groups)
+                            .ThenInclude(gr => gr.Connections)
+                                .ThenInclude(conn => conn.Server)
+                        .Include(usr => usr.Connections)
+                                .ThenInclude(conn => conn.Server)
                         .FirstOrDefaultAsync(usr => usr.Id == userId);
                     List<Server> servers = _context.Servers
                         .Include(srv => srv.Connections)
@@ -806,9 +816,19 @@ namespace ConnectorCenter.Controllers
                     }
 
                     AppUser? user = await _context.Users
+                        .Include(usr => usr.Groups)
+                            .ThenInclude(gr => gr.Connections)
+                                .ThenInclude(conn => conn.ServerUser)
+                                    .ThenInclude(usr => usr!.Credentials)
+                        .Include(usr => usr.Groups)
+                            .ThenInclude(gr => gr.Connections)
+                                .ThenInclude(conn => conn.Server)
                         .Include(usr => usr.Connections)
-                        .Where(usr => usr.Id == userId)
-                        .FirstOrDefaultAsync();
+                            .ThenInclude(conn => conn.ServerUser)
+                                .ThenInclude(usr => usr!.Credentials)
+                        .Include(usr => usr.Connections)
+                            .ThenInclude(conn => conn.Server)
+                        .FirstOrDefaultAsync(usr => usr.Id == userId);
 
                     if (user is null)
                     {

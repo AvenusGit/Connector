@@ -1,9 +1,12 @@
-﻿using System.Xml.Serialization;
+﻿using ConnectorCore.Models;
+using Newtonsoft.Json;
+using System.Xml.Serialization;
 
 namespace ConnectorCenter.Models.Settings
 {
-    public class OtherSettings : ISettingsConfiguration
+    public class OtherSettings : UnitedSettings, ISettingsConfiguration
     {
+        [JsonIgnore]
         [XmlIgnoreAttribute]
         public string ConfigurationPath
         {
@@ -12,9 +15,7 @@ namespace ConnectorCenter.Models.Settings
                 return ConnectorCenterApp.Instance.ConfigurationFolderPath + @"\OtherSettings.config";
             }
         }
-        public bool DoItGood { get; set; }
-        // some settings
-        public static OtherSettings GetDefault()
+        public new static OtherSettings GetDefault()
         {
             return new OtherSettings()
             {

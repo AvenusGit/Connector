@@ -3,6 +3,7 @@ using ConnectorCenter.Services.Authorize;
 using ConnectorCore.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Mime;
 
@@ -78,13 +79,14 @@ namespace ConnectorCenter.Controllers.Api
                             JwtSecurityToken jwt = JwtAuthorizeService.GetJwtToken(user!);
                             Response.StatusCode = 200;
                             JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
-                            var json = new
-                            {
-                                token = handler.WriteToken(jwt),
-                                user = user!.Name
-                            };
+                            user!.Credentials.Password = null;
+                            string json = JsonConvert.SerializeObject(
+                                new TokenInfo(handler.WriteToken(jwt))
+                                {
+                                    UserName = user!.Name ?? string.Empty,
+                                });
                             _logger.LogWarning($"Успешная API авторизация. Логин:{credentials.Login}.");
-                            await HttpContext.Response.WriteAsJsonAsync(json);
+                            await HttpContext.Response.WriteAsync(json);
                             return;
                         }
                         else

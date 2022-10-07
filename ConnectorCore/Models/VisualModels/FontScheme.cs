@@ -24,7 +24,14 @@ namespace ConnectorCore.Models.VisualModels
         [JsonIgnore]
         public VisualScheme VisualScheme { get; set; }
         public double? FontMultiplierPercent { get; set; }
-       
+        public static IFontScheme GetDefault()
+        {
+            return new FontScheme()
+            {
+                Font = "Yu Gothic UI Light",
+                FontMultiplierPercent = 100
+            };           
+        }
         public IFontScheme Clone()
         {
             return new FontScheme()

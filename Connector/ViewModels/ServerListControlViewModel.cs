@@ -20,50 +20,58 @@ namespace Connector.ViewModels
         private Command _toSettingsCommand;
         #endregion
         #region Properties
-        public ConnectorUser CurrentUser
+        public AppUser? CurrentUser
         {
-            get { return ConnectorApp.Instance.CurrentUser; }
+            get 
+            {
+                if(ConnectorApp.Instance.Session is not null)
+                    if(ConnectorApp.Instance.Session.User is not null)
+                        return ConnectorApp.Instance.Session.User; 
+                return null;
+            }
         }
         public ObservableCollection<Connection> RdpConnections
         {
             get
             {
-                return new ObservableCollection<Connection>(CurrentUser.Connections);
+                if(CurrentUser is not null)
+                    return new ObservableCollection<Connection>(CurrentUser.Connections);
+                return new ObservableCollection<Connection>();
             }
         }
         #endregion
         #region Commands
-        public Command UpdateConnectionListCommand
-        {
-            get
-            {
-                return _updateConnectionsList ??
-                  (_updateConnectionsList = new Command(async obj =>
-                  {
-                      await ConnectorApp.Instance.CurrentUser.UpdateConnections(
-                          new Action(() =>
-                          {
-                              ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Обновление подключений...");
-                          }), 
-                          new Action(() => ConnectorApp.Instance.WindowViewModel.HideBusyScreen()));
-                  }));
-            }
-        }
-        public Command LogOutCommand
-        {
-            get
-            {
-                return _logoutCommand ??
-                  (_logoutCommand = new Command(async obj =>
-                  {
-                      await ConnectorApp.Instance.WindowViewModel.ChangeUIControl(
-                          new LoginControl(new LoginControllerViewModel(
-                              new Сredentials(ConnectorApp.Instance.CurrentUser.Credentials.Login, string.Empty))),
-                          true);
-                      ConnectorApp.Instance.CurrentUser = null!;
-                  }));
-            }
-        }
+        //public Command UpdateConnectionListCommand
+        //{
+        //    get
+        //    {
+        //        return _updateConnectionsList ??
+        //          (_updateConnectionsList = new Command(async obj =>
+        //          {
+        //              await ConnectorApp.Instance.CurrentUser.UpdateConnections(
+        //                  new Action(() =>
+        //                  {
+        //                      ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Обновление подключений...");
+        //                  }), 
+        //                  new Action(() => ConnectorApp.Instance.WindowViewModel.HideBusyScreen()));
+        //          }));
+        //    }
+        //}
+        //public Command LogOutCommand
+        //{
+        //    get
+        //    {
+        //        return _logoutCommand ??
+        //          (_logoutCommand = new Command(async obj =>
+        //          {
+        //              await ConnectorApp.Instance.WindowViewModel.ChangeUIControl(
+        //                  new LoginControl(new LoginControllerViewModel(
+        //                      new Сredentials(ConnectorApp.Instance.CurrentUser.Credentials.Login, string.Empty))),
+        //                  true);
+        //              ConnectorApp.Instance.CurrentUser = null!;
+        //          }));
+        //    }
+        //}
         public Command ToSettingsCommand
         {
             get

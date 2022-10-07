@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Connector.Models.Commands;
-using AuraS.VisualModels;
+using Aura.VisualModels;
 using Connector.View;
 using ConnectorCore.Models.VisualModels.Interfaces;
 
@@ -14,8 +14,8 @@ namespace Connector.ViewModels
     {
         public SettingsControlViewModel()
         {
-            if(ConnectorApp.Instance.CurrentUser.VisualScheme is WpfVisualScheme)
-                _backup = (ConnectorApp.Instance.CurrentUser.VisualScheme as WpfVisualScheme).Clone();
+            //if(ConnectorApp.Instance.CurrentUser.VisualScheme is WpfVisualScheme)
+            //    _backup = (ConnectorApp.Instance.CurrentUser.VisualScheme as WpfVisualScheme).Clone();
         }
         private Command _saveCommand;
         private Command _cancelCommand;

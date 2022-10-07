@@ -10,7 +10,7 @@ services:
         "postgres":
             condition: service_started
     ports: 
-        - "80:80"
+        - "5000:5000"
 
   postgres:
     container_name: 'postgres'

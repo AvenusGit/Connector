@@ -7,12 +7,12 @@ using System.Reflection;
 using ConnectorCore.Models.VisualModels.Interfaces;
 using ConnectorCore.Models.VisualModels;
 
-namespace AuraS.VisualModels
+namespace Aura.VisualModels
 {
-    public class WpfColorScheme
+    public class WpfColorScheme : IColorScheme<WpfColorProperty>, IWpfScheme<WpfColorScheme>
     {
         public WpfColorScheme() { }
-        public WpfColorScheme(ColorScheme colorScheme)
+        public WpfColorScheme(IColorScheme<string> colorScheme)
         {
             Fone = new WpfColorProperty("Fone", colorScheme.Fone);
             Accent = new WpfColorProperty("Accent", colorScheme.Accent);
@@ -44,7 +44,6 @@ namespace AuraS.VisualModels
                     (property.Value).Apply();
             }
         }
-
         public Dictionary<string, WpfColorProperty> GetColorProperties()
         {
             Dictionary<string, WpfColorProperty> result = new Dictionary<string, WpfColorProperty>();
@@ -60,7 +59,6 @@ namespace AuraS.VisualModels
             result.Add("Disable", Disable!);
             return result;
         }
-
         public WpfColorScheme GetCurrent()
         {
             WpfColorScheme colorScheme = new WpfColorScheme();
@@ -73,6 +71,26 @@ namespace AuraS.VisualModels
                     prop.SetValue(colorScheme, property);
             }
             return colorScheme;
+        }
+        public WpfColorScheme GetFromColorScheme(ColorScheme colorScheme)
+        {
+            return new WpfColorScheme()
+            {
+                Fone = new WpfColorProperty("Fone", colorScheme.Fone),
+                Accent = new WpfColorProperty("Accent", colorScheme.Accent),
+                SubAccent = new WpfColorProperty("SubAccent", colorScheme.SubAccent),
+                Panel = new WpfColorProperty("Panel", colorScheme.Panel),
+                Border = new WpfColorProperty("Border", colorScheme.Border),
+                Path = new WpfColorProperty("Path", colorScheme.Path),
+                Text = new WpfColorProperty("Text", colorScheme.Text),
+                Select = new WpfColorProperty("Select", colorScheme.Select),
+                Error = new WpfColorProperty("Error", colorScheme.Error),
+                Disable = new WpfColorProperty("Disable", colorScheme.Disable)
+            };
+        }
+        public WpfColorScheme GetDefault()
+        {
+            return GetFromColorScheme(ColorScheme.GetDefault());            
         }
     }
 }

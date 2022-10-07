@@ -10,7 +10,7 @@ using System.Xml.Serialization;
 
 namespace ConnectorCore.Models.VisualModels
 {
-    public class VisualScheme : IVisualScheme<ColorScheme, FontScheme>
+    public class VisualScheme : IVisualScheme<ColorScheme, FontScheme, string>
     {
         [XmlIgnore]
         [JsonIgnore]
@@ -25,7 +25,6 @@ namespace ConnectorCore.Models.VisualModels
         public AppUser AppUser { get; set; }
         public ColorScheme ColorScheme { get; set; }
         public FontScheme FontScheme { get; set; }
-
         public static VisualScheme GetDefaultVisualScheme()
         {
             return new VisualScheme()
@@ -37,11 +36,6 @@ namespace ConnectorCore.Models.VisualModels
                     FontMultiplierPercent = 100
                 }
             };
-        }
-
-        public string GenerateCss(IVisualScheme<IColorScheme,IFontScheme> scheme)
-        {
-            return "";
         }
     }
 }

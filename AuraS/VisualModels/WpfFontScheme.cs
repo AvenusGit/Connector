@@ -6,10 +6,22 @@ using System.Windows.Media;
 using ConnectorCore.Models.VisualModels;
 using ConnectorCore.Models.VisualModels.Interfaces;
 
-namespace AuraS.VisualModels
+namespace Aura.VisualModels
 {
-    public class WpfFontScheme : FontScheme
+    public class WpfFontScheme : IFontScheme, IWpfScheme<WpfFontScheme>
     {
+        public WpfFontScheme(string font, double multiplier)
+        {
+            FontMultiplierPercent = multiplier;
+            Font = font;
+        }
+        public WpfFontScheme(IFontScheme simpleFontScheme)
+        {
+            Font = simpleFontScheme.Font;
+            FontMultiplierPercent = simpleFontScheme.FontMultiplierPercent;
+        }
+        public string Font { get; set; }
+        public double? FontMultiplierPercent { get; set; }
         public FontFamily FontValue
         {
             get
@@ -23,7 +35,7 @@ namespace AuraS.VisualModels
         }
         public WpfFontScheme GetCurrent()
         {
-            WpfFontScheme result = new WpfFontScheme();
+            WpfFontScheme result = new WpfFontScheme(string.Empty,100);
             if (Application.Current.Resources.Contains("Font"))
                 result.Font = ((FontFamily)Application.Current.Resources["Font"]).Source;
             if (Application.Current.Resources.Contains("FontMultiplier"))
@@ -45,6 +57,10 @@ namespace AuraS.VisualModels
             }
             Application.Current.Resources["Font"] = FontValue;
             Application.Current.Resources["FontMultiplier"] = FontMultiplierPercent ?? 100;
+        }
+        public WpfFontScheme GetDefault()
+        {
+            return new WpfFontScheme(FontScheme.GetDefault());
         }
     }
 }

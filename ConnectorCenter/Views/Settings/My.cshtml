@@ -86,7 +86,7 @@
                                 {
                                     <div class="row">
                                         <div class="col">
-                                            <p class="text">@IColorScheme.ColorFieldName(color.Key)</p>
+                                            <p class="text">@(IColorScheme<string>.ColorFieldName(color.Key))</p>
                                         </div>
                                         <div class="col">                                        
                                             <input type="text" name="@(color.Key)" style="max-width:100%;max-height:2vh;" class="text colorPicker"

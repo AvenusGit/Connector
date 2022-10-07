@@ -6,7 +6,7 @@ using System.Windows;
 using ConnectorCore.Models.VisualModels.Interfaces;
 using ConnectorCore.Models.VisualModels;
 
-namespace AuraS.VisualModels
+namespace Aura.VisualModels
 {
     public class WpfColorProperty
     {

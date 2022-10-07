@@ -24,13 +24,13 @@ namespace ConnectorCore.Models.Connections
         {
             get
             {
-                return $"{ConnectionType.ToString()} ({Server.Host}:{Port})/{ServerUser?.Name}";
+                return $"{ConnectionType.ToString()} (TODO_HOST:TODO_PORT)/{ServerUser?.Name}";
+                //return $"{ConnectionType.ToString()} ({Server.Host}:{Port})/{ServerUser?.Name}";
             }
         }
         public bool IsAvailable { get; set; }
-        public int Port { get; set; }
         [XmlIgnore]
-        [JsonIgnore]
+        //[JsonIgnore]
         public Server Server { get; set; }
         public ServerUser ServerUser { get; set; }
         [XmlIgnore]
@@ -39,6 +39,22 @@ namespace ConnectorCore.Models.Connections
         [XmlIgnore]
         [JsonIgnore]
         public List<AppUserGroup> AppUsersGroups { get; set; }
+        [XmlIgnore]
+        [JsonIgnore]
+        public int Port
+        {
+            get
+            {
+                switch (ConnectionType)
+                {
+                    case ConnectionTypes.SSH:
+                        return Server.SshPort;
+                    case ConnectionTypes.RDP:
+                        return Server.RdpPort;
+                    default: throw new Exception("Неизвестный тип подключения");
+                }
+            }
+        }
         public ConnectionTypes ConnectionType { get; set; }
         public enum ConnectionTypes
         {
