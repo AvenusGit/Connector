@@ -9,7 +9,7 @@ using ConnectorCore.Models.VisualModels;
 
 namespace Aura.VisualModels
 {
-    public class WpfColorScheme : IColorScheme<WpfColorProperty>, IWpfScheme<WpfColorScheme>
+    public class WpfColorScheme : IColorScheme<WpfColorProperty>, IWpfScheme<WpfColorScheme>, ICloneable
     {
         public WpfColorScheme() { }
         public WpfColorScheme(IColorScheme<string> colorScheme)
@@ -42,6 +42,7 @@ namespace Aura.VisualModels
             {
                 if (property.Value is WpfColorProperty)
                     (property.Value).Apply();
+                    
             }
         }
         public Dictionary<string, WpfColorProperty> GetColorProperties()
@@ -91,6 +92,22 @@ namespace Aura.VisualModels
         public WpfColorScheme GetDefault()
         {
             return GetFromColorScheme(ColorScheme.GetDefault());            
+        }
+        public object Clone()
+        {
+            return new WpfColorScheme()
+            {
+                Fone = (WpfColorProperty?)Fone?.Clone(),
+                Accent = (WpfColorProperty?)Accent?.Clone(),
+                SubAccent = (WpfColorProperty?)SubAccent?.Clone(),
+                Panel = (WpfColorProperty?)Panel?.Clone(),
+                Border = (WpfColorProperty?)Border?.Clone(),
+                Path = (WpfColorProperty?)Path?.Clone(),
+                Text = (WpfColorProperty?)Text?.Clone(),
+                Select = (WpfColorProperty?)Select?.Clone(),
+                Error = (WpfColorProperty?)Error?.Clone(),
+                Disable = (WpfColorProperty?)Disable?.Clone()
+            };
         }
     }
 }

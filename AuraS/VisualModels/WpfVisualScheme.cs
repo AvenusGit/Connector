@@ -43,8 +43,8 @@ namespace Aura.VisualModels
         {
             return new WpfVisualScheme()
             {
-                ColorScheme = ColorScheme,
-                FontScheme = FontScheme
+                ColorScheme = (WpfColorScheme)ColorScheme.Clone(),
+                FontScheme = (WpfFontScheme)FontScheme.Clone()
             };
         }
         public WpfVisualScheme GetDefault()
@@ -53,6 +53,30 @@ namespace Aura.VisualModels
             {
                 ColorScheme = new WpfColorScheme().GetDefault(),
                 FontScheme = new WpfFontScheme(string.Empty,0).GetDefault()
+            };
+        }
+        public VisualScheme ToVisualScheme()
+        {
+            return new VisualScheme()
+            {
+                ColorScheme = new ColorScheme()
+                {
+                    Fone = WpfColorProperty.WpfToCssColor("Fone", ColorScheme.Fone?.Color.ToString() ?? ""),
+                    Accent = WpfColorProperty.WpfToCssColor("Accent", ColorScheme.Accent?.Color.ToString() ?? ""),
+                    SubAccent = WpfColorProperty.WpfToCssColor("SubAccent", ColorScheme.SubAccent?.Color.ToString() ?? ""),
+                    Panel = WpfColorProperty.WpfToCssColor("Panel", ColorScheme.Panel?.Color.ToString() ?? ""),
+                    Border = WpfColorProperty.WpfToCssColor("Border", ColorScheme.Border?.Color.ToString() ?? ""),
+                    Path = WpfColorProperty.WpfToCssColor("Path", ColorScheme.Path?.Color.ToString() ?? ""),
+                    Text = WpfColorProperty.WpfToCssColor("Text", ColorScheme.Text?.Color.ToString() ?? ""),
+                    Select = WpfColorProperty.WpfToCssColor("Select", ColorScheme.Select?.Color.ToString() ?? ""),
+                    Error = WpfColorProperty.WpfToCssColor("Error", ColorScheme.Error?.Color.ToString() ?? ""),
+                    Disable = WpfColorProperty.WpfToCssColor("Disable", ColorScheme.Disable?.Color.ToString() ?? ""),
+                },
+                FontScheme = new FontScheme()
+                {
+                    Font = FontScheme.Font,
+                    FontMultiplierPercent = FontScheme.FontMultiplierPercent
+                }
             };
         }
     }

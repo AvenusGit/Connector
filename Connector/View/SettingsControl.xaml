@@ -19,6 +19,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
+                    <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
                 <Button Grid.Column="0" Style="{DynamicResource AuraDefaultButtonStyle}" 
                         HorizontalAlignment="Right" Command="{Binding CancelCommand}"
@@ -26,6 +27,11 @@
                     <TextBlock Style="{DynamicResource AuraDefaultText}" Text="Отмена"/>
                 </Button>
                 <Button Grid.Column="1" Style="{DynamicResource AuraDefaultButtonStyle}" 
+                        HorizontalAlignment="Right" Command="{Binding ResetCommand}"
+                        Width="{Binding ActualWidth, ElementName=iSaveButton}">
+                    <TextBlock Style="{DynamicResource AuraDefaultText}" Text="Сброс"/>
+                </Button>
+                <Button Grid.Column="2" Style="{DynamicResource AuraDefaultButtonStyle}" 
                          HorizontalAlignment="Left" x:Name="iSaveButton"
                         Command="{Binding SaveCommand}">
                     <TextBlock Style="{DynamicResource AuraDefaultText}" Text="Сохранить"/>

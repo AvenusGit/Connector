@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace ConnectorCenter.Controllers.Api
-{    
+{
     [Authorize(AuthenticationSchemes = "Bearer")]
     [ApiController]
     public class AppUsersApi : ControllerBase
@@ -62,7 +62,7 @@ namespace ConnectorCenter.Controllers.Api
                         .Include(user => user.VisualScheme)
                             .ThenInclude(vs => vs.FontScheme)
                         .FirstOrDefaultAsync(user => user.Id == JwtAuthorizeService.GetJwtUserId(HttpContext));
-                    if(user is not null)
+                    if (user is not null)
                     {
                         user.Credentials.Password = null; //  очистка перед пересылкой
                                                           // jsonIgore нельзя добавить т.к. credentials используется при пересылке подключений
@@ -105,11 +105,14 @@ namespace ConnectorCenter.Controllers.Api
                         return;
                     }
 
-                    AppUser? user = await _context.Users                        
-                        .Include(user => user.Groups)                      
+                    AppUser? user = await _context.Users
+                        .Include(user => user.Groups)
                             .ThenInclude(gr => gr.Connections)
                                 .ThenInclude(conn => conn.ServerUser)
                                     .ThenInclude(suser => suser.Credentials).IgnoreAutoIncludes()
+                        .Include(user => user.Groups)
+                            .ThenInclude(gr => gr.Connections)
+                                .ThenInclude(conn => conn.Server)
                         .FirstOrDefaultAsync(user => user.Id == JwtAuthorizeService.GetJwtUserId(HttpContext));
 
                     if (user is not null)
@@ -156,12 +159,10 @@ namespace ConnectorCenter.Controllers.Api
                         .Include(user => user.Connections)
                             .ThenInclude(conn => conn.ServerUser)
                                     .ThenInclude(suser => suser.Credentials)
-                        .Include(user => user.Groups)
-                            .ThenInclude(gr => gr.Connections)
-                                .ThenInclude(conn => conn.ServerUser)
-                                    .ThenInclude(suser => suser.Credentials)
+                        .Include(user => user.Connections)
+                            .ThenInclude(conn => conn.Server)
                         .FirstOrDefaultAsync(user => user.Id == JwtAuthorizeService.GetJwtUserId(HttpContext));
-                    
+
                     if (user is not null)
                     {
                         List<Connection> connections = new List<Connection>();
@@ -209,7 +210,7 @@ namespace ConnectorCenter.Controllers.Api
                         return;
                     }
 
-                    UserSettings? userSettings = await _context.UserSettings                          
+                    UserSettings? userSettings = await _context.UserSettings
                         .FirstOrDefaultAsync(settings => settings.AppUserId == JwtAuthorizeService.GetJwtUserId(HttpContext));
 
                     if (userSettings is not null)
@@ -308,6 +309,50 @@ namespace ConnectorCenter.Controllers.Api
                 catch (Exception ex)
                 {
                     _logger.LogWarning($"Ошибка при запросе доступов. {ex.Message} {ex.StackTrace}");
+                    HttpContext.Response.StatusCode = 500;
+                    await HttpContext.Response.WriteAsync("500: Internal error");
+                }
+            }
+        }
+        [Route("api/appuser/visualScheme/set")]
+        [HttpPost]
+        public async Task SetAppUserVisualScheme([FromBody] VisualScheme? scheme)
+        {
+            using (var scope = _logger.BeginScope($"API({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                try
+                {
+                    if (scheme is not null)
+                    {
+                        AppUser? user = await _context.Users
+                            .Include(user => user.VisualScheme)
+                            .FirstOrDefaultAsync(user => user.Id == JwtAuthorizeService.GetJwtUserId(HttpContext));
+                        if (user is not null)
+                        {
+                            user.VisualScheme = scheme;
+                            _context.Update(user);
+                            await _context.SaveChangesAsync();
+                            _logger.LogInformation($"Изменена визуальная схема пользователя {user.Name} через API.");
+                            HttpContext.Response.StatusCode = 200;
+                            await HttpContext.Response.WriteAsync("200: Visual scheme succefull changed.");
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"Ошибка при попытке установки визуальных настроек. Пользователь не найден в БД.");
+                            HttpContext.Response.StatusCode = 404;
+                            await HttpContext.Response.WriteAsync("404: User not found");
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Ошибка при попытке установки визуальных настроек. Отсутствуют аргументы.");
+                        HttpContext.Response.StatusCode = 500;
+                        await HttpContext.Response.WriteAsync("500: Internal error");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning($"Ошибка при попытке установки визуальных настроек. {ex.Message} {ex.StackTrace}");
                     HttpContext.Response.StatusCode = 500;
                     await HttpContext.Response.WriteAsync("500: Internal error");
                 }

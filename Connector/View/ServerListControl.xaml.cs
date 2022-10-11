@@ -26,5 +26,21 @@ namespace Connector.View
             InitializeComponent();
             DataContext = vm;
         }
+
+        private void SearchCancel(object sender, RoutedEventArgs e)
+        {
+            if(String.IsNullOrWhiteSpace(iSearch.Text))
+            {
+                (DataContext as ServerListControlViewModel).IsSearchEnabled = false;
+            }
+            else
+                iSearch.Text = String.Empty;
+
+        }
+
+        private void SearchPanelOpen(object sender, RoutedEventArgs e)
+        {
+            (DataContext as ServerListControlViewModel).IsSearchEnabled = true;
+        }
     }
 }

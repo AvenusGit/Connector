@@ -5,7 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Connector.View"
              mc:Ignorable="d">
-    <Grid>
+    <Border Background="{DynamicResource PanelBrush}" Margin="10" CornerRadius="10">
+        <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="2*"/>
@@ -111,4 +112,5 @@
             </Button>
         </Grid>
     </Grid>
+    </Border>
 </UserControl>

@@ -10,7 +10,7 @@
         <Setter Property="ColorMode" Value="ColorCanvas"/>
         <Setter Property="DisplayColorAndName" Value="False"/>
         <Setter Property="DisplayColorTooltip" Value="true"/>
-        <Setter Property="DropDownBackground" Value="{DynamicResource PanelBrush}"/>
+        <Setter Property="DropDownBackground" Value="{DynamicResource SubAccentBrush}"/>
         <Setter Property="DropDownBorderBrush" Value="{DynamicResource BorderBrush}"/>
         <Setter Property="ShowDropDownButton" Value="True"/>
         <Setter Property="ButtonStyle" Value="{DynamicResource ColorPickerDropDownButton}"/>

@@ -8,7 +8,7 @@ using ConnectorCore.Models.VisualModels.Interfaces;
 
 namespace Aura.VisualModels
 {
-    public class WpfFontScheme : IFontScheme, IWpfScheme<WpfFontScheme>
+    public class WpfFontScheme : IFontScheme, IWpfScheme<WpfFontScheme>, ICloneable
     {
         public WpfFontScheme(string font, double multiplier)
         {
@@ -61,6 +61,10 @@ namespace Aura.VisualModels
         public WpfFontScheme GetDefault()
         {
             return new WpfFontScheme(FontScheme.GetDefault());
+        }
+        public object Clone()
+        {
+            return new WpfFontScheme(this);
         }
     }
 }

@@ -25,7 +25,16 @@
 
         <!--Content-->
         <Grid>
-            <Border CornerRadius="10" Background="{DynamicResource FoneBrush}">
+            <Border CornerRadius="10">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="1,0" EndPoint="0,1">
+                        <GradientStop Color="{DynamicResource FoneColor}" Offset="0"/>
+                        <GradientStop Color="{DynamicResource SubAccentColor}" Offset="0.3"/>
+                        <GradientStop Color="{DynamicResource FoneColor}" Offset="0.5"/>
+                        <GradientStop Color="{DynamicResource SubAccentColor}" Offset="0.7"/>
+                        <GradientStop Color="{DynamicResource FoneColor}" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
                 <Grid >
                 <Grid.Style>
                     <Style TargetType="Grid">

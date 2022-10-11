@@ -5,10 +5,12 @@ using System.Windows.Media;
 using System.Windows;
 using ConnectorCore.Models.VisualModels.Interfaces;
 using ConnectorCore.Models.VisualModels;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace Aura.VisualModels
 {
-    public class WpfColorProperty
+    public class WpfColorProperty : ICloneable
     {
         public WpfColorProperty(string name)
         {
@@ -67,10 +69,10 @@ namespace Aura.VisualModels
         }
         public void Apply()
         {
-            if (Application.Current.Resources.Contains(ColorKeyName))
-                Application.Current.Resources[ColorKeyName] = Color;
+            if (Application.Current.Resources.Contains(ColorKeyName + "Color"))
+                Application.Current.Resources[ColorKeyName + "Color"] = Color;
             else
-                Application.Current.Resources.Add(ColorKeyName, Color);
+                Application.Current.Resources.Add(ColorKeyName + "Color", Color);
 
             if (Application.Current.Resources.Contains(BrushKeyName))
                 Application.Current.Resources[BrushKeyName] = BrushValue;
@@ -88,6 +90,18 @@ namespace Aura.VisualModels
         public static Color GetColorFromString(string color)
         {
             return (Color)ColorConverter.ConvertFromString(CssToWpfColor(color));
+        }
+        public static string WpfToCssColor(string colorName, string wpfColor)
+        {
+            if (!IColorScheme<string>.IsValueCorrect(wpfColor))
+                throw new Exception($"Ошибка при попытке перевода WPF цвета <{colorName}> в HEX. Строка цвета не валидна");
+            string opacity = wpfColor.Substring(1, 2);
+            wpfColor = wpfColor.Remove(1, 2);
+            return wpfColor + opacity;
+        }
+        public object Clone()
+        {
+            return MemberwiseClone();
         }
     }
 }

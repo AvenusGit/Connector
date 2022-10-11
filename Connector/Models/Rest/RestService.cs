@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using Microsoft.AspNetCore.Http;
 using System.Net.Http.Json;
+using ConnectorCore.Models.VisualModels;
 
 namespace Connector.Models.REST
 {
@@ -87,9 +88,9 @@ namespace Connector.Models.REST
         {
             if (String.IsNullOrWhiteSpace(Token))
                 throw new Exception("Попытка получить список подключений не имея токена авторизации. Необходима переавторизация.");
-            HttpResponseMessage tokenResponse = await RequestAsync(
-                @"/api/appuser/connections",
-                HttpMethod.Get
+                    HttpResponseMessage tokenResponse = await RequestAsync(
+                    @"/api/appuser/connections",
+                    HttpMethod.Get
                 );
             if (tokenResponse.IsSuccessStatusCode)
             {
@@ -107,6 +108,30 @@ namespace Connector.Models.REST
                 {
                     throw new Exception($"{(int)tokenResponse.StatusCode}:{tokenResponse.Content.ReadAsStringAsync()}");
                 }
+            }
+        }
+        public async Task<IEnumerable<AppUserGroup>?> GetGroupsListAsync()
+        {
+            if (String.IsNullOrWhiteSpace(Token))
+                throw new Exception("Попытка получить список подключений не имея токена авторизации. Необходима переавторизация.");
+                HttpResponseMessage tokenResponse = await RequestAsync(
+                        @"/api/appuser/groups",
+                        HttpMethod.Get
+            );
+            if (tokenResponse.IsSuccessStatusCode)
+            {
+                string resultJson = await tokenResponse.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<IEnumerable<AppUserGroup>>(resultJson)
+                            ?? null;
+            }
+            else
+            {
+                if (tokenResponse.StatusCode == HttpStatusCode.Unauthorized)
+                    throw new Exception("Ошибка при авторизации. Неверный логин пароль");
+                if (tokenResponse.StatusCode == HttpStatusCode.NotFound)
+                    throw new Exception("Ошибка при авторизации. Сервер не найден.");
+                else
+                    throw new Exception($"{(int)tokenResponse.StatusCode}:{tokenResponse.Content.ReadAsStringAsync()}");
             }
         }
         public async Task<AppUser?> GetUserFullAsync()
@@ -134,10 +159,23 @@ namespace Connector.Models.REST
                 }
             }
         }
-        //public async Task<WpfVisualScheme>? GetVisualSchemeAsync(long userId)
-        //{
-        //    await Task.Delay(1500);
-        //    return GetVisualScheme(userId);
-        //}
+        public async Task SendVisualSchemeAsync(VisualScheme newScheme)
+        {
+            HttpResponseMessage tokenResponse = await RequestAsync(
+                @"/api/appuser/visualScheme/set",
+                HttpMethod.Post,
+                JsonContent.Create(newScheme));
+            if (!tokenResponse.IsSuccessStatusCode)
+            {
+                if (tokenResponse.StatusCode == HttpStatusCode.Unauthorized)
+                    throw new Exception("Ошибка авторизации при сохранении визуальных настроек.");
+                if (tokenResponse.StatusCode == HttpStatusCode.NotFound)
+                    throw new Exception("Ошибка при сохранении визуальных настроек. Сервер не найден.");
+                else
+                {
+                    throw new Exception($"{(int)tokenResponse.StatusCode}:{tokenResponse.Content.ReadAsStringAsync()}");
+                }
+            }
+        }
     }
 }

@@ -30,7 +30,7 @@
                             <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource DisableBrush}"/>
                         </Trigger>
                         <Trigger Property="IsFocused" Value="True">
-                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource SelectBrush}"/>
                         </Trigger>
                         <Trigger Property="IsReadOnly" Value="True">
                             <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource DisableBrush}"/>

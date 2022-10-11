@@ -9,7 +9,7 @@
             <Border Grid.ColumnSpan="2" Name="Border"
               BorderBrush="{DynamicResource BorderBrush}" 
               CornerRadius="3" BorderThickness="1" 
-              Background="{DynamicResource PanelBrush}" />
+              Background="{DynamicResource SubAccentBrush}" />
             <Border Grid.Column="1" Margin="1, 1, 1, 1" BorderBrush="{DynamicResource BorderBrush}" Name="ButtonBorder"
               CornerRadius="3" BorderThickness="0" 
               Background="{DynamicResource PanelBrush}" />

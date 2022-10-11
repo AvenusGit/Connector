@@ -96,11 +96,11 @@
             <Grid Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" Margin="3">
                 <Border Grid.Column="0" Style="{DynamicResource AuraColorPickerValue}">
                     <Border.Background>
-                        <SolidColorBrush Color="{Binding ColorScheme.Fone.ColorValue}"/>
+                        <SolidColorBrush Color="{Binding ColorScheme.Fone.Color}"/>
                     </Border.Background>
                 </Border>
                 <xctk:ColorPicker Grid.Column="1" Style="{DynamicResource AuraColorPickerStyle}"
-                                  SelectedColor="{Binding ColorScheme.Fone.ColorValue}"/>
+                                  SelectedColor="{Binding ColorScheme.Fone.Color}"/>
             </Grid>
 
 
@@ -110,11 +110,11 @@
             <Grid Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" Margin="3">
                 <Border Grid.Column="0" Style="{DynamicResource AuraColorPickerValue}">
                     <Border.Background>
-                        <SolidColorBrush Color="{Binding ColorScheme.Accent.ColorValue}"/>
+                        <SolidColorBrush Color="{Binding ColorScheme.Accent.Color}"/>
                     </Border.Background>
                 </Border>
                 <xctk:ColorPicker Style="{DynamicResource AuraColorPickerStyle}"
-                                  SelectedColor="{Binding ColorScheme.Accent.ColorValue}"/>
+                                  SelectedColor="{Binding ColorScheme.Accent.Color}"/>
             </Grid>
 
             <!--SubAccent-->
@@ -123,11 +123,11 @@
             <Grid Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch" Margin="3">
                 <Border Grid.Column="0" Style="{DynamicResource AuraColorPickerValue}">
                     <Border.Background>
-                        <SolidColorBrush Color="{Binding ColorScheme.SubAccent.ColorValue}"/>
+                        <SolidColorBrush Color="{Binding ColorScheme.SubAccent.Color}"/>
                     </Border.Background>
                 </Border>
                 <xctk:ColorPicker  Style="{DynamicResource AuraColorPickerStyle}"
-                                   SelectedColor="{Binding ColorScheme.SubAccent.ColorValue}"/>
+                                   SelectedColor="{Binding ColorScheme.SubAccent.Color}"/>
             </Grid>
 
             <!--Panel-->
@@ -136,11 +136,11 @@
             <Grid Grid.Row="4" Grid.Column="1" HorizontalAlignment="Stretch" Margin="3">
                 <Border Grid.Column="0" Style="{DynamicResource AuraColorPickerValue}">
                     <Border.Background>
-                        <SolidColorBrush Color="{Binding ColorScheme.Panel.ColorValue}"/>
+                        <SolidColorBrush Color="{Binding ColorScheme.Panel.Color}"/>
                     </Border.Background>
                 </Border>
                 <xctk:ColorPicker  Style="{DynamicResource AuraColorPickerStyle}"
-                                   SelectedColor="{Binding ColorScheme.Panel.ColorValue}"/>
+                                   SelectedColor="{Binding ColorScheme.Panel.Color}"/>
             </Grid>
 
             <!--Border-->
@@ -149,11 +149,11 @@
             <Grid Grid.Row="5" Grid.Column="1" HorizontalAlignment="Stretch" Margin="3">
                 <Border Grid.Column="0" Style="{DynamicResource AuraColorPickerValue}">
                     <Border.Background>
-                        <SolidColorBrush Color="{Binding ColorScheme.Border.ColorValue}"/>
+                        <SolidColorBrush Color="{Binding ColorScheme.Border.Color}"/>
                     </Border.Background>
                 </Border>
                 <xctk:ColorPicker  Style="{DynamicResource AuraColorPickerStyle}"
-                                   SelectedColor="{Binding ColorScheme.Border.ColorValue}"/>
+                                   SelectedColor="{Binding ColorScheme.Border.Color}"/>
             </Grid>
 
             <!--Path-->
@@ -162,11 +162,11 @@
             <Grid Grid.Row="6" Grid.Column="1" HorizontalAlignment="Stretch" Margin="3">
                 <Border Grid.Column="0" Style="{DynamicResource AuraColorPickerValue}">
                     <Border.Background>
-                        <SolidColorBrush Color="{Binding ColorScheme.Path.ColorValue}"/>
+                        <SolidColorBrush Color="{Binding ColorScheme.Path.Color}"/>
                     </Border.Background>
                 </Border>
                 <xctk:ColorPicker Style="{DynamicResource AuraColorPickerStyle}"
-                                  SelectedColor="{Binding ColorScheme.Path.ColorValue}"/>
+                                  SelectedColor="{Binding ColorScheme.Path.Color}"/>
             </Grid>
 
             <!--Text-->
@@ -175,11 +175,11 @@
             <Grid Grid.Row="7" Grid.Column="1" HorizontalAlignment="Stretch" Margin="3">
                 <Border Grid.Column="0" Style="{DynamicResource AuraColorPickerValue}">
                     <Border.Background>
-                        <SolidColorBrush Color="{Binding ColorScheme.Text.ColorValue}"/>
+                        <SolidColorBrush Color="{Binding ColorScheme.Text.Color}"/>
                     </Border.Background>
                 </Border>
                 <xctk:ColorPicker  Style="{DynamicResource AuraColorPickerStyle}"
-                                   SelectedColor="{Binding ColorScheme.Text.ColorValue}"/>
+                                   SelectedColor="{Binding ColorScheme.Text.Color}"/>
             </Grid>
 
             <!--Select-->
@@ -188,11 +188,11 @@
             <Grid Grid.Row="8" Grid.Column="1" HorizontalAlignment="Stretch" Margin="3">
                 <Border Grid.Column="0" Style="{DynamicResource AuraColorPickerValue}">
                     <Border.Background>
-                        <SolidColorBrush Color="{Binding ColorScheme.Select.ColorValue}"/>
+                        <SolidColorBrush Color="{Binding ColorScheme.Select.Color}"/>
                     </Border.Background>
                 </Border>
                 <xctk:ColorPicker Style="{DynamicResource AuraColorPickerStyle}"
-                                   SelectedColor="{Binding ColorScheme.Select.ColorValue}"/>
+                                   SelectedColor="{Binding ColorScheme.Select.Color}"/>
             </Grid>
 
             <!--Error-->
@@ -201,11 +201,11 @@
             <Grid Grid.Row="9" Grid.Column="1" HorizontalAlignment="Stretch" Margin="3">
                 <Border Grid.Column="0" Style="{DynamicResource AuraColorPickerValue}">
                     <Border.Background>
-                        <SolidColorBrush Color="{Binding ColorScheme.Error.ColorValue}"/>
+                        <SolidColorBrush Color="{Binding ColorScheme.Error.Color}"/>
                     </Border.Background>
                 </Border>
                 <xctk:ColorPicker Style="{DynamicResource AuraColorPickerStyle}"
-                                  SelectedColor="{Binding ColorScheme.Error.ColorValue}"/>
+                                  SelectedColor="{Binding ColorScheme.Error.Color}"/>
             </Grid>
 
             <!--Disable-->
@@ -214,11 +214,11 @@
             <Grid Grid.Row="10" Grid.Column="1" HorizontalAlignment="Stretch" Margin="3">
                 <Border Grid.Column="0" Style="{DynamicResource AuraColorPickerValue}">
                     <Border.Background>
-                        <SolidColorBrush Color="{Binding ColorScheme.Disable.ColorValue}"/>
+                        <SolidColorBrush Color="{Binding ColorScheme.Disable.Color}"/>
                     </Border.Background>
                 </Border>
                 <xctk:ColorPicker  Style="{DynamicResource AuraColorPickerStyle}"
-                                   SelectedColor="{Binding ColorScheme.Disable.ColorValue}"/>
+                                   SelectedColor="{Binding ColorScheme.Disable.Color}"/>
             </Grid>
         </Grid>
 

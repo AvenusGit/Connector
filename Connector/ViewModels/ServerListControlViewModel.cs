@@ -18,11 +18,21 @@ namespace Connector.ViewModels
     public class ServerListControlViewModel : Notifier
     {
         #region Fields
+        private bool _searchEnabled = false;
         private Command _updateConnectionsList;
         private Command _logoutCommand;
         private Command _toSettingsCommand;
         #endregion
         #region Properties
+        public bool IsSearchEnabled
+        {
+            get { return _searchEnabled; }
+            set
+            {
+                _searchEnabled = value;
+                OnPropertyChanged("IsSearchEnabled");
+            }
+        }
         public AppUser? CurrentUser
         {
             get 
@@ -44,24 +54,34 @@ namespace Connector.ViewModels
         }
         #endregion
         #region Commands
-        //public Command UpdateConnectionListCommand
-        //{
-        //    get
-        //    {
-        //        return _updateConnectionsList ??
-        //          (_updateConnectionsList = new Command(async obj =>
-        //          {
-        //             
-        //              Conn Connections = await restService.GetConnectionListAsync();
-        //              await ConnectorApp.Instance.CurrentUser.UpdateConnections(
-        //                  new Action(() =>
-        //                  {
-        //                      ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Обновление подключений...");
-        //                  }),
-        //                  new Action(() => ConnectorApp.Instance.WindowViewModel.HideBusyScreen()));
-        //          }));
-        //    }
-        //}
+        public Command UpdateConnectionListCommand
+        {
+            get
+            {
+                return _updateConnectionsList ??
+                  (_updateConnectionsList = new Command(async obj =>
+                  {
+                      ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Обновление",true);
+                      if (ConnectorApp.Instance.Session is null || ConnectorApp.Instance.Session.Token is null)
+                          throw new Exception("Возникла ошибка при попытке обновить данные подключений. Сессия недоступна или отсутствует токен." +
+                              "Необходима переавторизация.");
+                      RestService restService = new RestService(ConnectorApp.Instance.Session!.Token!.Token);
+                      IEnumerable<Connection>? updatedConnection = await restService.GetConnectionListAsync();
+                      if (updatedConnection is not null)
+                          ConnectorApp.Instance.Session.User!.Connections = updatedConnection.ToList();
+                      else
+                          throw new Exception("Возникла ошибка при попытке обновить данные подключений");
+
+                      IEnumerable<AppUserGroup>? updatedGroups = await restService.GetGroupsListAsync();
+                      if (updatedGroups is not null)
+                          ConnectorApp.Instance.Session.User!.Groups = updatedGroups.ToList();
+                      else
+                          throw new Exception("Возникла ошибка при попытке обновить данные подключений");
+                      OnPropertyChanged("CurrentUser");
+                      ConnectorApp.Instance.WindowViewModel.HideBusyScreen();
+                  }));
+            }
+        }
         public Command LogOutCommand
         {
             get
@@ -76,7 +96,7 @@ namespace Connector.ViewModels
                                   ConnectorApp.Instance.Session?.User?.Credentials.Login ?? string.Empty,
                                   string.Empty))), 
                           true);
-                      ConnectorApp.Instance.VisualScheme.GetDefault().Apply();
+                      //ConnectorApp.Instance.VisualScheme.GetDefault().Apply();
                   }));
             }
         }

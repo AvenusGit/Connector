@@ -35,11 +35,11 @@
                     <Ellipse x:Name="Ellipse"
                              StrokeThickness="1"
                              Stroke="{DynamicResource AccentBrush}"
-                             Fill="{DynamicResource PanelBrush}">
+                             Fill="{DynamicResource AccentBrush}">
                     </Ellipse>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Ellipse" Property="Fill" Value="{DynamicResource AccentBrush}" />
+                            <Setter TargetName="Ellipse" Property="Fill" Value="{DynamicResource SelectBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -77,9 +77,9 @@
                              EndPoint="0,1">
                         <LinearGradientBrush.GradientStops>
                             <GradientStopCollection>
-                                <GradientStop Color="{DynamicResource SubAccentColor}"
+                                <GradientStop Color="{DynamicResource PanelColor}"
                             Offset="0.0" />
-                                <GradientStop Color="{DynamicResource SubAccentColor}"
+                                <GradientStop Color="{DynamicResource PanelColor}"
                             Offset="1.0" />
                             </GradientStopCollection>
                         </LinearGradientBrush.GradientStops>
@@ -90,9 +90,9 @@
                              EndPoint="0,1">
                         <LinearGradientBrush.GradientStops>
                             <GradientStopCollection>
-                                <GradientStop Color="{DynamicResource PanelColor}"
+                                <GradientStop Color="{DynamicResource SubAccentColor}"
                             Offset="0.0" />
-                                <GradientStop Color="{DynamicResource PanelColor}"
+                                <GradientStop Color="{DynamicResource SubAccentColor}"
                             Offset="1.0" />
                             </GradientStopCollection>
                         </LinearGradientBrush.GradientStops>
@@ -177,9 +177,9 @@
                              EndPoint="1,0">
                         <LinearGradientBrush.GradientStops>
                             <GradientStopCollection>
-                                <GradientStop Color="{DynamicResource SubAccentColor}"
+                                <GradientStop Color="{DynamicResource PanelColor}"
                             Offset="0.0" />
-                                <GradientStop Color="{DynamicResource SubAccentColor}"
+                                <GradientStop Color="{DynamicResource PanelColor}"
                             Offset="1.0" />
                             </GradientStopCollection>
                         </LinearGradientBrush.GradientStops>
