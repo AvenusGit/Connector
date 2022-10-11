@@ -18,7 +18,7 @@ namespace Connector
     {
         public const string AppName = "Connector";
         public static readonly ApplicationVersion AppVersion = new ApplicationVersion("A", 0, string.Empty);
-        public string _connectorCenterUrl = "https://localhost:54411"; 
+        public string _connectorCenterUrl = "https://localhost:53241"; 
 
         #region Singletone
         private static ConnectorApp _connectorApp;

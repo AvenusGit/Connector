@@ -234,14 +234,14 @@
                 <Setter Property="Width"
               Value="Auto" />
                 <Setter Property="Height"
-              Value="20" />
+              Value="5" />
                 <Setter Property="Template"
               Value="{StaticResource HorizontalScrollBar}" />
             </Trigger>
             <Trigger Property="Orientation"
              Value="Vertical">
                 <Setter Property="Width"
-              Value="20" />
+              Value="5" />
                 <Setter Property="Height"
               Value="Auto" />
                 <Setter Property="Template"

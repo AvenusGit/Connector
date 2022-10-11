@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Connector.ViewModels;
+using System.Windows.Input;
 
 namespace Connector.View
 {
@@ -28,6 +29,14 @@ namespace Connector.View
         private void PasswordChanged(object sender, RoutedEventArgs e)
         {
             (DataContext as LoginControllerViewModel).Сredentials.Password = iPasswordField.Password;
+        }
+
+        private void CheckEnterKey(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if(e.Key == Key.Enter)
+            {
+                (DataContext as LoginControllerViewModel).AuthorizeCommand.Execute(null!);
+            }
         }
     }
 }

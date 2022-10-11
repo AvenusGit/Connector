@@ -83,7 +83,8 @@
                          HorizontalAlignment="Stretch"
                          Margin="10,0,0,0"
                          HorizontalContentAlignment="Center"
-                         x:Name="iLoginField"/>
+                         x:Name="iLoginField"
+                         KeyUp="CheckEnterKey"/>
                 <Viewbox Width="24"
                          Height="24"
                          Grid.Row="1">
@@ -100,7 +101,8 @@
                              Height="{Binding ActualHeight, ElementName=iLoginField}"
                              Style="{StaticResource AuraPasswordBoxDefaultStyle}"
                              Margin="10,5,0,5" PasswordChanged="PasswordChanged"
-                             HorizontalContentAlignment="Center"/>
+                             HorizontalContentAlignment="Center"
+                             KeyUp="CheckEnterKey"/>
             </Grid>
             <Button Command="{Binding AuthorizeCommand}" Grid.Row="1"
                     Style="{StaticResource AuraDefaultButtonStyle}"

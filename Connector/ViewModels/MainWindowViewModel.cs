@@ -87,6 +87,8 @@ namespace Connector.ViewModels
             }
             else
                 ConnectorApp.Instance.WindowViewModel.CurrentUserControl = newControl;
+
+            OnPropertyChanged("ShowConnectionSettingsButton");
         }
 
         private void ApplicationExit()
@@ -173,6 +175,13 @@ namespace Connector.ViewModels
             get
             {
                 return Title + " " + ConnectorApp.AppVersion;
+            }
+        }
+        public bool ShowConnectionSettingsButton
+        {
+            get
+            {
+                return CurrentUserControl is LoginControl;
             }
         }
         #endregion

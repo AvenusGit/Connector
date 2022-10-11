@@ -77,10 +77,10 @@ namespace Connector.ViewModels
                 newSession.User = user;
 
                 ConnectorApp.Instance.Session = newSession;
-                ConnectorApp.Instance.VisualScheme = new WpfVisualScheme(ConnectorApp.Instance.Session.User.VisualScheme);
-                ConnectorApp.Instance.VisualScheme.Apply();
+                ConnectorApp.Instance.VisualScheme = new WpfVisualScheme(ConnectorApp.Instance.Session.User.VisualScheme);                
                 ServerListControlViewModel serversVm = new ServerListControlViewModel();
-                ConnectorApp.Instance.WindowViewModel.CurrentUserControl = new ServerListControl(serversVm);
+                await ConnectorApp.Instance.WindowViewModel.ChangeUIControl(new ServerListControl(serversVm), true);
+                ConnectorApp.Instance.VisualScheme.Apply();
                 ConnectorApp.Instance.WindowViewModel.HideBusyScreen();
             }
             catch (Exception ex)

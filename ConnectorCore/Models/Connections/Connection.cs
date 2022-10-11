@@ -24,7 +24,7 @@ namespace ConnectorCore.Models.Connections
         {
             get
             {
-                return $"{ConnectionType.ToString()} ({Server.Name})/{ServerUser?.Name}";
+                return $"{ConnectionType.ToString()}:{Server.Name}/{ServerUser?.Name}";
             }
         }
         public bool IsAvailable { get; set; }

@@ -10,6 +10,8 @@ using ConnectorCore.Models.Connections;
 using Connector.Models.Authorization;
 using Connector.View;
 using Connector.Models.REST;
+using Aura.VisualModels;
+using System.Net;
 
 namespace Connector.ViewModels
 {
@@ -60,21 +62,24 @@ namespace Connector.ViewModels
         //          }));
         //    }
         //}
-        //public Command LogOutCommand
-        //{
-        //    get
-        //    {
-        //        return _logoutCommand ??
-        //          (_logoutCommand = new Command(async obj =>
-        //          {
-        //              await ConnectorApp.Instance.WindowViewModel.ChangeUIControl(
-        //                  new LoginControl(new LoginControllerViewModel(
-        //                      new Сredentials(ConnectorApp.Instance.CurrentUser.Credentials.Login, string.Empty))),
-        //                  true);
-        //              ConnectorApp.Instance.CurrentUser = null!;
-        //          }));
-        //    }
-        //}
+        public Command LogOutCommand
+        {
+            get
+            {
+                return _logoutCommand ??
+                  (_logoutCommand = new Command(async obj =>
+                  {                      
+                      ConnectorApp.Instance.Session = null;
+                      await ConnectorApp.Instance.WindowViewModel.ChangeUIControl(
+                          new LoginControl(new LoginControllerViewModel(
+                              new Сredentials(
+                                  ConnectorApp.Instance.Session?.User?.Credentials.Login ?? string.Empty,
+                                  string.Empty))), 
+                          true);
+                      ConnectorApp.Instance.VisualScheme.GetDefault().Apply();
+                  }));
+            }
+        }
         public Command ToSettingsCommand
         {
             get
