@@ -7,11 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Extended.Wpf.Toolkit" Version="4.3.0" />
+    <Compile Remove="Interfaces\**" />
+    <EmbeddedResource Remove="Interfaces\**" />
+    <None Remove="Interfaces\**" />
+    <Page Remove="Interfaces\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Interfaces\" />
+    <PackageReference Include="Extended.Wpf.Toolkit" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -5,6 +5,8 @@ using Connector.Models.Authorization;
 using Connector.View;
 using ConnectorCore.Models;
 using Aura.VisualModels;
+using AuraS.Controls;
+using AuraS.Controls.ControlsViewModels;
 using System.Windows;
 using System.Collections.Generic;
 using ConnectorCore.Models.Connections;
@@ -85,54 +87,16 @@ namespace Connector.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
-                //AuraMessageWindow message = new AuraMessageWindow("Авторизация", "Неверный логин/пароль",
-                //        "Ok", AuraMessageWindow.MessageTypes.WarningType);
-                //    message.ShowDialog();
+                AuraMessageWindow message = new AuraMessageWindow(
+                    new AuraMessageWindowViewModel(
+                        "Ошибка авторизации",
+                        ex.Message,
+                        "Ok",
+                        AuraMessageWindowViewModel.MessageTypes.Error));
+                    message.ShowDialog();
 
                 ConnectorApp.Instance.WindowViewModel.HideBusyScreen();
-                //TODO AuraMessageWindow
             }
-
-
-
-            //if (ConnectorApp.Instance.Session is not null)
-            //{
-            //    await ConnectorApp.Instance.Session.UpdateConnections(
-            //        new Action(() =>
-            //        {
-            //            ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Получение доступов...");
-            //        }),
-            //        new Action(() =>
-            //        {
-            //            ServerListControlViewModel serversVm = new ServerListControlViewModel();
-            //            ConnectorApp.Instance.WindowViewModel.CurrentUserControl = new ServerListControl(serversVm);
-            //        }));
-            //    await ConnectorApp.Instance.CurrentUser.UpdateUserSettings(
-            //        new Action(() =>
-            //        {
-            //            ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Получение настроек...");
-            //        }), null!
-            //        );
-            //    await ConnectorApp.Instance.CurrentUser.UpdateVisualSettings(
-            //        new Action(() =>
-            //        {
-            //            ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Получение темы...");
-            //        }), 
-            //        new Action(() =>
-            //        {
-            //            ConnectorApp.Instance.WindowViewModel.HideBusyScreen();
-            //        }));
-            //}
-            //else
-            //{
-            //    //TODO Message
-            //    //AuraMessageWindow message = new AuraMessageWindow("Авторизация","Неверный логин/пароль",
-            //    //    "Ok", AuraMessageWindow.MessageTypes.WarningType);
-            //    //message.ShowDialog();
-            //    ConnectorApp.Instance.WindowViewModel.HideBusyScreen();
-            //}
-
         }
         #endregion
     }

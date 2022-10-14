@@ -12,6 +12,8 @@ using Connector.View;
 using Connector.Models.REST;
 using Aura.VisualModels;
 using System.Net;
+using AuraS.Controls.ControlsViewModels;
+using AuraS.Controls;
 
 namespace Connector.ViewModels
 {
@@ -33,6 +35,15 @@ namespace Connector.ViewModels
                 OnPropertyChanged("IsSearchEnabled");
             }
         }
+        public bool ConnectionListAny
+        {
+            get
+            {
+                if(CurrentUser is not null)
+                    return CurrentUser.AllConnections.Any();
+                return false;
+            }
+        }
         public AppUser? CurrentUser
         {
             get 
@@ -41,15 +52,6 @@ namespace Connector.ViewModels
                     if(ConnectorApp.Instance.Session.User is not null)
                         return ConnectorApp.Instance.Session.User; 
                 return null;
-            }
-        }
-        public ObservableCollection<Connection> Connections
-        {
-            get
-            {
-                if(CurrentUser is not null)
-                    return new ObservableCollection<Connection>(CurrentUser.AllConnections);
-                return new ObservableCollection<Connection>();
             }
         }
         #endregion
@@ -61,24 +63,40 @@ namespace Connector.ViewModels
                 return _updateConnectionsList ??
                   (_updateConnectionsList = new Command(async obj =>
                   {
-                      ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Обновление",true);
-                      if (ConnectorApp.Instance.Session is null || ConnectorApp.Instance.Session.Token is null)
-                          throw new Exception("Возникла ошибка при попытке обновить данные подключений. Сессия недоступна или отсутствует токен." +
-                              "Необходима переавторизация.");
-                      RestService restService = new RestService(ConnectorApp.Instance.Session!.Token!.Token);
-                      IEnumerable<Connection>? updatedConnection = await restService.GetConnectionListAsync();
-                      if (updatedConnection is not null)
-                          ConnectorApp.Instance.Session.User!.Connections = updatedConnection.ToList();
-                      else
-                          throw new Exception("Возникла ошибка при попытке обновить данные подключений");
+                      try
+                      {
 
-                      IEnumerable<AppUserGroup>? updatedGroups = await restService.GetGroupsListAsync();
-                      if (updatedGroups is not null)
-                          ConnectorApp.Instance.Session.User!.Groups = updatedGroups.ToList();
-                      else
-                          throw new Exception("Возникла ошибка при попытке обновить данные подключений");
-                      OnPropertyChanged("CurrentUser");
-                      ConnectorApp.Instance.WindowViewModel.HideBusyScreen();
+
+                          ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Обновление", true);
+                          if (ConnectorApp.Instance.Session is null || ConnectorApp.Instance.Session.Token is null)
+                              throw new Exception("Возникла ошибка при попытке обновить данные подключений. Сессия недоступна или отсутствует токен." +
+                                  "Необходима переавторизация.");
+                          RestService restService = new RestService(ConnectorApp.Instance.Session!.Token!.Token);
+                          IEnumerable<Connection>? updatedConnection = await restService.GetConnectionListAsync();
+                          if (updatedConnection is not null)
+                              ConnectorApp.Instance.Session.User!.Connections = updatedConnection.ToList();
+                          else
+                              throw new Exception("Возникла ошибка при попытке обновить данные подключений");
+
+                          IEnumerable<AppUserGroup>? updatedGroups = await restService.GetGroupsListAsync();
+                          if (updatedGroups is not null)
+                              ConnectorApp.Instance.Session.User!.Groups = updatedGroups.ToList();
+                          else
+                              throw new Exception("Возникла ошибка при попытке обновить данные подключений");
+                          OnPropertyChanged("CurrentUser");
+                          OnPropertyChanged("ConnectionListAny");
+                          ConnectorApp.Instance.WindowViewModel.HideBusyScreen();
+                      }
+                      catch(Exception ex)
+                      {
+                          AuraMessageWindow message = new AuraMessageWindow(
+                                new AuraMessageWindowViewModel(
+                                    "Ошибка обновления",
+                                    ex.Message,
+                                    "Ok",
+                                    AuraMessageWindowViewModel.MessageTypes.Error));
+                                      message.ShowDialog();
+                      }
                   }));
             }
         }
@@ -88,17 +106,32 @@ namespace Connector.ViewModels
             {
                 return _logoutCommand ??
                   (_logoutCommand = new Command(async obj =>
-                  {                      
-                      ConnectorApp.Instance.Session = null;
-                      await ConnectorApp.Instance.WindowViewModel.ChangeUIControl(
-                          new LoginControl(new LoginControllerViewModel(
-                              new Сredentials(
-                                  ConnectorApp.Instance.Session?.User?.Credentials.Login ?? string.Empty,
-                                  string.Empty))), 
-                          true);
-                      //ConnectorApp.Instance.VisualScheme.GetDefault().Apply();
+                  {
+                      try
+                      {
+
+
+                          ConnectorApp.Instance.Session = null;
+                          await ConnectorApp.Instance.WindowViewModel.ChangeUIControl(
+                              new LoginControl(new LoginControllerViewModel(
+                                  new Сredentials(
+                                      ConnectorApp.Instance.Session?.User?.Credentials.Login ?? string.Empty,
+                                      string.Empty))),
+                              true);
+                          //ConnectorApp.Instance.VisualScheme.GetDefault().Apply();
+                      }
+                      catch (Exception ex)
+                      {
+                          AuraMessageWindow message = new AuraMessageWindow(
+                                      new AuraMessageWindowViewModel(
+                                          "Ошибка деавторизации",
+                                          ex.Message,
+                                          "Ok",
+                                          AuraMessageWindowViewModel.MessageTypes.Error));
+                          message.ShowDialog();
+                      }
                   }));
-            }
+            }            
         }
         public Command ToSettingsCommand
         {
@@ -107,8 +140,24 @@ namespace Connector.ViewModels
                 return _toSettingsCommand ??
                     (_toSettingsCommand = new Command(async obj =>
                     {
-                        await ConnectorApp.Instance.WindowViewModel.ChangeUIControl(new SettingsControl(), true);
+                        try
+                        {
+                            await ConnectorApp.Instance.WindowViewModel.ChangeUIControl(
+                                new SettingsControl(),
+                                true);
+                        }
+                        catch (Exception ex)
+                        {
+                            AuraMessageWindow message = new AuraMessageWindow(
+                                        new AuraMessageWindowViewModel(
+                                            "Ошибка загрузки настроек",
+                                            ex.Message,
+                                            "Ok",
+                                            AuraMessageWindowViewModel.MessageTypes.Error));
+                            message.ShowDialog();
+                        }                        
                     }));
+
             }
         }
         #endregion

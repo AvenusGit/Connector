@@ -1,0 +1,61 @@
+﻿<Window x:Class="AuraS.Controls.AuraMessageWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AuraS.Controls"
+        xmlns:conv="clr-namespace:AuraS.Converters"
+        mc:Ignorable="d" WindowStyle="None"
+        Title="{Binding Title}" Padding="20" WindowState="Normal" 
+        WindowStartupLocation="CenterScreen"
+        SizeToContent="WidthAndHeight"
+        ResizeMode="NoResize"
+        AllowsTransparency="True"
+        Background="Transparent"
+        MouseLeftButtonDown="DragWindow">
+    <Window.Resources>
+        <conv:MessagePathConverter x:Key="messageTypeToPathConverter"/>
+    </Window.Resources>
+    <Window.Effect>
+        <DropShadowEffect ShadowDepth="5" BlurRadius="20" Direction="300" Color="{DynamicResource SubAccentColor}" Opacity="0.5"/>
+    </Window.Effect>
+    <Border CornerRadius="10" Background="{DynamicResource FoneBrush}"
+            Margin="20">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" Color="{DynamicResource FoneColor}"
+                              Direction="120"/>
+        </Border.Effect>
+        <Grid Background="Transparent">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <!--header-->
+            <Grid Margin="10" HorizontalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Viewbox Width="20" Height="20" HorizontalAlignment="Right">
+                    <Canvas Width="24" Height="24">
+                        <Path Fill="{DynamicResource PathBrush}" Data="{Binding MessageType, Converter={StaticResource messageTypeToPathConverter}}" />
+                    </Canvas>
+                </Viewbox>
+                <TextBlock Style="{DynamicResource AuraDefaultText}" Text="{Binding Title}"
+                       Grid.Column="1" HorizontalAlignment="Left"/>
+            </Grid>
+            <TextBlock Style="{DynamicResource AuraDefaultText}" Text="{Binding Message}"
+                       Grid.Row="1" HorizontalAlignment="Center"
+                       Margin="20,0"/>
+            <Button Style="{DynamicResource AuraDefaultButtonStyle}" Margin="20"
+                    Grid.Row="2" HorizontalAlignment="Center"
+                    Click="CloseMessageWindow">
+                <TextBlock Style="{DynamicResource AuraDefaultText}" 
+                           Text="{Binding ButtonText}"
+                           Margin="20,5"/>
+            </Button>
+
+        </Grid>
+    </Border>
+</Window>

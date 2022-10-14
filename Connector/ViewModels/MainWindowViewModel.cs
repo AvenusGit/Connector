@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows;
 using Connector.Models.Commands;
 using Connector.View;
+using System.Diagnostics;
 
 namespace Connector.ViewModels
 {
@@ -26,6 +27,7 @@ namespace Connector.ViewModels
         private Command _closeCommand;
         private Command _minimizeCommand;
         private Command _settingsCommand;
+        private Command _toGit;
         private UserControl userControl;
         #endregion
         #region Commands
@@ -55,10 +57,26 @@ namespace Connector.ViewModels
         {
             get
             {
-                return _minimizeCommand ??
-                  (_minimizeCommand = new Command(obj =>
+                return _settingsCommand ??
+                  (_settingsCommand = new Command(obj =>
                   {
-                      GoToSettings();
+                      if(CurrentUserControl is not AppSettingsControl)
+                        GoToSettings();
+                  }));
+            }
+        }
+        public Command ToGitCommand
+        {
+            get
+            {
+                return _toGit ??
+                  (_toGit = new Command(obj =>
+                  {
+                      Process.Start(new ProcessStartInfo
+                      {
+                          FileName = "https://github.com/AvenusGit/Connector",
+                          UseShellExecute = true
+                      });
                   }));
             }
         }

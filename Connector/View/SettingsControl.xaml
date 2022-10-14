@@ -6,6 +6,12 @@
              xmlns:local="clr-namespace:Connector.View"
              xmlns:AuraS="clr-namespace:AuraS.Controls;assembly=AuraS"
              mc:Ignorable="d">
+    <Grid>
+        <Border Background="{DynamicResource FoneBrush}" Opacity="0.5" Margin="0" CornerRadius="10">
+
+        </Border>
+
+    <Border>
     <ScrollViewer Style="{DynamicResource AuraScrollViewer}" VerticalScrollBarVisibility="Auto">
         <Grid Margin="30,0">
             <Grid.RowDefinitions>
@@ -13,8 +19,8 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <!--TODO Settings Control-->
-            <AuraS:AuraSettingControl Margin="20,10,20,50" Name="iAuraSettingsControl"/>
+            <!--Settings Control-->
+            <AuraS:AuraSettingControl Name="iAuraSettingsControl"/>
             <Grid Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Top">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
@@ -39,4 +45,6 @@
             </Grid>
         </Grid>
     </ScrollViewer>
+    </Border>
+    </Grid>
 </UserControl>
