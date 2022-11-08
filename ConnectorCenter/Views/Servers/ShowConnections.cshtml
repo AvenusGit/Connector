@@ -46,7 +46,7 @@
             </div>
         </div>
         <!--List-->
-        <form>
+
     <div class="row" style="margin:0px 2vw; height:70vh;">
                 @if(Model.Server.Connections.Any())
                 {
@@ -82,6 +82,7 @@
                                     <td class="text text-center">@connection.ServerUser?.Credentials?.Login</td>
                                     <td class="text text-center">
                                         <div class="container d-flex justify-content-center">
+                                    <form>
                                         @if (Model.AccessSettings.ServersConnections == AccessSettings.AccessModes.Edit)
                                         {
                                             @if (connection.IsAvailable)
@@ -118,6 +119,7 @@
                                                 </svg>
                                             </button>
                                         }
+                                    </form>
                                     </div>    
                                     </td>
                                 </tr>
@@ -130,5 +132,4 @@
                     <p class="text text-center m-3">Список пуст</p>
                 }
             </div>
-        </form>
 </div>

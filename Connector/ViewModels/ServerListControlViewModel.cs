@@ -14,6 +14,7 @@ using Aura.VisualModels;
 using System.Net;
 using AuraS.Controls.ControlsViewModels;
 using AuraS.Controls;
+//using Connector.Models.Connectors;
 
 namespace Connector.ViewModels
 {
@@ -24,6 +25,7 @@ namespace Connector.ViewModels
         private Command _updateConnectionsList;
         private Command _logoutCommand;
         private Command _toSettingsCommand;
+        private Command _connectCommand;
         #endregion
         #region Properties
         public bool IsSearchEnabled
@@ -156,6 +158,43 @@ namespace Connector.ViewModels
                                             AuraMessageWindowViewModel.MessageTypes.Error));
                             message.ShowDialog();
                         }                        
+                    }));
+
+            }
+        }
+        public Command ConnectCommand
+        {
+            get
+            {
+                return _connectCommand ??
+                    (_connectCommand = new Command(async obj =>
+                    {
+                        try
+                        {
+                            if (obj is Connection)
+                            {
+                                Connection connection = (Connection)obj;
+                                if (connection.ConnectionType == Connection.ConnectionTypes.RDP)
+                                {
+                                    RdpWindow rdpWindow = new RdpWindow(connection);
+                                    rdpWindow.Show();
+                                    rdpWindow.Connect();                                    
+                                }
+                                //TODO SSH connection type!
+                            }
+                            else
+                                throw new Exception("Неизвестный тип подключения. Параметр не является типом Connection.");
+                        }
+                        catch (Exception ex)
+                        {                            
+                            AuraMessageWindow message = new AuraMessageWindow(
+                                        new AuraMessageWindowViewModel(
+                                            "Ошибка при попытке подключения",
+                                            ex.Message,
+                                            "Ok",
+                                            AuraMessageWindowViewModel.MessageTypes.Error));
+                            message.ShowDialog();
+                        }
                     }));
 
             }

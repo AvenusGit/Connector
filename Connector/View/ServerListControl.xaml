@@ -10,7 +10,7 @@
         <converters:InverseVisibilityConverter x:Key="VisibilityInvertor"/>
         <converters:RolePathConverter x:Key="RoleToPath"/>
     </UserControl.Resources>
-    <Grid>
+    <Grid x:Name="ServerListControlGrid">
         <Border Background="{DynamicResource FoneBrush}" Opacity="0.5" Padding="5" CornerRadius="10"/>
         <Border Padding="5" CornerRadius="10">
         <Grid >
@@ -166,7 +166,9 @@
                                     </Viewbox>
                                 </Button>
                                 <Button Style="{DynamicResource AuraIconButtonStyle}" Grid.Column="1"
-                                        Margin="0" Width="35" Height="35" Cursor="Hand">
+                                        Margin="0" Width="35" Height="35" Cursor="Hand"
+                                        Command="{Binding DataContext.ConnectCommand, ElementName=ServerListControlGrid}"
+                                        CommandParameter="{Binding}">
                                     <Viewbox Width="20" Height="20">
                                         <Canvas Width="24" Height="24">
                                                 <Path Fill="{DynamicResource PathBrush}" Data="M2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2A10,10 0 0,0 2,12M4,12A8,8 0 0,1 12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12M10,17L15,12L10,7V17Z" />

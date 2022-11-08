@@ -5,6 +5,7 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +15,15 @@
 
   <ItemGroup>
     <Folder Include="Models\Visual\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="AxInterop.MSTSCLib">
+      <HintPath>..\..\..\..\..\Users\v.brodikov\Downloads\MSTSCLib\AxInterop.MSTSCLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Interop.MSTSCLib">
+      <HintPath>..\..\..\..\..\Users\v.brodikov\Downloads\MSTSCLib\Interop.MSTSCLib.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
