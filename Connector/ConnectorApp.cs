@@ -11,6 +11,8 @@ using Connector.Models;
 using Connector.Models.REST;
 using ConnectorCore.Models.Connections;
 using Aura.VisualModels;
+using System.Windows;
+using Connector.View;
 
 namespace Connector
 {
@@ -18,7 +20,7 @@ namespace Connector
     {
         public const string AppName = "Connector";
         public static readonly ApplicationVersion AppVersion = new ApplicationVersion("A", 0, string.Empty);
-        public string _connectorCenterUrl = "https://localhost:54708"; 
+        public string _connectorCenterUrl = "https://localhost:54531"; 
 
         #region Singletone
         private static ConnectorApp _connectorApp;
@@ -68,6 +70,7 @@ namespace Connector
             }
         }
         public WpfVisualScheme VisualScheme { get; set; }
+        public List<RdpWindow> ActiveConnections { get; set; } = new List<RdpWindow>();
         #endregion
         #region Methods
         private void Initialize()

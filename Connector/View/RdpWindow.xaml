@@ -7,14 +7,15 @@
         xmlns:wc="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
         mc:Ignorable="d"
         Title="{Binding WindowLogo}" WindowStartupLocation="CenterScreen"
-        WindowStyle="None" ResizeMode="CanResizeWithGrip" Background="Transparent"
-        AllowsTransparency="True" MinHeight="400" MinWidth="600"
+        WindowStyle="None"  ResizeMode="CanResizeWithGrip"
+        MinHeight="400" MinWidth="600"
+        SizeChanged="RdpWindowSizeChanged"
+        Closing="RDPWindowClosing"
         MouseLeftButtonDown="DragWindow">
     <Window.Resources>
         <wc:BooleanToVisibilityConverter x:Key="boolToVisibilityConv"/>
     </Window.Resources>
-    <Border BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource FoneBrush}"
-            CornerRadius="10,10,0,0">
+    <Border BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource FoneBrush}">
         <Grid>
             <!--Content-->
             <Grid>
@@ -93,17 +94,28 @@
                         </Viewbox>
                     </Button>
                 </Grid>
-                <Grid  Grid.Row="1"  Margin="0,0,0,10" x:Name="iHost">
+                <!--Content-->
+                <Grid Grid.Row="1" x:Name="iHost">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <!--RDP Control-->
                     <WindowsFormsHost x:Name="iWindowsFormsHost"
                                       HorizontalAlignment="Stretch"
-                                      VerticalAlignment="Stretch"/>
+                                      VerticalAlignment="Stretch"/>                   
+                    
                 </Grid>
-                
                 <!--BusyScreen-->
                 <Border CornerRadius="10"
-                    BorderBrush="Transparent" Grid.Row="1"
+                    Grid.Row="1"
                     Visibility="{Binding IsBusy, Converter={StaticResource boolToVisibilityConv}}"
-                    Opacity="0.7">
+                    Opacity="0.7" Background="{DynamicResource PanelBrush}">
                     <Border.Style>
                         <Style TargetType="Border">
                             <Style.Triggers>

@@ -19,6 +19,8 @@ using MSTSCLib;
 using AxMSTSCLib;
 using System.Windows.Forms;
 using System.Runtime.CompilerServices;
+using System.Windows.Forms.Integration;
+using System.Drawing;
 
 namespace Connector.View
 {
@@ -32,7 +34,8 @@ namespace Connector.View
             this.DataContext = this;
             Connection = connection;
             WindowLogo = $"{Connection.Server.Name}:{Connection.ConnectionName}";
-            InitializeComponent();            
+            InitializeComponent();
+            Loaded += Connect;
         }
         private bool _isBusy;
         private string _busyMessage;
@@ -63,7 +66,7 @@ namespace Connector.View
         public string WindowLogo { get; set; }
         public Connection Connection { get; set; }
         public AxMsRdpClient10NotSafeForScripting? Client { get; set; }
-        public void Connect()
+        private void Connect(object? sender, EventArgs e)
         {
             BusyMessage = "Идет подключение...";
             IsBusy = true;
@@ -77,10 +80,29 @@ namespace Connector.View
             if (String.IsNullOrEmpty(Connection.Server.Host))
                 throw new Exception("Не удалось подключиться к RDP серверу. Не указан хост. Обратитесь к администратору.");
 
-            Client = new AxMsRdpClient10NotSafeForScripting();   
-            ((ISupportInitialize)Client).BeginInit();
+            Client = new AxMsRdpClient10NotSafeForScripting();
+
+            ((ISupportInitialize)Client).BeginInit();            
+            Client.Name = WindowLogo;
             iWindowsFormsHost.Child = Client;
-            
+
+            //visual settings
+            Client.ColorDepth = 32;            
+            Client.Width = Client.Parent.ClientRectangle.Width; //Convert.ToInt32(iHost.ActualWidth);
+            Client.Height = Client.Parent.ClientRectangle.Height;//Convert.ToInt32(iHost.ActualHeight);
+            Client.AdvancedSettings9.SmartSizing = true;
+            Client.DesktopWidth = Convert.ToInt32(SystemParameters.FullPrimaryScreenWidth);
+            Client.DesktopHeight = Convert.ToInt32(SystemParameters.FullPrimaryScreenHeight);
+            Client.AdvancedSettings9.AuthenticationLevel = 2;
+            Client.AdvancedSettings9.EnableCredSspSupport = true;
+            //Client.FullScreen = true;
+            Client.FullScreenTitle = WindowLogo;
+            Client.AdvancedSettings.ContainerHandledFullScreen = 0;
+            Client.AdvancedSettings8.RelativeMouseMode = true;
+            Client.AdvancedSettings.BitmapPeristence = 1;
+            Client.AdvancedSettings.Compress = 1;
+            //Client.AdvancedSettings2.overallConnectionTimeout = 1;//?
+
             //events
             Client.ConnectingText = "Идет подключение...";
             Client.DisconnectedText = "Идет отключение...";
@@ -95,32 +117,22 @@ namespace Connector.View
             Client.OnRequestContainerMinimize += OnMinimize;
             Client.OnFatalError += OnFatalError;
             Client.OnWarning += OnNoFatalError;
-            ((ISupportInitialize)Client).EndInit();            
+            Client.OnDisconnected += OnDisconnected;
+            Client.OnIdleTimeoutNotification += OnTimeout;
+
 
             //connection settings
             Client.Name = $"Подключение к {Connection.ConnectionName}";
             Client.Server = Connection.Server.Host;
             Client.UserName = Connection.ServerUser.Credentials.Login;
-            Client.AdvancedSettings2.ClearTextPassword = Connection.ServerUser.Credentials.Password ?? "";
-            Client.AdvancedSettings2.RDPPort = Connection.Server.RdpPort;
+            Client.AdvancedSettings9.ClearTextPassword = Connection.ServerUser.Credentials.Password ?? "";
+            Client.AdvancedSettings9.RDPPort = Connection.Server.RdpPort;
 
-            //visual settings
-            Client.ColorDepth = 24;
-            Client.AdvancedSettings9.SmartSizing = true;
-            Client.Width = Convert.ToInt32(iHost.ActualWidth);
-            Client.Height = Convert.ToInt32(iHost.ActualHeight);
-            Client.DesktopWidth = Convert.ToInt32(iHost.ActualWidth);
-            Client.DesktopHeight = Convert.ToInt32(iHost.ActualHeight);
-            Client.AdvancedSettings9.AuthenticationLevel = 2;
-            Client.AdvancedSettings9.EnableCredSspSupport = true;
-            Client.FullScreen = true;
-            Client.FullScreenTitle = WindowLogo;
-            Client.AdvancedSettings.ContainerHandledFullScreen = 0;
+            ((ISupportInitialize)Client).EndInit();
 
             try
             {
                 Client.Connect();
-                Client.Show();
             }
             catch
             {
@@ -152,7 +164,7 @@ namespace Connector.View
         #region Close connection/Window
         private bool OnClose(object sender, IMsTscAxEvents_OnConfirmCloseEvent e)
         {
-            this.Close();
+            Client.RequestClose();
             return true; // TODO realise confirm
         }
         private void CloseWindow(object sender, RoutedEventArgs e)
@@ -165,12 +177,11 @@ namespace Connector.View
         private void OnFullScreenMode(object? sender, EventArgs e)
         {
             Client!.FullScreen = true;
-            this.WindowState = WindowState.Minimized;
         }
         private void OnWindowMode(object? sender, EventArgs e)
         {
             Client!.FullScreen = false;
-            this.WindowState = WindowState.Normal;
+            Client.Show();
         }
         #endregion
         #region Minimize
@@ -200,6 +211,20 @@ namespace Connector.View
             this.Close();
             throw new Exception("Ошибка в RDP подлючении:" + e.errorCode);
         }
+        private void OnDisconnected(object? sender, IMsTscAxEvents_OnDisconnectedEvent e)
+        {
+            OnClosed(null);
+        }
+        private void OnTimeout(object? sender, EventArgs e)
+        {
+            AuraS.Controls.AuraMessageWindow messageWindow = new AuraS.Controls.AuraMessageWindow(
+                    new AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel(
+                        "Информация",
+                        $"Не удалось подключиться к {Connection.Server.Name}.",
+                        "Ok",
+                        AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel.MessageTypes.Info)
+                );
+        }
         #endregion
         private void DragWindow(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
@@ -211,10 +236,7 @@ namespace Connector.View
         }
         private void Maximized(object sender, RoutedEventArgs e)
         {
-            if (this.WindowState == WindowState.Normal)
-                this.WindowState = WindowState.Maximized;              
-            else
-                OnFullScreenMode(sender, e);
+            OnFullScreenMode(sender, e);
         }
         private void Minimize(object sender, RoutedEventArgs e)
         {
@@ -229,5 +251,28 @@ namespace Connector.View
                 PropertyChanged(this, new PropertyChangedEventArgs(prop));
         }
         #endregion
+
+        private void RdpWindowSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (Client is null) return;
+            if(Client.FullScreen)
+            {
+                Client.Width = Convert.ToInt32(SystemParameters.FullPrimaryScreenWidth);
+                Client.Height = Convert.ToInt32(SystemParameters.FullPrimaryScreenHeight);
+            }
+            else
+            {
+                Client.Height = Convert.ToInt32(iHost.ActualHeight);
+                Client.Width = Convert.ToInt32(iHost.ActualWidth);               
+            }            
+        }
+
+        private void RDPWindowClosing(object sender, CancelEventArgs e)
+        {
+            if (Client is not null)
+                if (Client.Connected == 2)
+                    Client.Disconnect();
+            ConnectorApp.Instance.ActiveConnections.Remove(this);
+        }
     }
 }

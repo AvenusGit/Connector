@@ -174,11 +174,34 @@ namespace Connector.ViewModels
                             if (obj is Connection)
                             {
                                 Connection connection = (Connection)obj;
+                                if(!connection.IsAvailable)
+                                {
+                                    AuraMessageWindow message = new AuraMessageWindow(
+                                        new AuraMessageWindowViewModel(
+                                            "Подключение заблокировано",
+                                            "Это подключение заблокировано администратором на текущий момент.\r\nВозможно ведутся ремонтные работы.",
+                                            "Ok",
+                                            AuraMessageWindowViewModel.MessageTypes.Info));
+                                    message.ShowDialog();
+                                    return;
+                                }
                                 if (connection.ConnectionType == Connection.ConnectionTypes.RDP)
                                 {
-                                    RdpWindow rdpWindow = new RdpWindow(connection);
-                                    rdpWindow.Show();
-                                    rdpWindow.Connect();                                    
+                                    RdpWindow? activeWindow = ConnectorApp.Instance.ActiveConnections
+                                        .Where(rdpWindow => rdpWindow.Connection.Id == connection.Id)
+                                        .FirstOrDefault();
+                                    if(activeWindow is not null)
+                                    {
+                                        activeWindow.Focus();
+                                        if (activeWindow.WindowState == System.Windows.WindowState.Minimized)
+                                            activeWindow.WindowState = System.Windows.WindowState.Normal;
+                                    }
+                                    else
+                                    {
+                                        RdpWindow rdpWindow = new RdpWindow(connection);
+                                        rdpWindow.Show();
+                                        ConnectorApp.Instance.ActiveConnections.Add(rdpWindow);
+                                    }                                    
                                 }
                                 //TODO SSH connection type!
                             }

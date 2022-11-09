@@ -9,6 +9,7 @@ namespace ConnectorCore.Models
 {
     public class UnitedSettings
     {
+
         public bool DoItGood { get; set; }
         // some settings
         public static UnitedSettings GetDefault()
