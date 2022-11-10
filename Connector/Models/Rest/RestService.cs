@@ -32,9 +32,13 @@ namespace Connector.Models.REST
         }
         public string? Token { get; set; }
         public HttpClient HttpClient { get; set; } = new HttpClient();
-        private async Task<HttpResponseMessage> RequestAsync(string request, HttpMethod method, HttpContent? content = null)
+        private async Task<HttpResponseMessage> RequestAsync(string request, HttpMethod method, bool isTokenNeed, HttpContent? content = null)
         {
+            if(isTokenNeed)
+                if (ConnectorApp.Instance.IsTokenOld)
+                    ConnectorApp.Instance.UpdateToken();
             HttpClient = new HttpClient();
+            HttpClient.Timeout = new TimeSpan(0, 0, 5);
             HttpRequestMessage message = new HttpRequestMessage(method, ConnectorApp.Instance.ConnectorCenterUrl + request);
             if (content is not null)
                 message.Content = content;
@@ -48,29 +52,30 @@ namespace Connector.Models.REST
             HttpResponseMessage tokenResponse = await RequestAsync(
                 @"/api/token/gettoken",
                 HttpMethod.Post,
+                false,
                 JsonContent.Create(сredentials));
             if(tokenResponse.IsSuccessStatusCode)
             {
                 string resultJson = await tokenResponse.Content.ReadAsStringAsync();
                 return JsonConvert.DeserializeObject<TokenInfo>(resultJson);
-            }                
+            }
             else
             {
+                if (tokenResponse.StatusCode == HttpStatusCode.UnavailableForLegalReasons)
+                    throw new Exception("Ошибка при авторизации. Пользователь заблокирован администратором.");
                 if (tokenResponse.StatusCode == HttpStatusCode.Unauthorized)
-                    throw new Exception("Ошибка при авторизации. Неверный логин пароль");
+                    throw new Exception("Ошибка при авторизации. Неверный логин пароль.");
                 if (tokenResponse.StatusCode == HttpStatusCode.NotFound)
                     throw new Exception("Ошибка при авторизации. Сервер не найден.");
                 else
-                {
-                    throw new Exception($"{(int)tokenResponse.StatusCode}:{tokenResponse.Content.ReadAsStringAsync()}");
-                }
+                    throw new Exception($"Ошибка при авторизации. Проверьте адрес сервера и учетные данные.");
             }
         }
         public async Task<UnitedSettings?> GetUnitedSettingsAsync()
         {
             if(String.IsNullOrWhiteSpace(Token))
                 throw new Exception("Попытка получить общие настройки не имея токена авторизации. Необходима переавторизация.");
-            HttpResponseMessage response = await RequestAsync(@"/api/unitedSettings", HttpMethod.Get);
+            HttpResponseMessage response = await RequestAsync(@"/api/unitedSettings", HttpMethod.Get, true);
             if (response.IsSuccessStatusCode)
                 return JsonConvert.DeserializeObject<UnitedSettings>(await response.Content.ReadAsStringAsync());
             else
@@ -83,14 +88,14 @@ namespace Connector.Models.REST
                 }
             }
         }
-
         public async Task<IEnumerable<Connection>?> GetConnectionListAsync()
         {
             if (String.IsNullOrWhiteSpace(Token))
                 throw new Exception("Попытка получить список подключений не имея токена авторизации. Необходима переавторизация.");
                     HttpResponseMessage tokenResponse = await RequestAsync(
                     @"/api/appuser/connections",
-                    HttpMethod.Get
+                    HttpMethod.Get,
+                    true
                 );
             if (tokenResponse.IsSuccessStatusCode)
             {
@@ -116,7 +121,8 @@ namespace Connector.Models.REST
                 throw new Exception("Попытка получить список подключений не имея токена авторизации. Необходима переавторизация.");
                 HttpResponseMessage tokenResponse = await RequestAsync(
                         @"/api/appuser/groups",
-                        HttpMethod.Get
+                        HttpMethod.Get,
+                        true
             );
             if (tokenResponse.IsSuccessStatusCode)
             {
@@ -140,7 +146,8 @@ namespace Connector.Models.REST
                 throw new Exception("Попытка получить данные пользователя не имея токена авторизации. Необходима переавторизация.");
             HttpResponseMessage tokenResponse = await RequestAsync(
                 @"/api/appuser/full",
-                HttpMethod.Get
+                HttpMethod.Get,
+                true
                 );
             if (tokenResponse.IsSuccessStatusCode)
             {
@@ -164,6 +171,7 @@ namespace Connector.Models.REST
             HttpResponseMessage tokenResponse = await RequestAsync(
                 @"/api/appuser/visualScheme/set",
                 HttpMethod.Post,
+                true,
                 JsonContent.Create(newScheme));
             if (!tokenResponse.IsSuccessStatusCode)
             {

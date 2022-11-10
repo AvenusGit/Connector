@@ -30,17 +30,17 @@
                 <Button Grid.Column="0" Style="{DynamicResource AuraDefaultButtonStyle}" 
                         HorizontalAlignment="Right" Command="{Binding CancelCommand}"
                         Width="{Binding ActualWidth, ElementName=iSaveButton}">
-                    <TextBlock Style="{DynamicResource AuraDefaultText}" Text="Отмена"/>
+                            <TextBlock Style="{DynamicResource AuraDefaultText}" Text="Отмена" FontSize="{DynamicResource FontSize12}"/>
                 </Button>
                 <Button Grid.Column="1" Style="{DynamicResource AuraDefaultButtonStyle}" 
                         HorizontalAlignment="Right" Command="{Binding ResetCommand}"
                         Width="{Binding ActualWidth, ElementName=iSaveButton}">
-                    <TextBlock Style="{DynamicResource AuraDefaultText}" Text="Сброс"/>
+                            <TextBlock Style="{DynamicResource AuraDefaultText}" Text="Сброс" FontSize="{DynamicResource FontSize12}"/>
                 </Button>
                 <Button Grid.Column="2" Style="{DynamicResource AuraDefaultButtonStyle}" 
-                         HorizontalAlignment="Left" x:Name="iSaveButton"
+                        HorizontalAlignment="Left" x:Name="iSaveButton"
                         Command="{Binding SaveCommand}">
-                    <TextBlock Style="{DynamicResource AuraDefaultText}" Text="Сохранить"/>
+                    <TextBlock Style="{DynamicResource AuraDefaultText}" Text="Сохранить" FontSize="{DynamicResource FontSize12}"/>
                 </Button>
             </Grid>
         </Grid>

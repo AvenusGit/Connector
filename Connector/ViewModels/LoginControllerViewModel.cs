@@ -57,6 +57,9 @@ namespace Connector.ViewModels
         {
             try
             {
+                if (String.IsNullOrEmpty(Сredentials.Login) || String.IsNullOrEmpty(Сredentials.Password))
+                    throw new Exception("Не все необходимые данные введены.");
+
                 ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Авторизация...");
                 RestService restService = new RestService();
                 Session newSession = new Session();
@@ -65,6 +68,7 @@ namespace Connector.ViewModels
                     throw new Exception("Ошибка при авторизации. Не удалось десериализовать данные авторизации.");
                 newSession.Token = tokenInfo;
                 restService.Token = tokenInfo.Token;
+                ConnectorApp.Instance.IsTokenOld = false;
 
                 ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Получение настроек...");
                 UnitedSettings? unitedSettings =  await restService.GetUnitedSettingsAsync();
@@ -78,7 +82,8 @@ namespace Connector.ViewModels
                     throw new Exception("Ошибка при авторизации. Не удалось десериализовать данные пользователя.");
                 newSession.User = user;
 
-                ConnectorApp.Instance.Session = newSession;
+                ConnectorApp.Instance.Session = newSession;                
+                ConnectorApp.Instance.Session.User.Credentials = Сredentials;
                 ConnectorApp.Instance.VisualScheme = new WpfVisualScheme(ConnectorApp.Instance.Session.User.VisualScheme);                
                 ServerListControlViewModel serversVm = new ServerListControlViewModel();
                 await ConnectorApp.Instance.WindowViewModel.ChangeUIControl(new ServerListControl(serversVm), true);

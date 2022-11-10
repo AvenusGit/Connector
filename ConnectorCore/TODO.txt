@@ -1,0 +1,8 @@
+﻿// check activeX rdp control in web page
+// client rdp connection timeout
+// password hash
+//// realize ssh connection
+/ change default theme (border)
+// client connection timeout ???
+/ client texture
+//// client-server timeout

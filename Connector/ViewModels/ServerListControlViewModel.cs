@@ -14,6 +14,8 @@ using Aura.VisualModels;
 using System.Net;
 using AuraS.Controls.ControlsViewModels;
 using AuraS.Controls;
+using System.Timers;
+using System.Data;
 //using Connector.Models.Connectors;
 
 namespace Connector.ViewModels
@@ -26,6 +28,7 @@ namespace Connector.ViewModels
         private Command _logoutCommand;
         private Command _toSettingsCommand;
         private Command _connectCommand;
+        private Command _toConnectionInfoCommand;
         #endregion
         #region Properties
         public bool IsSearchEnabled
@@ -56,6 +59,13 @@ namespace Connector.ViewModels
                 return null;
             }
         }
+        public Session? CurrentSession
+        {
+            get
+            {
+                return ConnectorApp.Instance.Session;
+            }
+        }
         #endregion
         #region Commands
         public Command UpdateConnectionListCommand
@@ -67,8 +77,6 @@ namespace Connector.ViewModels
                   {
                       try
                       {
-
-
                           ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Обновление", true);
                           if (ConnectorApp.Instance.Session is null || ConnectorApp.Instance.Session.Token is null)
                               throw new Exception("Возникла ошибка при попытке обновить данные подключений. Сессия недоступна или отсутствует токен." +
@@ -111,16 +119,8 @@ namespace Connector.ViewModels
                   {
                       try
                       {
-
-
                           ConnectorApp.Instance.Session = null;
-                          await ConnectorApp.Instance.WindowViewModel.ChangeUIControl(
-                              new LoginControl(new LoginControllerViewModel(
-                                  new Сredentials(
-                                      ConnectorApp.Instance.Session?.User?.Credentials.Login ?? string.Empty,
-                                      string.Empty))),
-                              true);
-                          //ConnectorApp.Instance.VisualScheme.GetDefault().Apply();
+                          ConnectorApp.Instance.Logout();
                       }
                       catch (Exception ex)
                       {
@@ -167,7 +167,7 @@ namespace Connector.ViewModels
             get
             {
                 return _connectCommand ??
-                    (_connectCommand = new Command(async obj =>
+                    (_connectCommand = new Command(obj =>
                     {
                         try
                         {
@@ -180,6 +180,17 @@ namespace Connector.ViewModels
                                         new AuraMessageWindowViewModel(
                                             "Подключение заблокировано",
                                             "Это подключение заблокировано администратором на текущий момент.\r\nВозможно ведутся ремонтные работы.",
+                                            "Ok",
+                                            AuraMessageWindowViewModel.MessageTypes.Info));
+                                    message.ShowDialog();
+                                    return;
+                                }
+                                if (!connection.Server.IsAvailable)
+                                {
+                                    AuraMessageWindow message = new AuraMessageWindow(
+                                        new AuraMessageWindowViewModel(
+                                            "Сервер заблокирован",
+                                            "Сервер этого подключения заблокирован администратором на текущий момент.\r\nВозможно ведутся ремонтные работы.",
                                             "Ok",
                                             AuraMessageWindowViewModel.MessageTypes.Info));
                                     message.ShowDialog();
@@ -222,6 +233,41 @@ namespace Connector.ViewModels
 
             }
         }
+        public Command ToConnectionCommand
+        {
+            get
+            {
+                return _toConnectionInfoCommand ??
+                    (_toConnectionInfoCommand = new Command(obj =>
+                    {
+                        try
+                        {
+                            if (obj is Connection)
+                            {
+                                Connection connection = (Connection)obj;
+                                ConnectionInfoWindow infoWindow = new ConnectionInfoWindow(connection);
+                                infoWindow.Show();
+                            }
+                            else
+                                throw new Exception("Неизвестный тип подключения. Параметр не является типом Connection.");
+                        }
+                        catch (Exception ex)
+                        {
+                            AuraMessageWindow message = new AuraMessageWindow(
+                                        new AuraMessageWindowViewModel(
+                                            "Ошибка при попытке получить информацию о подключении",
+                                            ex.Message,
+                                            "Ok",
+                                            AuraMessageWindowViewModel.MessageTypes.Error));
+                            message.ShowDialog();
+                        }
+                    }));
+
+            }
+        }
+        #endregion
+        #region Methods
+
         #endregion
 
     }

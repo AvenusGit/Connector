@@ -171,7 +171,7 @@ namespace ConnectorCenter.Controllers
                             }));
                     }
                     _logger.LogInformation($"Запрос страницы для редактирования пользователя {appUser.Name}.");
-                    return View(new EditModel(appUser));
+                    return View(new EditModel(appUser, accessSettings));
                 }
                 catch (Exception ex)
                 {
@@ -378,11 +378,26 @@ namespace ConnectorCenter.Controllers
                     AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
                     if (accessSettings.Users != AccessSettings.AccessModes.Edit)
                     {
-                        _logger.LogWarning("Отказано в попытке запросить страницу добавления пользователя. Недостаточно прав.");
+                        _logger.LogWarning("Отказано в попытке добавить пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
                     }
                     if (ModelState.IsValid)
                     {
+                        if(AppUserExist(appUser.Credentials.Login))
+                        {
+                            _logger.LogWarning("Отказано в попытке добавления пользователя. Пользователь с таким логином уже существует.");
+                            return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                                new
+                                {
+                                    message = "Пользователь с таким логином уже существует",
+                                    buttons = new Dictionary<string, string>()
+                                    {
+                                        {"На главную",@"\dashboard" },
+                                        {"К логам",@"\logs" }
+                                    },
+                                    errorCode = 400
+                                }));
+                        }
                         appUser.VisualScheme = VisualScheme.GetDefaultVisualScheme();
                         _context.Users.Add(appUser);
                         await _context.SaveChangesAsync();
@@ -440,9 +455,14 @@ namespace ConnectorCenter.Controllers
                     }
                     if (ModelState.IsValid)
                     {
-                        if (AppUserExists(appUser.Id))
+                        AppUser? user = _context.Users.FirstOrDefault(x => x.Id == appUser.Id);
+                        if (user is not null)
                         {
-                            _context.Update(appUser);
+                            user.Name = appUser.Name;
+                            user.Credentials = appUser.Credentials;
+                            user.Role = appUser.Role;
+                            user.IsEnabled = appUser.IsEnabled;
+                            _context.Update(user);
                             await _context.SaveChangesAsync();
                             _logger.LogInformation($"Изменен пользователь {appUser.Name} (ID:{appUser.Id}).");
                             return RedirectToAction("Index");
@@ -956,6 +976,73 @@ namespace ConnectorCenter.Controllers
                 }
             }
         }
+        [HttpPost]
+        public async Task<IActionResult> DropUserVisualSetting(long? userId)
+        {
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                try
+                {
+                    ConnectorCenterApp.Instance.Statistics.IncWebRequest();
+                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (accessSettings.ResetVisualSettings != true)
+                    {
+                        _logger.LogWarning("Отказано в попытке сбросить визуальные настройки пользователя. Недостаточно прав.");
+                        return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
+                    }
+
+                    AppUser? user = await _context.Users
+                        .Include(usr => usr.VisualScheme)
+                        .FirstOrDefaultAsync(usr => usr.Id == userId);
+
+                    if (user is null)
+                    {
+                        _logger.LogWarning($"Ошибка при запросе сброса визуальных настроек у пользователя. Пользователь не найден.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе сброса визуальных настроек у пользователя. Пользователь не найден.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 404
+                            }));
+                    }
+                    user.VisualScheme = VisualScheme.GetDefaultVisualScheme();
+                    _context.Update(user);
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation($"Сброшены визуальные настройки у пользователя {user.Name}.");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = $"У пользователя {user.Name} успешно сброшены визуальные настройки.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"К списку",@"\appUsers" },
+                                {"К логам",@"\logs" }
+                            }
+                            
+                        }));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при запросе сброса визуальных настроек у пользователя. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при запросе сброса визуальных настроек у пользователя.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
+        }
         #endregion
         #region Methods
         /// <summary>
@@ -983,7 +1070,13 @@ namespace ConnectorCenter.Controllers
         /// <returns>True - пользователь есть, False - пользователя нет</returns>
         private bool AppUserExists(long id)
         {
-            return (_context.Users?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Users?
+                .Include(usr => usr.UserSettings)
+                .Any(e => e.Id == id)).GetValueOrDefault();
+        }
+        private bool AppUserExist(string login)
+        {
+            return (_context.Users?.Any(usr => usr.Credentials.Login == login)).GetValueOrDefault();
         }
         #endregion
 

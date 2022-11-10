@@ -73,12 +73,12 @@
                                         @if (Model.SupportAccessSettings.WebAccess)
                                             {
                                                 <option selected value="True">Разрешено</option>
-                                                <option value="False">Запрещен</option>
+                                                <option value="False">Запрещено</option>
                                             }
                                             else
                                             {
                                                 <option value="True">Разрешено</option>
-                                                <option selected value="False">Запрещен</option>
+                                                <option selected value="False">Запрещено</option>
                                             }                                    
                                         </select>
                                     </div>
@@ -227,12 +227,12 @@
                                         @if (Model.SupportAccessSettings.Statistics)
                                             {
                                                 <option selected value="True">Разрешено</option>
-                                                <option value="False">Запрещен</option>
+                                                <option value="False">Запрещено</option>
                                             }
                                             else
                                             {
                                                 <option value="True">Разрешено</option>
-                                                <option selected value="False">Запрещен</option>
+                                                <option selected value="False">Запрещено</option>
                                             }                                    
                                         </select>
                                     </div>
@@ -248,12 +248,12 @@
                                         @if (Model.SupportAccessSettings.Logs)
                                             {
                                                 <option selected value="True">Разрешено</option>
-                                                <option value="False">Запрещен</option>
+                                                <option value="False">Запрещено</option>
                                             }
                                             else
                                             {
                                                 <option value="True">Разрешено</option>
-                                                <option selected value="False">Запрещен</option>
+                                                <option selected value="False">Запрещено</option>
                                             }                                    
                                         </select>
                                     </div>
@@ -269,12 +269,33 @@
                                             @if (Model.SupportAccessSettings.ImportAndExport)
                                             {
                                                 <option selected value="True">Разрешено</option>
-                                                <option value="False">Запрещен</option>
+                                                <option value="False">Запрещено</option>
                                             }
                                             else
                                             {
                                                 <option value="True">Разрешено</option>
-                                                <option selected value="False">Запрещен</option>
+                                                <option selected value="False">Запрещено</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <p class="text">Сброс визуальных настроек</p>
+                                </div>
+                                <div class="col">
+                                    <div class="select">
+                                        <select name="ResetVisualSettings">
+                                            @if (Model.SupportAccessSettings.ResetVisualSettings)
+                                            {
+                                                <option selected value="True">Разрешено</option>
+                                                <option value="False">Запрещено</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="True">Разрешено</option>
+                                                <option selected value="False">Запрещено</option>
                                             }
                                         </select>
                                     </div>

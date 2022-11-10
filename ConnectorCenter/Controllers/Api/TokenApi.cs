@@ -76,6 +76,13 @@ namespace ConnectorCenter.Controllers.Api
                         AppUser? user;
                         if (AuthorizeService.IsAuthorized(_dataBaseContext, credentials, out user))
                         {
+                            if(!user.IsEnabled)
+                            {
+                                Response.StatusCode = 451;
+                                _logger.LogWarning($"Отказ в API авторизации. Пользователь деактивирован. Логин:{credentials.Login}.");
+                                await HttpContext.Response.WriteAsync("No active user");
+                                return;
+                            }
                             JwtSecurityToken jwt = JwtAuthorizeService.GetJwtToken(user!);
                             Response.StatusCode = 200;
                             JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();

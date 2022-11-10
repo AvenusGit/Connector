@@ -44,25 +44,46 @@
                             </div>
                             <div class="row">
                                 <div class="col">
-                                    <p class="text">Делать все хорошо</p>
+                                    <p class="text">Показывать сетевую информацию</p>
                                 </div>
                                 <div class="col">
                                     <div class="select">
-                                    <select name="DoItGood">
-                                        @if (Model.OtherSettings.DoItGood)
-                                        {
-                                            <option selected value="True">Да</option>
-                                            <option value="False">Нет</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="True">Да</option>
-                                            <option selected value="False">Нет</option>
-                                        }                                    
+                                        <select name="AllowConnectionInfo">
+                                            @if (Model.OtherSettings.AllowConnectionInfo)
+                                            {
+                                                <option selected value="True">Да</option>
+                                                <option value="False">Нет</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="True">Да</option>
+                                                <option selected value="False">Нет</option>
+                                            }
                                         </select>
                                     </div>
                                 </div>
-                            </div>                            
+                            </div>
+                            <div class="row">
+                                        <div class="col">
+                                            <p class="text">Делать все хорошо</p>
+                                        </div>
+                                        <div class="col">
+                                            <div class="select">
+                                            <select name="DoItGood">
+                                                @if (Model.OtherSettings.DoItGood)
+                                                {
+                                                    <option selected value="True">Да</option>
+                                                    <option value="False">Нет</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="True">Да</option>
+                                                    <option selected value="False">Нет</option>
+                                                }                                    
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>                            
                             <!--Save-->
                             @if(Model.AccessSettings.SettingsOther == AccessSettings.AccessModes.Edit)
                             {

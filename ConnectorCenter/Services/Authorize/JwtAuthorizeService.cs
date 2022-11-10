@@ -26,7 +26,7 @@ namespace ConnectorCenter.Services.Authorize
                 issuer: AuthOptions.ISSUER,
                 audience: AuthOptions.AUDIENCE,
                 claims: identity.Claims,
-                expires: DateTime.UtcNow.AddMinutes(30), // время действия 30 минут
+                expires: DateTime.UtcNow.AddMinutes(UnitedSettings.JwtTokenLifeTimeMinutes), // время действия ожидается одинаковым на сервере и клиенте
                 signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
             return jwt;
         }
