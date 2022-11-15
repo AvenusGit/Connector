@@ -15,6 +15,7 @@ using ConnectorCore.Models.Connections;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using ConnectorCenter.Models.Settings;
+using ConnectorCore.Cryptography;
 
 namespace ConnectorCenter.Controllers
 {
@@ -170,6 +171,8 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 404
                             }));
                     }
+
+                    appUser.Credentials.Password = "֍password֍";
                     _logger.LogInformation($"Запрос страницы для редактирования пользователя {appUser.Name}.");
                     return View(new EditModel(appUser, accessSettings));
                 }
@@ -383,7 +386,22 @@ namespace ConnectorCenter.Controllers
                     }
                     if (ModelState.IsValid)
                     {
-                        if(AppUserExist(appUser.Credentials.Login))
+                        if (String.IsNullOrEmpty(appUser.Credentials.Login) || String.IsNullOrEmpty(appUser.Credentials.Password))
+                        {
+                            _logger.LogWarning("Отказано в попытке добавления пользователя. Не указан логин или пароль.");
+                            return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                                new
+                                {
+                                    message = "Отказано в попытке добавления пользователя. Не указан логин или пароль.",
+                                    buttons = new Dictionary<string, string>()
+                                    {
+                                        {"На главную",@"\dashboard" },
+                                        {"К логам",@"\logs" }
+                                    },
+                                    errorCode = 400
+                                }));
+                        }
+                        if (AppUserExist(appUser.Credentials.Login))
                         {
                             _logger.LogWarning("Отказано в попытке добавления пользователя. Пользователь с таким логином уже существует.");
                             return RedirectToAction("Index", "Message", new RouteValueDictionary(
@@ -398,6 +416,12 @@ namespace ConnectorCenter.Controllers
                                     errorCode = 400
                                 }));
                         }
+
+                        appUser.Credentials.Password = PasswordCryptography.GetUserPasswordHash(
+                            appUser.Credentials.Login,
+                            appUser.Credentials.Password
+                            );
+
                         appUser.VisualScheme = VisualScheme.GetDefaultVisualScheme();
                         _context.Users.Add(appUser);
                         await _context.SaveChangesAsync();
@@ -455,11 +479,32 @@ namespace ConnectorCenter.Controllers
                     }
                     if (ModelState.IsValid)
                     {
-                        AppUser? user = _context.Users.FirstOrDefault(x => x.Id == appUser.Id);
+                        if (String.IsNullOrEmpty(appUser.Credentials.Login) || String.IsNullOrEmpty(appUser.Credentials.Password))
+                        {
+                            _logger.LogWarning("Отказано в попытке изменения пользователя. Логин или пароль пусты.");
+                            return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                                new
+                                {
+                                    message = "Отказано в попытке добавления пользователя. Логин или пароль пусты.",
+                                    buttons = new Dictionary<string, string>()
+                                    {
+                                        {"На главную",@"\dashboard" },
+                                        {"К логам",@"\logs" }
+                                    },
+                                    errorCode = 400
+                                }));
+                        }
+                        AppUser? user = _context.Users
+                            .Include(usr => usr.Credentials)
+                            .FirstOrDefault(x => x.Id == appUser.Id);
                         if (user is not null)
                         {
                             user.Name = appUser.Name;
-                            user.Credentials = appUser.Credentials;
+                            user.Credentials.Login = appUser.Credentials.Login;
+                            if (appUser.Credentials.Password != "֍password֍")
+                                user.Credentials.Password = PasswordCryptography.GetUserPasswordHash(
+                                    appUser.Credentials.Login,
+                                    appUser.Credentials.Password);                       
                             user.Role = appUser.Role;
                             user.IsEnabled = appUser.IsEnabled;
                             _context.Update(user);
@@ -1079,18 +1124,5 @@ namespace ConnectorCenter.Controllers
             return (_context.Users?.Any(usr => usr.Credentials.Login == login)).GetValueOrDefault();
         }
         #endregion
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
 }

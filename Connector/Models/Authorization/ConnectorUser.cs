@@ -14,7 +14,7 @@ namespace Connector.Models.Authorization
     {
        
         public ConnectorUser() { }
-        public ConnectorUser(string name, Сredentials credentials)
+        public ConnectorUser(string name, Credentials credentials)
         {
             Name = name;
             Credentials = credentials;

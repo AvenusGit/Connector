@@ -22,7 +22,7 @@ namespace Connector
     {
         public const string AppName = "Connector";
         public static readonly ApplicationVersion AppVersion = new ApplicationVersion("A", 0, string.Empty);
-        public string _connectorCenterUrl = "https://localhost:60170"; 
+        public string _connectorCenterUrl = "https://localhost:64892"; 
 
         #region Singletone
         private static ConnectorApp _connectorApp;
@@ -109,8 +109,8 @@ namespace Connector
             }
             await WindowViewModel.ChangeUIControl(
                               new LoginControl(new LoginControllerViewModel(
-                                  new Сredentials(
-                                      ConnectorApp.Instance.Session?.User?.Credentials.Login ?? string.Empty,
+                                  new Credentials(
+                                      Session?.User?.Credentials.Login ?? string.Empty,
                                       string.Empty))),
                               true);
         }

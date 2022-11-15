@@ -83,7 +83,7 @@
                                   15.79 7.58,14 12,14Z" />
                             </Canvas>
                         </Viewbox>
-                        <TextBox Text="{Binding Сredentials.Login}" Grid.Column="1"
+                        <TextBox Text="{Binding Credentials.Login}" Grid.Column="1"
                              Style="{StaticResource AuraTextBoxDefaultStyle}"
                              HorizontalAlignment="Stretch"
                              Margin="10,0,0,0"

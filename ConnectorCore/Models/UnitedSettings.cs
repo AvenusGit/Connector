@@ -14,7 +14,6 @@ namespace ConnectorCore.Models
         public const int JwtTokenLifeTimeMinutes = 10;// нельзя ставить меньше 2 минут!
         public bool AllowConnectionInfo { get; set; }
         public bool UsePasswordHash { get; set; }
-        public PasswordCryptography.HashTypes HashType { get; set; }
         public bool DoItGood { get; set; }
         // some settings
         public static UnitedSettings GetDefault()
@@ -23,8 +22,7 @@ namespace ConnectorCore.Models
             {
                 DoItGood = false,
                 AllowConnectionInfo = false,
-                UsePasswordHash = true,
-                HashType = PasswordCryptography.HashTypes.MD5
+                UsePasswordHash = true
             };
         }
     }

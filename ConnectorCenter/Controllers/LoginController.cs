@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using ConnectorCore.Models;
 using ConnectorCenter.Data;
 using ConnectorCenter.Services.Authorize;
+using ConnectorCore.Cryptography;
 
 namespace ConnectorCenter.Controllers
 {
@@ -61,7 +62,7 @@ namespace ConnectorCenter.Controllers
         /// <param name="сredentials">Учетные данные для авторизации</param>
         /// <returns>Переадресовывает либо в меню, либо на страницу первого запуска либо на страницы авторизации в зависимости от результата.</returns>
         [HttpPost]
-        public IActionResult Authorize(Сredentials сredentials)
+        public IActionResult Authorize(Credentials credentials)
         {
             using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
@@ -83,8 +84,24 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 400
                             }));
                     }
+                    if(String.IsNullOrEmpty(credentials.Login) || String.IsNullOrEmpty(credentials.Password))
+                    {
+                        _logger.LogWarning($"Ошибка при попытке авторизации в приложении через Cookies. Введенный логин или пароль пуст.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при попытке авторизации в приложении через Cookies. Логин или пароль пуст.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"К авторизации",@"\login" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 400
+                            }));
+                    }
+                    credentials.Password = PasswordCryptography.GetUserPasswordHash(credentials.Login, credentials.Password);
                     AppUser? user;
-                    if (AuthorizeService.IsAuthorized(_dataBaseContext, сredentials, out user))
+                    if (AuthorizeService.IsAuthorized(_dataBaseContext, credentials, out user))
                     {
                         if( !AuthorizeService.GetAccessSettings(user.Role).WebAccess)
                         {

@@ -18,6 +18,6 @@ namespace ConnectorCore.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
         public string? Name { get; set; }
-        public Сredentials? Credentials { get; set; }
+        public Credentials? Credentials { get; set; }
     }
 }

@@ -47,7 +47,7 @@ namespace Connector.Models.REST
                 message.Headers.Add("Authorization", "Bearer " + Token);
             return await HttpClient.SendAsync(message);
         }
-        public async Task<TokenInfo?> GetTokenInfoAsync(Сredentials сredentials)
+        public async Task<TokenInfo?> GetTokenInfoAsync(Credentials сredentials)
         {
             HttpResponseMessage tokenResponse = await RequestAsync(
                 @"/api/token/gettoken",

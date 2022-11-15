@@ -11,6 +11,7 @@ using System.Windows;
 using System.Collections.Generic;
 using ConnectorCore.Models.Connections;
 using System.Linq;
+using ConnectorCore.Cryptography;
 
 namespace Connector.ViewModels
 {
@@ -19,14 +20,15 @@ namespace Connector.ViewModels
         #region Constructors
         public LoginControllerViewModel() 
         {
-            Сredentials = new Сredentials(string.Empty, string.Empty);
+            Credentials = new Credentials(string.Empty, string.Empty);
         }
-        public LoginControllerViewModel(Сredentials credentials)
+        public LoginControllerViewModel(Credentials credentials)
         {
-            Сredentials = credentials;
+            Credentials = credentials;
         }
         #endregion
         #region Fields
+        private Credentials _credentials;
         private Command _authorizeCommand;
         #endregion
         #region Properties
@@ -37,7 +39,21 @@ namespace Connector.ViewModels
                 return ConnectorApp.AppName;
             }
         }
-        public Сredentials Сredentials { get; set; }
+        public Credentials Credentials
+        { 
+            get
+            {
+                return _credentials;
+            }
+            set
+            {
+                _credentials = value;
+                if(!String.IsNullOrEmpty(_credentials.Password))
+                    _credentials.Password = PasswordCryptography.GetUserPasswordHash(
+                        _credentials.Login,
+                        _credentials.Password);
+            }
+        }
         #endregion
         #region Commands
         public Command AuthorizeCommand
@@ -57,13 +73,20 @@ namespace Connector.ViewModels
         {
             try
             {
-                if (String.IsNullOrEmpty(Сredentials.Login) || String.IsNullOrEmpty(Сredentials.Password))
+                if (String.IsNullOrEmpty(Credentials.Login) || String.IsNullOrEmpty(Credentials.Password))
                     throw new Exception("Не все необходимые данные введены.");
 
                 ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Авторизация...");
                 RestService restService = new RestService();
                 Session newSession = new Session();
-                TokenInfo? tokenInfo = await restService.GetTokenInfoAsync(Сredentials);
+                Credentials hashedCredentials = new Credentials()
+                {
+                    Login = Credentials.Login,
+                    Password = PasswordCryptography.GetUserPasswordHash(
+                        Credentials.Login,
+                        Credentials.Password)
+                };
+                TokenInfo? tokenInfo = await restService.GetTokenInfoAsync(hashedCredentials);
                 if (tokenInfo is null)
                     throw new Exception("Ошибка при авторизации. Не удалось десериализовать данные авторизации.");
                 newSession.Token = tokenInfo;
@@ -83,7 +106,7 @@ namespace Connector.ViewModels
                 newSession.User = user;
 
                 ConnectorApp.Instance.Session = newSession;                
-                ConnectorApp.Instance.Session.User.Credentials = Сredentials;
+                ConnectorApp.Instance.Session.User.Credentials = Credentials;
                 ConnectorApp.Instance.VisualScheme = new WpfVisualScheme(ConnectorApp.Instance.Session.User.VisualScheme);                
                 ServerListControlViewModel serversVm = new ServerListControlViewModel();
                 await ConnectorApp.Instance.WindowViewModel.ChangeUIControl(new ServerListControl(serversVm), true);

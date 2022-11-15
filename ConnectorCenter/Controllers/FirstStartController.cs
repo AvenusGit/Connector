@@ -8,6 +8,7 @@ using ConnectorCore.Models.Connections;
 using ConnectorCore.Models.VisualModels.Interfaces;
 using ConnectorCore.Models.VisualModels;
 using ConnectorCenter.Models.Settings;
+using ConnectorCore.Cryptography;
 
 namespace ConnectorCenter.Controllers
 {
@@ -64,7 +65,7 @@ namespace ConnectorCenter.Controllers
         #endregion
         #region POST
         [HttpPost]
-        public IActionResult CreateFirstUser(string username, Сredentials credentials)
+        public IActionResult CreateFirstUser(string username, Credentials credentials)
         {
             using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
@@ -85,6 +86,21 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 400
                             }));
                     }
+                    if(String.IsNullOrEmpty(credentials.Login) || String.IsNullOrEmpty(credentials.Password))
+                    {
+                        _logger.LogWarning($"Ошибка при запросе сохранении первого пользователя. Логин или пароль пусты.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе сохранении первого пользователя. Логин или пароль пусты.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"Повторить попытку",@"\firstStart" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 400
+                            }));
+                    }
                     AppUser newUser = new AppUser()
                     {
                         Name = username,
@@ -95,6 +111,9 @@ namespace ConnectorCenter.Controllers
                         UserSettings = UserSettings.GetDefault(),
                         VisualScheme = VisualScheme.GetDefaultVisualScheme()
                     };
+                    newUser.Credentials.Password = PasswordCryptography.GetUserPasswordHash(
+                        newUser.Credentials.Login,
+                        newUser.Credentials.Password);
                     _dataBaseContext.Users.Add(newUser);
                     _dataBaseContext.SaveChanges();
                     _logger.LogInformation($"Выполнено сохранение первого пользователя - {newUser.Name}. Назначены права администратора.");

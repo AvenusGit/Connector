@@ -45,7 +45,7 @@ namespace ConnectorCenter.Controllers.Api
         [Produces(MediaTypeNames.Application.Json)]
         [Consumes("application/json")]
         [HttpPost]
-        public async Task GetToken([FromBody] Сredentials credentials)
+        public async Task GetToken([FromBody] Credentials credentials)
         {
             using (var scope = _logger.BeginScope($"API({JwtAuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {

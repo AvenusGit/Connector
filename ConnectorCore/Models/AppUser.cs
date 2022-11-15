@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Newtonsoft.Json;
 using System.Xml.Serialization;
+using ConnectorCore.Cryptography;
 
 namespace ConnectorCore.Models
 {
@@ -16,7 +17,7 @@ namespace ConnectorCore.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
         public string? Name { get; set; }
-        public Сredentials Credentials { get; set; }
+        public Credentials Credentials { get; set; }
         public List<AppUserGroup> Groups { get; set; } = new List<AppUserGroup>();
         public List<Connection> Connections { get; set; } = new List<Connection>();
         [XmlIgnore]
@@ -49,7 +50,7 @@ namespace ConnectorCore.Models
             return new AppUser()
             {
                 Name = "DefaultAdmin",
-                Credentials = new Сredentials("connectorCenter", "connectorCenter"),
+                Credentials = new Credentials("connectorCenter", "connectorCenter"),
                 Connections = new List<Connection>(),
                 Role = AppUser.AppRoles.Administrator,
                 UserSettings = UserSettings.GetDefault(),

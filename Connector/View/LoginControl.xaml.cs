@@ -28,7 +28,7 @@ namespace Connector.View
 
         private void PasswordChanged(object sender, RoutedEventArgs e)
         {
-            (DataContext as LoginControllerViewModel).Сredentials.Password = iPasswordField.Password;
+            (DataContext as LoginControllerViewModel).Credentials.Password = iPasswordField.Password;
         }
 
         private void CheckEnterKey(object sender, System.Windows.Input.KeyEventArgs e)

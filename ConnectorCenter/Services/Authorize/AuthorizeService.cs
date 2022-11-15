@@ -7,12 +7,13 @@ using System.Reflection;
 using ConnectorCenter.Models.Settings;
 using System.Net;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using ConnectorCore.Cryptography;
 
 namespace ConnectorCenter.Services.Authorize
 {
     public abstract class AuthorizeService
     {
-        public static bool IsAuthorized(DataBaseContext dbContext, Сredentials credentials, out AppUser? user)
+        public static bool IsAuthorized(DataBaseContext dbContext, Credentials credentials, out AppUser? user)
         {
             List<AppUser> userList =
                 dbContext.Users.Where(user =>
@@ -29,7 +30,9 @@ namespace ConnectorCenter.Services.Authorize
             {
                 if (!dbContext.Users.Where(usr => usr.Role == AppUser.AppRoles.Administrator).Any()
                     && credentials.Login == AppUser.GetDefault().Credentials!.Login
-                    && credentials.Password == AppUser.GetDefault().Credentials!.Password)
+                    && credentials.Password == PasswordCryptography.GetUserPasswordHash(
+                        AppUser.GetDefault().Credentials!.Login,
+                        AppUser.GetDefault().Credentials!.Password))
                 {
                     user = AppUser.GetDefault();
                     return true;

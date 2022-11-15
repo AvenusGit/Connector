@@ -31,7 +31,8 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     _logger.LogInformation($"Запрос страницы главного меню.");
-                    return View(new Views.DashBoard.IndexViewModel(AuthorizeService.GetAccessSettings(HttpContext)));
+                    return View(new Views.DashBoard.IndexViewModel(AuthorizeService.GetAccessSettings(HttpContext),
+                        AuthorizeService.GetUserName(HttpContext), AuthorizeService.GetUserRole(HttpContext)));
                 }
                 catch (Exception ex)
                 {

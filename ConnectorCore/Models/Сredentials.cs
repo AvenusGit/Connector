@@ -7,14 +7,15 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Newtonsoft.Json;
+using ConnectorCore.Cryptography;
 
 namespace ConnectorCore.Models
 {
-    public class Сredentials
+    public class Credentials
     {
-        public Сredentials() { }
-        public Сredentials(string login) { }
-        public Сredentials(string login, string password)
+        public Credentials() { }
+        public Credentials(string login) { }
+        public Credentials(string login, string password)
         {
             Login = login;
             Password = password;
@@ -23,9 +24,9 @@ namespace ConnectorCore.Models
         [JsonIgnore]
         public long Id { get; set; }
         public string? Login { get; set; }
-        public string? Password { get; set; }
+        public string? Password {get; set; }
 
-        public bool IsIdentical(Сredentials original)
+        public bool IsIdentical(Credentials original)
         {
             return Login == original.Login && Password == original.Password;
         }
