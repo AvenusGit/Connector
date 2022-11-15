@@ -87,21 +87,27 @@ namespace Connector.View
             iWindowsFormsHost.Child = Client;
 
             //visual settings
-            Client.ColorDepth = 32;            
+            Client.ColorDepth = 32;//!         
             Client.Width = Client.Parent.ClientRectangle.Width; //Convert.ToInt32(iHost.ActualWidth);
             Client.Height = Client.Parent.ClientRectangle.Height;//Convert.ToInt32(iHost.ActualHeight);
-            Client.AdvancedSettings9.SmartSizing = true;
+            Client.AdvancedSettings9.SmartSizing = true;//!
             Client.DesktopWidth = Convert.ToInt32(SystemParameters.FullPrimaryScreenWidth);
             Client.DesktopHeight = Convert.ToInt32(SystemParameters.FullPrimaryScreenHeight);
             Client.AdvancedSettings9.AuthenticationLevel = 2;
             Client.AdvancedSettings9.EnableCredSspSupport = true;
-            //Client.FullScreen = true;
+            Client.FullScreen = true; //!
             Client.FullScreenTitle = WindowLogo;
             Client.AdvancedSettings.ContainerHandledFullScreen = 0;
             Client.AdvancedSettings8.RelativeMouseMode = true;
             Client.AdvancedSettings.BitmapPeristence = 1;
             Client.AdvancedSettings.Compress = 1;
             //Client.AdvancedSettings2.overallConnectionTimeout = 1;//?
+            Client.AdvancedSettings2.DisableCtrlAltDel = 1; //!
+            Client.AdvancedSettings2.RedirectDrives = true;
+            Client.AdvancedSettings2.RedirectPrinters = true;
+            Client.AdvancedSettings2.RedirectSmartCards = true;
+            Client.AdvancedSettings9.EnableAutoReconnect = true;
+            Client.AdvancedSettings9.RedirectDirectX = true;
 
             //events
             Client.ConnectingText = "Идет подключение...";

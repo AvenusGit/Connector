@@ -22,5 +22,10 @@ namespace Connector.View
             iAuraSettingsControl.DataContext = 
                 new AuraSettingControlViewModel(ConnectorApp.Instance.VisualScheme);
         }
+
+        private void DragMove(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            e.Handled = false;
+        }
     }
 }

@@ -4,6 +4,7 @@
 ////client-server timeout
 //	client connection settings screen fone
 /// user rdp settings
+	// server control (check bug, no save)
 
 // check activeX rdp control in web page
 // server download logs

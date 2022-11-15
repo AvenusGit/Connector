@@ -15,6 +15,7 @@ using System.Windows;
 using Connector.View;
 using AuraS.Controls.ControlsViewModels;
 using AuraS.Controls;
+using ConnectorCore.Models.VisualModels;
 
 namespace Connector
 {
@@ -22,7 +23,7 @@ namespace Connector
     {
         public const string AppName = "Connector";
         public static readonly ApplicationVersion AppVersion = new ApplicationVersion("A", 0, string.Empty);
-        public string _connectorCenterUrl = "https://localhost:64892"; 
+        public string _connectorCenterUrl = "https://localhost:51654"; 
 
         #region Singletone
         private static ConnectorApp _connectorApp;
@@ -91,7 +92,11 @@ namespace Connector
                 _isTokenOld = value;
             }
         }
-        public WpfVisualScheme VisualScheme { get; set; }
+        public WpfVisualScheme VisualScheme { get; set; } = new WpfVisualScheme()
+        {
+            ColorScheme = new WpfColorScheme().GetDefault(),
+            FontScheme = new WpfFontScheme(string.Empty, 0).GetDefault()
+        };
         public List<RdpWindow> ActiveConnections { get; set; } = new List<RdpWindow>();
         #endregion
         #region Methods

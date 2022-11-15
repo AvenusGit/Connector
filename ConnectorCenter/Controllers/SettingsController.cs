@@ -769,6 +769,55 @@ namespace ConnectorCenter.Controllers
                 }
             }
         }
+        [HttpPost]
+        public async Task<IActionResult> SaveMyRdpSettings(RdpSettings? rdpSettings)
+        {
+            using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                ConnectorCenterApp.Instance.Statistics.IncWebRequest();
+                try
+                {
+                    if (rdpSettings is null || !ModelState.IsValid)
+                    {
+                        _logger.LogError($"Ошибка при попытке сохранить настройки RDP. Неверные аргументы.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при попытке сохранить настройки RDP. Неверные аргументы.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"Назад",@"\settings\my" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 400
+                            }));
+                    }
+                    _context.Update(rdpSettings);
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation($"Настройки RDP пользователя успешно сохранена.");
+                    return View("Index",
+                        new IndexViewModel(
+                            AuthorizeService.GetAccessSettings(HttpContext),
+                            AuthorizeService.GetUserRole(HttpContext)
+                        ));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ошибка при попытке сохранить настройки RDP. {ex.Message}. {ex.StackTrace}");
+                    return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                        new
+                        {
+                            message = "Ошибка при попытке сохранить настройки RDP.",
+                            buttons = new Dictionary<string, string>()
+                            {
+                                {"Назад",@"\settings\my" },
+                                {"К логам",@"\logs" }
+                            },
+                            errorCode = 500
+                        }));
+                }
+            }
+        }
         #endregion
 
     }

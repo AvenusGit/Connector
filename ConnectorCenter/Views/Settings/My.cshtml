@@ -6,6 +6,12 @@
 @{
     Layout = "~/Views/Shared/ViewBase.cshtml";
 }
+@functions{
+    private int[] GetColorDepths()
+    {
+        return new int[] { 8, 16, 24, 32 };
+    }
+}
     <script src="/js/jscolor/jscolor.js"></script>
     <div class="container panel" style="height:80vh;">
         <form>
@@ -151,6 +157,237 @@
                             </div>
                         </div>
                     </form>
+                    <!--separator-->
+                    <div class="row">
+                        <div class="separator" style="height:1px;">
+                        </div>
+                    </div>
+                    <form>
+                        <div class="row">
+                            <h1 class="text text-center fw-bold" style="font-size:2vh; margin:2vh 0px;">Настройки RDP:</h1>
+                            <input type="number" name="Id" hidden
+                                   value="@Model.CurrentUser.UserSettings.RdpSettings.Id" />
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <p class="text">Глубина цвета</p>
+                            </div>
+                            <div class="col">
+                                <div class="select">
+                                    <select name="ColorDepth">
+                                        @foreach (int colorDepth in GetColorDepths())
+                                        {
+                                            if(colorDepth == Model.CurrentUser.UserSettings.RdpSettings.ColorDepth)
+                                            {
+                                                <option selected value="@colorDepth">@colorDepth.ToString()</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@colorDepth">@colorDepth.ToString()</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <p class="text">Авто масштаб</p>
+                            </div>
+                            <div class="col">
+                                <div class="select">
+                                    <select name="SmartSizing">
+                                        @if (Model.CurrentUser.UserSettings.RdpSettings.SmartSizing)
+                                        {
+                                            <option selected value="True">Да</option>
+                                            <option value="False">Нет</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="True">Да</option>
+                                            <option selected value="False">Нет</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <p class="text">Авто полный экран</p>
+                            </div>
+                            <div class="col">
+                                <div class="select">
+                                    <select name="AutoFullScreen">
+                                        @if (Model.CurrentUser.UserSettings.RdpSettings.AutoFullScreen)
+                                        {
+                                            <option selected value="True">Да</option>
+                                            <option value="False">Нет</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="True">Да</option>
+                                            <option selected value="False">Нет</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <p class="text">Выключить CtrAltDel</p>
+                            </div>
+                            <div class="col">
+                                <div class="select">
+                                    <select name="DisableCtrlAltDel">
+                                        @if (Model.CurrentUser.UserSettings.RdpSettings.DisableCtrlAltDel)
+                                        {
+                                            <option selected value="True">Да</option>
+                                            <option value="False">Нет</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="True">Да</option>
+                                            <option selected value="False">Нет</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <p class="text">Проброс дисков</p>
+                            </div>
+                            <div class="col">
+                                <div class="select">
+                                    <select name="RedirectDrives">
+                                        @if (Model.CurrentUser.UserSettings.RdpSettings.RedirectDrives)
+                                        {
+                                            <option selected value="True">Да</option>
+                                            <option value="False">Нет</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="True">Да</option>
+                                            <option selected value="False">Нет</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <p class="text">Проброс портов</p>
+                            </div>
+                            <div class="col">
+                                <div class="select">
+                                    <select name="RedirectPorts">
+                                        @if (Model.CurrentUser.UserSettings.RdpSettings.RedirectPorts)
+                                        {
+                                            <option selected value="True">Да</option>
+                                            <option value="False">Нет</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="True">Да</option>
+                                            <option selected value="False">Нет</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <p class="text">Проброс принтеров</p>
+                            </div>
+                            <div class="col">
+                                <div class="select">
+                                    <select name="RedirectPrinters">
+                                        @if (Model.CurrentUser.UserSettings.RdpSettings.RedirectPrinters)
+                                        {
+                                            <option selected value="True">Да</option>
+                                            <option value="False">Нет</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="True">Да</option>
+                                            <option selected value="False">Нет</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <p class="text">Проброс смарт карт</p>
+                            </div>
+                            <div class="col">
+                                <div class="select">
+                                    <select name="RedirectSmartCards">
+                                        @if (Model.CurrentUser.UserSettings.RdpSettings.RedirectSmartCards)
+                                        {
+                                            <option selected value="True">Да</option>
+                                            <option value="False">Нет</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="True">Да</option>
+                                            <option selected value="False">Нет</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <p class="text">Проброс DirectX</p>
+                            </div>
+                            <div class="col">
+                                <div class="select">
+                                    <select name="RedirectDirectX">
+                                        @if (Model.CurrentUser.UserSettings.RdpSettings.RedirectDirectX)
+                                        {
+                                            <option selected value="True">Да</option>
+                                            <option value="False">Нет</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="True">Да</option>
+                                            <option selected value="False">Нет</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <p class="text">Авто переподключение</p>
+                            </div>
+                            <div class="col">
+                                <div class="select">
+                                    <select name="EnableAutoReconnect">
+                                        @if (Model.CurrentUser.UserSettings.RdpSettings.EnableAutoReconnect)
+                                        {
+                                            <option selected value="True">Да</option>
+                                            <option value="False">Нет</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="True">Да</option>
+                                            <option selected value="False">Нет</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" style="margin:3vh;">
+                            <div class="d-flex justify-content-center">
+                                <button class="button" formaction="/settings/SaveMyRdpSettings" formmethod="post">
+                                    <h1 class="text text-center fw-bold">Сохранить</h1>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
                         </div>
                     </div>
                 </div>

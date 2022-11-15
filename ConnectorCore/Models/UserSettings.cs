@@ -23,8 +23,8 @@ namespace ConnectorCore.Models
         [XmlIgnore]
         [JsonIgnore]
         public AppUser AppUser { get; set; }
-        // some user settings
         public string HelloText { get; set; } = "Hello!";
+        public RdpSettings RdpSettings { get; set; } = RdpSettings.GetDefault();
         public static UserSettings GetDefault()
         {
             return new UserSettings();

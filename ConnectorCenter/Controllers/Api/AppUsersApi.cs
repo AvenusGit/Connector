@@ -57,6 +57,7 @@ namespace ConnectorCenter.Controllers.Api
                         .Include(user => user.Connections)
                             .ThenInclude(conn => conn.Server)
                         .Include(user => user.UserSettings)
+                            .ThenInclude(set => set.RdpSettings)
                         .Include(user => user.VisualScheme)
                             .ThenInclude(vs => vs.ColorScheme)
                         .Include(user => user.VisualScheme)
@@ -211,6 +212,7 @@ namespace ConnectorCenter.Controllers.Api
                     }
 
                     UserSettings? userSettings = await _context.UserSettings
+                        .Include(set => set.RdpSettings)
                         .FirstOrDefaultAsync(settings => settings.AppUserId == JwtAuthorizeService.GetJwtUserId(HttpContext));
 
                     if (userSettings is not null)
@@ -346,8 +348,55 @@ namespace ConnectorCenter.Controllers.Api
                     else
                     {
                         _logger.LogWarning($"Ошибка при попытке установки визуальных настроек. Отсутствуют аргументы.");
-                        HttpContext.Response.StatusCode = 500;
-                        await HttpContext.Response.WriteAsync("500: Internal error");
+                        HttpContext.Response.StatusCode = 400;
+                        await HttpContext.Response.WriteAsync("400: Argument error");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning($"Ошибка при попытке установки визуальных настроек. {ex.Message} {ex.StackTrace}");
+                    HttpContext.Response.StatusCode = 500;
+                    await HttpContext.Response.WriteAsync("500: Internal error");
+                }
+            }
+        }
+        [Route("api/appuser/rdpsettings/set")]
+        [HttpPost]
+        public async Task SetAppUserRdpSettings([FromBody] RdpSettings? rdpSettings)
+        {
+            using (var scope = _logger.BeginScope($"API({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
+            {
+                try
+                {
+                    if (rdpSettings is not null)
+                    {
+                        AppUser? user = await _context.Users
+                            .Include(user => user.UserSettings)
+                                .ThenInclude(userSettings => userSettings.RdpSettings)
+                            .FirstOrDefaultAsync(user => user.Id == JwtAuthorizeService.GetJwtUserId(HttpContext));
+                        if (user is not null)
+                        {
+                            if (user.UserSettings is null)
+                                user.UserSettings = UserSettings.GetDefault();
+                            user.UserSettings.RdpSettings = rdpSettings;
+                            _context.Update(user);
+                            await _context.SaveChangesAsync();
+                            _logger.LogInformation($"Изменены настройки RDP пользователя {user.Name} через API.");
+                            HttpContext.Response.StatusCode = 200;
+                            await HttpContext.Response.WriteAsync("200: Rdp settings succefull changed.");
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"Ошибка при попытке установки визуальных настроек. Пользователь не найден в БД.");
+                            HttpContext.Response.StatusCode = 404;
+                            await HttpContext.Response.WriteAsync("404: User not found");
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Ошибка при попытке установки визуальных настроек. Отсутствуют аргументы.");
+                        HttpContext.Response.StatusCode = 400;
+                        await HttpContext.Response.WriteAsync("400: Argument error");
                     }
                 }
                 catch (Exception ex)

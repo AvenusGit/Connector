@@ -26,9 +26,6 @@ using Microsoft.Extensions.Primitives;
 
 namespace Connector.View
 {
-    /// <summary>
-    /// Логика взаимодействия для RdpWindow.xaml
-    /// </summary>
     public partial class ConnectionInfoWindow : Window
     {
         public ConnectionInfoWindow(Connection connection)
@@ -39,7 +36,7 @@ namespace Connector.View
         }
         public Connection Connection { get; set; }
         
-        private void DragWindow(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void DragWindow(object sender, MouseButtonEventArgs e)
         {
             try
             {

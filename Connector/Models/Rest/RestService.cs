@@ -185,5 +185,24 @@ namespace Connector.Models.REST
                 }
             }
         }
+        public async Task SendRdpSettingsAsync(RdpSettings rdpSettings)
+        {
+            HttpResponseMessage tokenResponse = await RequestAsync(
+                @"/api/appuser/rdpsettings/set",
+                HttpMethod.Post,
+                true,
+                JsonContent.Create(rdpSettings));
+            if (!tokenResponse.IsSuccessStatusCode)
+            {
+                if (tokenResponse.StatusCode == HttpStatusCode.Unauthorized)
+                    throw new Exception("Ошибка авторизации при сохранении визуальных настроек.");
+                if (tokenResponse.StatusCode == HttpStatusCode.NotFound)
+                    throw new Exception("Ошибка при сохранении визуальных настроек. Сервер не найден.");
+                else
+                {
+                    throw new Exception($"{(int)tokenResponse.StatusCode}:{tokenResponse.Content.ReadAsStringAsync()}");
+                }
+            }
+        }
     }
 }

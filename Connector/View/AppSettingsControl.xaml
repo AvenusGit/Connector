@@ -5,7 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Connector.View"
              mc:Ignorable="d">
-    <Grid>
+    <Border Background="{DynamicResource PanelBrush}" CornerRadius="8" Padding="0,20">
+        <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -15,7 +16,7 @@
         <TextBlock Style="{DynamicResource AuraDefaultText}"
                    FontSize="{DynamicResource FontSize18}"
                    HorizontalAlignment="Center"
-                   Text="Настройки приложения"></TextBlock>
+                   Text="Настройки подключения"></TextBlock>
         <Grid Grid.Row="1" Margin="20" HorizontalAlignment="Center">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -43,4 +44,5 @@
                        ></TextBlock>
         </Button>
     </Grid>
+    </Border>
 </UserControl>

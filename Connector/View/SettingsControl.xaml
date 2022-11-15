@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Connector.View"
              xmlns:AuraS="clr-namespace:AuraS.Controls;assembly=AuraS"
+             MouseLeftButtonDown="DragMove"
              mc:Ignorable="d">
     <Grid>
         <Border Background="{DynamicResource FoneBrush}" Opacity="0.5" Margin="0" CornerRadius="10">
@@ -21,7 +22,7 @@
             </Grid.RowDefinitions>
             <!--Settings Control-->
             <AuraS:AuraSettingControl Name="iAuraSettingsControl"/>
-            <Grid Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Top">
+            <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
@@ -43,6 +44,11 @@
                     <TextBlock Style="{DynamicResource AuraDefaultText}" Text="Сохранить" FontSize="{DynamicResource FontSize12}"/>
                 </Button>
             </Grid>
+            <Button Style="{DynamicResource AuraDefaultButtonStyle}" HorizontalAlignment="Stretch" Grid.Row="2"
+                    Margin="15,0,15,0" Command="{Binding ToRdpSettingsCommand}">
+                <TextBlock Style="{DynamicResource AuraDefaultText}" FontSize="{DynamicResource FontSize12}"
+                            Text="Настройки RDP"/>
+            </Button>
         </Grid>
     </ScrollViewer>
     </Border>

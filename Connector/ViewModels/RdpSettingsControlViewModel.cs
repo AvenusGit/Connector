@@ -1,44 +1,41 @@
-﻿using System;
+﻿using AuraS.Controls.ControlsViewModels;
+using AuraS.Controls;
+using Connector.Models.Commands;
+using Connector.Models.REST;
+using Connector.View;
+using ConnectorCore.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Connector.Models.Commands;
-using Aura.VisualModels;
-using AuraS.Controls;
-using Connector.View;
-using ConnectorCore.Models.VisualModels.Interfaces;
-using Connector.Models.REST;
-using AuraS.Controls.ControlsViewModels;
-using ConnectorCore.Models;
 
 namespace Connector.ViewModels
 {
-    public class SettingsControlViewModel : Notifier
+    public class RdpSettingsControlViewModel :Notifier
     {
-        public SettingsControlViewModel(WpfVisualScheme scheme, AuraSettingControl auraControl)
+        public RdpSettingsControlViewModel()
         {
-            CurrentScheme = scheme;
-            AuraControl = auraControl;
-            _backup = scheme.Clone();               
+            if (ConnectorApp.Instance.Session is null)
+                throw new Exception("Ошибка при вызове редактора настроек RDP. Отсутствует сессия.");
+            _backup = (RdpSettings)ConnectorApp.Instance.Session.User.UserSettings.RdpSettings.Clone();
+            RdpSettings = ConnectorApp.Instance.Session.User.UserSettings.RdpSettings;
         }
+        private RdpSettings _backup;
+        private RdpSettings _settings;
         private Command _saveCommand;
         private Command _cancelCommand;
         private Command _resetCommand;
-        private Command _toRdpSettings;
-        private WpfVisualScheme _backup;
-        private WpfVisualScheme _currentScheme;
-        public AuraSettingControl AuraControl { get; set; }
-        public WpfVisualScheme CurrentScheme
+        public RdpSettings RdpSettings
         {
             get
             {
-                return _currentScheme;
+                return _settings;
             }
             set
             {
-                _currentScheme = value;
-                OnPropertyChanged("CurrentScheme");
+                _settings = value;
+                OnPropertyChanged("RdpSettings");
             }
         }
         public Command SaveCommand
@@ -50,14 +47,20 @@ namespace Connector.ViewModels
                     {
                         try
                         {
-                            CurrentScheme.Apply();
+                            if (ConnectorApp.Instance.Session is null)
+                                throw new Exception("Попытка установить настройки RDP без сессии. Переавторизуйтесь.");
+                            if (ConnectorApp.Instance.Session.User is null)
+                                throw new Exception("Попытка установить настройки RDP без указания пользователя. Переавторизуйтесь.");
+                            if (ConnectorApp.Instance.Session.User.UserSettings is null)
+                                ConnectorApp.Instance.Session.User.UserSettings = UserSettings.GetDefault();
+                            ConnectorApp.Instance.Session.User.UserSettings.RdpSettings = RdpSettings;
                             await ConnectorApp.Instance.WindowViewModel.ChangeUIControl(
                                 new ServerListControl(new ServerListControlViewModel()), true);
                             if (ConnectorApp.Instance.Session is not null)
                                 if (ConnectorApp.Instance.Session.Token is not null)
                                 {
                                     RestService restService = new RestService(ConnectorApp.Instance.Session!.Token!.Token);
-                                    await restService.SendVisualSchemeAsync(ConnectorApp.Instance.VisualScheme.ToVisualScheme());
+                                    await restService.SendRdpSettingsAsync(ConnectorApp.Instance.Session.User.UserSettings.RdpSettings);
                                 }
                                 else throw new Exception("Не удалось отправить новую визуальную схему на сервер. Отсутствует токен. Необходима переавторизация.");
                             else throw new Exception("Не удалось отправить новую визуальную схему на сервер. Отсутствует сессия. Необходима переавторизация.");
@@ -66,12 +69,14 @@ namespace Connector.ViewModels
                         {
                             AuraMessageWindow message = new AuraMessageWindow(
                                         new AuraMessageWindowViewModel(
-                                            "Ошибка сохранения настроек",
+                                            "Ошибка сохранения настроек RDP",
                                             ex.Message,
                                             "Ok",
                                             AuraMessageWindowViewModel.MessageTypes.Error));
                             message.ShowDialog();
-                        }                        
+                            await ConnectorApp.Instance.WindowViewModel.ChangeUIControl(
+                                new ServerListControl(new ServerListControlViewModel()), true);
+                        }
                     }));
             }
         }
@@ -80,14 +85,11 @@ namespace Connector.ViewModels
             get
             {
                 return _resetCommand ??
-                    (_resetCommand = new Command(async obj =>
+                    (_resetCommand = new Command(obj =>
                     {
                         try
                         {
-                            CurrentScheme = ConnectorApp.Instance.VisualScheme.GetDefault();
-                            ConnectorApp.Instance.VisualScheme = CurrentScheme;
-                            CurrentScheme.Apply();
-                            AuraControl.DataContext = new AuraSettingControlViewModel(CurrentScheme);
+                            RdpSettings = RdpSettings.GetDefault();
                         }
                         catch (Exception ex)
                         {
@@ -98,7 +100,7 @@ namespace Connector.ViewModels
                                             "Ok",
                                             AuraMessageWindowViewModel.MessageTypes.Error));
                             message.ShowDialog();
-                        }                        
+                        }
                     }));
             }
         }
@@ -112,11 +114,10 @@ namespace Connector.ViewModels
                         try
                         {
                             ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Отмена изменений", true);
-                            CurrentScheme = _backup;
-                            CurrentScheme.Apply();
+                            RdpSettings = _backup;
+                            ConnectorApp.Instance.Session.User.UserSettings.RdpSettings = RdpSettings;
                             await ConnectorApp.Instance.WindowViewModel.ChangeUIControl(
                                 new ServerListControl(new ServerListControlViewModel()), true);
-                            ConnectorApp.Instance.WindowViewModel.HideBusyScreen();
                         }
                         catch (Exception ex)
                         {
@@ -127,38 +128,15 @@ namespace Connector.ViewModels
                                             "Ok",
                                             AuraMessageWindowViewModel.MessageTypes.Error));
                             message.ShowDialog();
-                        }                        
+                        }
                     }));
             }
         }
-        public Command ToRdpSettingsCommand
+        public int[] ColorDepths
         {
             get
             {
-                return _toRdpSettings ??
-                    (_toRdpSettings = new Command(async obj =>
-                    {
-                        try
-                        {
-                            ConnectorApp.Instance.WindowViewModel.ShowBusyScreen("Загрузка", true);
-                            await ConnectorApp.Instance.WindowViewModel.ChangeUIControl(
-                                new RdpSettingsControl(new RdpSettingsControlViewModel()), true);
-                            ConnectorApp.Instance.WindowViewModel.HideBusyScreen();
-                        }
-                        catch (Exception ex)
-                        {
-                            AuraMessageWindow message = new AuraMessageWindow(
-                                        new AuraMessageWindowViewModel(
-                                            "Ошибка при загрузке контрола настроек RDP настроек",
-                                            ex.Message,
-                                            "Ok",
-                                            AuraMessageWindowViewModel.MessageTypes.Error));
-                            message.ShowDialog();
-                            await ConnectorApp.Instance.WindowViewModel.ChangeUIControl(
-                                new ServerListControl(new ServerListControlViewModel()), true);
-                            ConnectorApp.Instance.WindowViewModel.HideBusyScreen();
-                        }
-                    }));
+                return new int[] { 8, 16, 24, 32 };
             }
         }
     }
