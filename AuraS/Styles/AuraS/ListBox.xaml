@@ -61,7 +61,54 @@
             </Setter.Value>
         </Setter>
     </Style>
+    <Style x:Key="AuraListBoxPopupStyle" TargetType="ListBox">
+        <Setter Property="SnapsToDevicePixels"
+          Value="true" />
+        <Setter Property="OverridesDefaultStyle"
+          Value="true" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility"
+          Value="Auto" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility"
+          Value="Auto" />
+        <Setter Property="ScrollViewer.CanContentScroll"
+          Value="true" />
+        <Setter Property="MinWidth"
+          Value="120" />
+        <Setter Property="ItemContainerStyle" Value="{DynamicResource AuraListBoxItemDefaultStyle}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBox">
+                    <Border Name="Border"
+                BorderThickness="1" Background="{DynamicResource FoneBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                CornerRadius="10">
+                        <ScrollViewer Margin="0"
+                        Focusable="false">
+                            <StackPanel Margin="0"
+                        IsItemsHost="True" />
+                        </ScrollViewer>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled"
+                   Value="false">
+                            <Setter TargetName="Border"
+                    Property="Background" Value="{DynamicResource DisableBrush}">
+                            </Setter>
+                            <Setter TargetName="Border"
+                    Property="BorderBrush" Value="{DynamicResource DisableBrush}">
 
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsGrouping"
+                   Value="true">
+                            <Setter Property="ScrollViewer.CanContentScroll"
+                    Value="false" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
     <Style x:Key="AuraListBoxItemDefaultStyle" TargetType="ListBoxItem">
         <Setter Property="SnapsToDevicePixels"
           Value="true" />

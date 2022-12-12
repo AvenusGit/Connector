@@ -27,7 +27,11 @@ namespace ConnectorCore.Models
         public RdpSettings RdpSettings { get; set; } = RdpSettings.GetDefault();
         public static UserSettings GetDefault()
         {
-            return new UserSettings();
+            return new UserSettings()
+            {
+                HelloText = "",
+                RdpSettings = RdpSettings.GetDefault()
+            };
         }
     }
 }

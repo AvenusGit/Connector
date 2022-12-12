@@ -16,6 +16,7 @@ using AuraS.Controls.ControlsViewModels;
 using AuraS.Controls;
 using System.Timers;
 using System.Data;
+using Connector.Models;
 //using Connector.Models.Connectors;
 
 namespace Connector.ViewModels
@@ -196,25 +197,53 @@ namespace Connector.ViewModels
                                     message.ShowDialog();
                                     return;
                                 }
-                                if (connection.ConnectionType == Connection.ConnectionTypes.RDP)
+
+                                switch (connection.ConnectionType)
                                 {
-                                    RdpWindow? activeWindow = ConnectorApp.Instance.ActiveConnections
-                                        .Where(rdpWindow => rdpWindow.Connection.Id == connection.Id)
-                                        .FirstOrDefault();
-                                    if(activeWindow is not null)
-                                    {
-                                        activeWindow.Focus();
-                                        if (activeWindow.WindowState == System.Windows.WindowState.Minimized)
-                                            activeWindow.WindowState = System.Windows.WindowState.Normal;
-                                    }
-                                    else
-                                    {
-                                        RdpWindow rdpWindow = new RdpWindow(connection);
-                                        rdpWindow.Show();
-                                        ConnectorApp.Instance.ActiveConnections.Add(rdpWindow);
-                                    }                                    
+                                    case Connection.ConnectionTypes.SSH:
+                                        ConnectionWindow? activeSshWindow = ConnectorApp.Instance.ActiveConnections
+                                            .Where(sshWindow => sshWindow.Connection.Id == connection.Id)
+                                            .FirstOrDefault();
+                                        if (activeSshWindow is not null)
+                                        {
+                                            activeSshWindow.Focus();
+                                            if (activeSshWindow.WindowState == System.Windows.WindowState.Minimized)
+                                                activeSshWindow.WindowState = System.Windows.WindowState.Normal;
+                                        }
+                                        else
+                                        {
+                                            // все подключения, которые доступны пользователю к этому серверу
+                                            // для быстрой смены аккаунта на сервере
+                                            IEnumerable<Connection> otherVariants = ConnectorApp.Instance.Session.User.Connections
+                                                .Where(conn => conn.IsAvailable == true &&
+                                                       conn.ConnectionType == Connection.ConnectionTypes.SSH &&
+                                                       conn.Server.IsAvailable == true &&
+                                                       conn.Server.Id == connection.Server.Id);
+                                            SshWindow sshWindow = new SshWindow(connection, otherVariants);
+                                            sshWindow.Show();
+                                            ConnectorApp.Instance.ActiveConnections.Add(sshWindow);
+                                        }
+                                        break;
+                                    case Connection.ConnectionTypes.RDP:
+                                        ConnectionWindow? activeWindow = ConnectorApp.Instance.ActiveConnections
+                                            .Where(rdpWindow => rdpWindow.Connection.Id == connection.Id)
+                                            .FirstOrDefault();
+                                        if (activeWindow is not null)
+                                        {
+                                            activeWindow.Focus();
+                                            if (activeWindow.WindowState == System.Windows.WindowState.Minimized)
+                                                activeWindow.WindowState = System.Windows.WindowState.Normal;
+                                        }
+                                        else
+                                        {
+                                            RdpWindow rdpWindow = new RdpWindow(connection);
+                                            rdpWindow.Show();
+                                            ConnectorApp.Instance.ActiveConnections.Add(rdpWindow);
+                                        }
+                                        break;
+                                    default:
+                                        break;
                                 }
-                                //TODO SSH connection type!
                             }
                             else
                                 throw new Exception("Неизвестный тип подключения. Параметр не является типом Connection.");

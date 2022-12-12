@@ -27,6 +27,13 @@ namespace ConnectorCore.Models.Connections
                 return $"{ConnectionType.ToString()}:{Server.Name}/{ServerUser?.Name}";
             }
         }
+        public string ConnectionUserShort
+        {
+            get
+            {
+                return ToString();
+            }            
+        }
         public bool IsAvailable { get; set; }
         [XmlIgnore]
         //[JsonIgnore]
@@ -59,6 +66,10 @@ namespace ConnectorCore.Models.Connections
         {
             SSH,
             RDP
+        }
+        public override string ToString()
+        {
+            return ServerUser.Name + "@" + Server.Name;
         }
     }
 }

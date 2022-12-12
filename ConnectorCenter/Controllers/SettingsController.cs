@@ -269,6 +269,7 @@ namespace ConnectorCenter.Controllers
 
                     AppUser? currentUser = await _context.Users
                        .Include(user => user.UserSettings)
+                            .ThenInclude(us => us!.RdpSettings)
                        .Include(user => user.VisualScheme)
                            .ThenInclude(vs => vs.ColorScheme)
                         .Include(user => user.VisualScheme)

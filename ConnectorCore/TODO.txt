@@ -1,13 +1,13 @@
 ﻿//	client rdp connection timeout
-////realize ssh connection
 //	client connection timeout ???
 ////client-server timeout
-//	client connection settings screen fone
-/// user rdp settings
-	// server control (check bug, no save)
+/// timeout token bug
+// rdp size bug
+//ssh ctrl+z realize
 
 // check activeX rdp control in web page
 // server download logs
 // client lang
 // server lang
 // domains
+/ comments

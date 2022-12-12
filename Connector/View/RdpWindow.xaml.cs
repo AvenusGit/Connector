@@ -1,33 +1,15 @@
 ﻿using ConnectorCore.Models.Connections;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using Microsoft.Extensions;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using MSTSCLib;
 using AxMSTSCLib;
-using System.Windows.Forms;
-using System.Runtime.CompilerServices;
-using System.Windows.Forms.Integration;
-using System.Drawing;
+using System.ComponentModel;
+using ConnectorCore.Models;
+using Connector.Models;
 
 namespace Connector.View
 {
-    /// <summary>
-    /// Логика взаимодействия для RdpWindow.xaml
-    /// </summary>
-    public partial class RdpWindow : Window, INotifyPropertyChanged
+    public partial class RdpWindow : ConnectionWindow
     {
         public RdpWindow(Connection connection)
         {
@@ -37,36 +19,8 @@ namespace Connector.View
             InitializeComponent();
             Loaded += Connect;
         }
-        private bool _isBusy;
-        private string _busyMessage;
-        public bool IsBusy 
-        {
-            get
-            {
-                return _isBusy;
-            }
-            set
-            {
-                _isBusy = value;
-                OnPropertyChanged("IsBusy");
-            }
-        }
-        public string BusyMessage 
-        {
-            get
-            {
-                return _busyMessage;
-            }
-            set
-            {
-                _busyMessage = value;
-                OnPropertyChanged("BusyMessage");
-            }
-        } 
-        public string WindowLogo { get; set; }
-        public Connection Connection { get; set; }
         public AxMsRdpClient10NotSafeForScripting? Client { get; set; }
-        private void Connect(object? sender, EventArgs e)
+        public override void Connect(object? sender, EventArgs e)
         {
             BusyMessage = "Идет подключение...";
             IsBusy = true;
@@ -86,28 +40,46 @@ namespace Connector.View
             Client.Name = WindowLogo;
             iWindowsFormsHost.Child = Client;
 
+            if(ConnectorApp.Instance.Session is null || ConnectorApp.Instance.Session.User is null)
+            {
+                OnClose(this, null);
+                AuraS.Controls.AuraMessageWindow message = new AuraS.Controls.AuraMessageWindow(new AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel
+                    ("Ошибка при подключении", "Отсутствует сессия пользователя. Переавторизауйтесь в приложении.", "Ок",
+                    AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel.MessageTypes.Error));
+                ConnectorApp.Instance.Logout();
+                return;
+            }
+            if (ConnectorApp.Instance.Session.User.UserSettings is null)
+            {
+                OnClose(this, null);
+                AuraS.Controls.AuraMessageWindow message = new AuraS.Controls.AuraMessageWindow(new AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel
+                    ("Ошибка при подключении", "Отсутствуют настройки пользователя. Они будут назначены по умолчанию.", "Ок",
+                    AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel.MessageTypes.Warning));
+                ConnectorApp.Instance.Session.User.UserSettings = UserSettings.GetDefault();
+            }
+
             //visual settings
-            Client.ColorDepth = 32;//!         
+            Client.ColorDepth = ConnectorApp.Instance.Session.User.UserSettings.RdpSettings.ColorDepth;        
             Client.Width = Client.Parent.ClientRectangle.Width; //Convert.ToInt32(iHost.ActualWidth);
             Client.Height = Client.Parent.ClientRectangle.Height;//Convert.ToInt32(iHost.ActualHeight);
-            Client.AdvancedSettings9.SmartSizing = true;//!
+            Client.AdvancedSettings9.SmartSizing = ConnectorApp.Instance.Session.User.UserSettings.RdpSettings.SmartSizing;
             Client.DesktopWidth = Convert.ToInt32(SystemParameters.FullPrimaryScreenWidth);
             Client.DesktopHeight = Convert.ToInt32(SystemParameters.FullPrimaryScreenHeight);
             Client.AdvancedSettings9.AuthenticationLevel = 2;
             Client.AdvancedSettings9.EnableCredSspSupport = true;
-            Client.FullScreen = true; //!
+            Client.FullScreen = ConnectorApp.Instance.Session.User.UserSettings.RdpSettings.AutoFullScreen;
             Client.FullScreenTitle = WindowLogo;
             Client.AdvancedSettings.ContainerHandledFullScreen = 0;
             Client.AdvancedSettings8.RelativeMouseMode = true;
             Client.AdvancedSettings.BitmapPeristence = 1;
             Client.AdvancedSettings.Compress = 1;
             //Client.AdvancedSettings2.overallConnectionTimeout = 1;//?
-            Client.AdvancedSettings2.DisableCtrlAltDel = 1; //!
-            Client.AdvancedSettings2.RedirectDrives = true;
-            Client.AdvancedSettings2.RedirectPrinters = true;
-            Client.AdvancedSettings2.RedirectSmartCards = true;
-            Client.AdvancedSettings9.EnableAutoReconnect = true;
-            Client.AdvancedSettings9.RedirectDirectX = true;
+            Client.AdvancedSettings2.DisableCtrlAltDel = ConnectorApp.Instance.Session.User.UserSettings.RdpSettings.DisableCtrlAltDel ? 1 : 0;
+            Client.AdvancedSettings2.RedirectDrives = ConnectorApp.Instance.Session.User.UserSettings.RdpSettings.RedirectDrives;
+            Client.AdvancedSettings2.RedirectPrinters = ConnectorApp.Instance.Session.User.UserSettings.RdpSettings.RedirectPrinters;
+            Client.AdvancedSettings2.RedirectSmartCards = ConnectorApp.Instance.Session.User.UserSettings.RdpSettings.RedirectSmartCards;
+            Client.AdvancedSettings9.EnableAutoReconnect = ConnectorApp.Instance.Session.User.UserSettings.RdpSettings.EnableAutoReconnect;
+            Client.AdvancedSettings9.RedirectDirectX = ConnectorApp.Instance.Session.User.UserSettings.RdpSettings.RedirectDirectX;
 
             //events
             Client.ConnectingText = "Идет подключение...";
@@ -190,12 +162,6 @@ namespace Connector.View
             Client.Show();
         }
         #endregion
-        #region Minimize
-        private void OnMinimize(object? sender, EventArgs e)
-        {
-            this.WindowState = WindowState.Minimized;
-        }
-        #endregion
         #region Other
         private void PinBarDown(object? sender, EventArgs e)
         {
@@ -220,6 +186,7 @@ namespace Connector.View
         private void OnDisconnected(object? sender, IMsTscAxEvents_OnDisconnectedEvent e)
         {
             OnClosed(null);
+            this.Close();
         }
         private void OnTimeout(object? sender, EventArgs e)
         {
@@ -232,14 +199,7 @@ namespace Connector.View
                 );
         }
         #endregion
-        private void DragWindow(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            try
-            {
-                this.DragMove();
-            }
-            catch { }
-        }
+
         private void Maximized(object sender, RoutedEventArgs e)
         {
             OnFullScreenMode(sender, e);
@@ -248,16 +208,6 @@ namespace Connector.View
         {
             OnMinimize(sender, e);
         }
-
-        #region InotifyPropertyChange
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void OnPropertyChanged([CallerMemberName] string prop = "")
-        {
-            if (PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(prop));
-        }
-        #endregion
-
         private void RdpWindowSizeChanged(object sender, SizeChangedEventArgs e)
         {
             if (Client is null) return;
@@ -272,8 +222,7 @@ namespace Connector.View
                 Client.Width = Convert.ToInt32(iHost.ActualWidth);               
             }            
         }
-
-        private void RDPWindowClosing(object sender, CancelEventArgs e)
+        public void WindowClosing(object sender, CancelEventArgs e)
         {
             if (Client is not null)
                 if (Client.Connected == 2)

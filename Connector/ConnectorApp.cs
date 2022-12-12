@@ -16,6 +16,7 @@ using Connector.View;
 using AuraS.Controls.ControlsViewModels;
 using AuraS.Controls;
 using ConnectorCore.Models.VisualModels;
+using Microsoft.VisualBasic.ApplicationServices;
 
 namespace Connector
 {
@@ -23,7 +24,7 @@ namespace Connector
     {
         public const string AppName = "Connector";
         public static readonly ApplicationVersion AppVersion = new ApplicationVersion("A", 0, string.Empty);
-        public string _connectorCenterUrl = "https://localhost:51654"; 
+        public string _connectorCenterUrl = "https://localhost:51980"; 
 
         #region Singletone
         private static ConnectorApp _connectorApp;
@@ -97,7 +98,7 @@ namespace Connector
             ColorScheme = new WpfColorScheme().GetDefault(),
             FontScheme = new WpfFontScheme(string.Empty, 0).GetDefault()
         };
-        public List<RdpWindow> ActiveConnections { get; set; } = new List<RdpWindow>();
+        public List<ConnectionWindow> ActiveConnections { get; set; } = new List<ConnectionWindow>();
         #endregion
         #region Methods
         private void Initialize()
@@ -163,10 +164,21 @@ namespace Connector
                         "Ok",
                         AuraMessageWindowViewModel.MessageTypes.Error));
                 message.ShowDialog();
-                await WindowViewModel.ChangeUIControl(
+                if(Session is null || Session.User is null)
+                {
+                    await WindowViewModel.ChangeUIControl(
                     new LoginControl(
-                        new LoginControllerViewModel(Session.User.Credentials)),
+                        new LoginControllerViewModel(new Credentials("",""))),
                     true);
+                }
+                else
+                {
+                    await WindowViewModel.ChangeUIControl(
+                    new LoginControl(
+                        new LoginControllerViewModel(Session.User.Credentials ?? new Credentials("", ""))),
+                    true);
+                }
+                
                 Session = null;
                 WindowViewModel.HideBusyScreen();
             }

@@ -35,7 +35,25 @@
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
-
+    <ControlTemplate x:Key="AuraPopupSelectorButton" TargetType="ToggleButton">
+        <Grid>
+            <Border Grid.ColumnSpan="2" Name="Border"
+              BorderBrush="{DynamicResource BorderBrush}" 
+              CornerRadius="10,0,0,10" BorderThickness="1" 
+              Background="{DynamicResource PanelBrush}"
+                    Padding="3">
+                <ContentPresenter/>
+            </Border>            
+        </Grid>
+        <ControlTemplate.Triggers>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+                <Setter Property="Border.BorderBrush" TargetName="Border" Value="{DynamicResource SelectBrush}"/>
+            </Trigger>
+            <Trigger Property="ToggleButton.IsChecked" Value="True">
+                <Setter Property="Border.BorderBrush" TargetName="Border" Value="{DynamicResource SelectBrush}"/>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
     <ControlTemplate x:Key="AuraARMSelectButton" TargetType="ToggleButton">
         <Grid Margin="0,0,0,-15">
             <Border Grid.ColumnSpan="2" Name="Border"
@@ -105,4 +123,9 @@
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
+    <Style x:Key="AuraToggleButtonPopupSelectorStyle" TargetType="ToggleButton">
+        <Style.Setters>
+            <Setter Property="Template" Value="{DynamicResource AuraPopupSelectorButton}"/>
+        </Style.Setters>
+    </Style>
 </ResourceDictionary>

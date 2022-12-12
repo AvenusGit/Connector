@@ -1,21 +1,29 @@
-﻿<cw:ConnectionWindow x:Class="Connector.View.RdpWindow"
+﻿<cw:ConnectionWindow x:Class="Connector.View.SshWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:wc="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
         xmlns:cw="clr-namespace:Connector.View"
+        xmlns:mcd="clr-namespace:ConnectorCore.Models.Connections;assembly=ConnectorCore"
         mc:Ignorable="d"
         Title="{Binding WindowLogo}" WindowStartupLocation="CenterScreen"
         WindowStyle="None"  ResizeMode="CanResizeWithGrip"
-        MinHeight="400" MinWidth="600"
-        SizeChanged="RdpWindowSizeChanged"
-        Closing="WindowClosing"
+        MinHeight="400" MinWidth="600" Height="450" Width="500"
         MouseLeftButtonDown="DragWindow">
     <cw:ConnectionWindow.Resources>
         <wc:BooleanToVisibilityConverter x:Key="boolToVisibilityConv"/>
     </cw:ConnectionWindow.Resources>
-    <Border BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource FoneBrush}">
+    <cw:ConnectionWindow.Background>
+        <LinearGradientBrush StartPoint="1,0" EndPoint="0,1">
+            <GradientStop Color="{DynamicResource FoneColor}" Offset="0"/>
+            <GradientStop Color="{DynamicResource SubAccentColor}" Offset="0.3"/>
+            <GradientStop Color="{DynamicResource FoneColor}" Offset="0.5"/>
+            <GradientStop Color="{DynamicResource SubAccentColor}" Offset="0.7"/>
+            <GradientStop Color="{DynamicResource FoneColor}" Offset="1"/>
+        </LinearGradientBrush>
+    </cw:ConnectionWindow.Background>
+    <Border BorderBrush="{DynamicResource BorderBrush}">        
         <Grid>
             <!--Content-->
             <Grid>
@@ -29,6 +37,7 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
@@ -53,14 +62,27 @@
                     </Viewbox>
                     <!--logo-->
                     <TextBlock Style="{DynamicResource AuraDefaultText}" Text="{Binding WindowLogo}"
-                               Grid.Column="1" FontSize="{DynamicResource FontSize18}"/>
-                    <!--minimize-->
+                               Grid.Column="1" FontSize="{DynamicResource FontSize16}"/>
+                    <!--Clear-->
                     <Button Style="{DynamicResource AuraIconButtonStyle}"
                                 HorizontalAlignment="Right"
                                 ToolTip="Свернуть"
                                 Width="30" Height="30" Margin="0"
                                 Grid.Column="3"
-                                Click="Minimize">
+                                Command="{Binding ClearCommand}">
+                        <Viewbox Width="20" Height="20">
+                            <Canvas Width="24" Height="24">
+                                <Path Fill="{DynamicResource PathBrush}" Data="M19.36,2.72L20.78,4.14L15.06,9.85C16.13,11.39 16.28,13.24 15.38,14.44L9.06,8.12C10.26,7.22 12.11,7.37 13.65,8.44L19.36,2.72M5.93,17.57C3.92,15.56 2.69,13.16 2.35,10.92L7.23,8.83L14.67,16.27L12.58,21.15C10.34,20.81 7.94,19.58 5.93,17.57Z" />
+                            </Canvas>
+                        </Viewbox>
+                    </Button>
+                    <!--minimize-->
+                    <Button Style="{DynamicResource AuraIconButtonStyle}"
+                                HorizontalAlignment="Right"
+                                ToolTip="Свернуть"
+                                Width="30" Height="30" Margin="0"
+                                Grid.Column="4"
+                                Command="{Binding MinimizeCommand}">
                         <Viewbox Width="20" Height="20">
                             <Canvas Width="24" Height="24">
                                 <Path Fill="{DynamicResource PathBrush}" Data="M20,14H4V10H20" />
@@ -72,8 +94,8 @@
                                 HorizontalAlignment="Right"
                                 ToolTip="Развернуть"
                                 Width="30" Height="30" Margin="0"
-                                Grid.Column="4"
-                                Click="Maximized">
+                                Grid.Column="5"
+                                Command="{Binding MaximizeCommand}">
                         <Viewbox Width="20" Height="20">
                             <Canvas Width="24" Height="24">
                                 <Path Fill="{DynamicResource PathBrush}" Data="M4,4H20V20H4V4M6,8V18H18V8H6Z" />
@@ -85,9 +107,9 @@
                                 HorizontalAlignment="Right"
                                 ToolTip="Закрыть"
                                 Width="30" Height="30" Margin="0"
-                                Grid.Column="5"
-                                Click="CloseWindow">
-                        <Viewbox Width="20" Height="20">
+                                Grid.Column="6"
+                                Command="{Binding CloseCommand}">
+                            <Viewbox Width="20" Height="20">
                             <Canvas Width="24" Height="24">
                                 <Path Fill="{DynamicResource PathBrush}" Data="M13.46,12L19,17.54V19H17.54L12,13.46L6.46,19H5V17.54L10.54,12L5,6.46V5H6.46L12,10.54L17.54,5H19V6.46L13.46,12Z" />
                             </Canvas>
@@ -95,22 +117,62 @@
                     </Button>
                 </Grid>
                 <!--Content-->
-                <Grid Grid.Row="1" x:Name="iHost">
-                    <Grid.Style>
-                        <Style TargetType="Grid">
+                <Border Grid.Row="1" x:Name="iHost" Background="{DynamicResource PanelBrush}" CornerRadius="10,10,0,0">
+                    <Border.Style>
+                        <Style TargetType="Border">
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsBusy}" Value="True">
                                     <Setter Property="Visibility" Value="Hidden"/>
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </Grid.Style>
-                    <!--RDP Control-->
-                    <WindowsFormsHost x:Name="iWindowsFormsHost"
-                                      HorizontalAlignment="Stretch"
-                                      VerticalAlignment="Stretch"/>                   
-                    
-                </Grid>
+                    </Border.Style>
+                    <!--SSH Control-->
+                    <ScrollViewer x:Name="iConsoleScrollViewer" Style="{DynamicResource AuraScrollViewer}" VerticalScrollBarVisibility="Auto">
+                        <Grid Margin="10,0,10,10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Style="{DynamicResource AuraDefaultText}" VerticalAlignment="Stretch"
+                                       Text="{Binding HistoryString}" FontSize="{DynamicResource FontSize16}" Margin="5"
+                                       TextWrapping="WrapWithOverflow" />
+                            <Grid Grid.Row="1" VerticalAlignment="Bottom">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <ToggleButton x:Name="iPopupSelector" Style="{DynamicResource AuraToggleButtonPopupSelectorStyle}">
+                                    <TextBlock Style="{DynamicResource AuraDefaultText}" Text="{Binding Connection.ConnectionUserShort}" FontSize="{DynamicResource FontSize16}"
+                                           FontWeight="Bold" Foreground="{DynamicResource TextBrush}"/>                                                                          
+                                </ToggleButton>
+                                <Popup x:Name="iSelectAcc" IsOpen="{Binding IsChecked, ElementName=iPopupSelector}" AllowsTransparency="True"
+                                       PopupAnimation="Fade" PlacementTarget="{Binding ElementName=iPopupSelector}" Placement="Bottom" StaysOpen="False">
+                                    <ListBox Style="{DynamicResource AuraListBoxPopupStyle}" ItemsSource="{Binding OtherVariants}">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Style="{DynamicResource AuraNullButtonStyle}" Background="{DynamicResource FoneBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                                                    Margin="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                        Command="{Binding DataContext.ReconnectCommand, ElementName=iHost}"
+                                                        CommandParameter="{Binding}">
+                                                    <TextBlock Style="{DynamicResource AuraDefaultText}" Text="{Binding ConnectionUserShort}"/>
+                                                </Button>
+                                            </DataTemplate>
+                                            
+                                        </ListBox.ItemTemplate>
+                                        
+                                    </ListBox>
+                                    
+                                </Popup>
+                                <Border Grid.Column="1" BorderThickness="0,1,1,1" BorderBrush="{DynamicResource BorderBrush}"
+                                        CornerRadius="0,10,10,0" Background="Transparent">
+                                    <TextBox x:Name="iConsole" Style="{DynamicResource AuraTextBoxSSHStyle}" BorderThickness="0"  KeyUp="ConsoleKeyUp" Margin="5,0,0,0"
+                                         Text="{Binding CurrentCommand, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" TextWrapping="WrapWithOverflow"/>
+                                </Border>                                
+                            </Grid>                            
+                        </Grid>
+                    </ScrollViewer>                                     
+                </Border>
                 <!--BusyScreen-->
                 <Border CornerRadius="10"
                     Grid.Row="1"

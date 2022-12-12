@@ -43,7 +43,7 @@ namespace ConnectorCore.Models.VisualModels
                 Fone = "#FFFFFFFF",
                 SubAccent = "#ADADADFF",
                 Panel = "#FFFFFF51",
-                Border = "#4F4F4FAB",
+                Border = "#4F4F4F76",
                 Path = "#3B3B3BFF",
                 Text = "#3B3B3BFF",
                 Select = "#A0A0A0FF",

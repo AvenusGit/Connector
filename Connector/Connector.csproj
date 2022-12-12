@@ -24,6 +24,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="SSH.NET" Version="2020.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="AxInterop.MSTSCLib">
       <HintPath>..\..\..\..\..\Users\v.brodikov\Downloads\MSTSCLib\AxInterop.MSTSCLib.dll</HintPath>
     </Reference>
@@ -39,6 +43,9 @@
     <Compile Update="View\ConnectionInfoWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="View\SshWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -47,6 +54,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="View\ConnectionInfoWindow.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="View\SshWindow.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>
     </Page>
