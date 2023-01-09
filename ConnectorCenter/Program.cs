@@ -108,7 +108,7 @@ builder.Services.AddDbContext<DataBaseContext>(options =>
     options.UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-// добавление MVC сервиса
+// add MVC service
 builder.Services.AddControllersWithViews(mvcOtions =>
 {
     mvcOtions.EnableEndpointRouting = false;

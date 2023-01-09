@@ -97,6 +97,7 @@ namespace Connector.View
             Client.OnWarning += OnNoFatalError;
             Client.OnDisconnected += OnDisconnected;
             Client.OnIdleTimeoutNotification += OnTimeout;
+            Client.OnLoginComplete += OnLoginComplete;
 
 
             //connection settings
@@ -112,8 +113,12 @@ namespace Connector.View
             {
                 Client.Connect();
             }
-            catch
+            catch (Exception ex)
             {
+                OnClose(this, null);
+                AuraS.Controls.AuraMessageWindow message = new AuraS.Controls.AuraMessageWindow(new AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel
+                    ($"Не удалось подключиться через {Connection.ConnectionName}", ex.Message, "Ок",
+                    AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel.MessageTypes.Error));
             }            
         }
         #region Connecting
@@ -142,7 +147,7 @@ namespace Connector.View
         #region Close connection/Window
         private bool OnClose(object sender, IMsTscAxEvents_OnConfirmCloseEvent e)
         {
-            Client.RequestClose();
+            Client?.RequestClose();
             return true; // TODO realise confirm
         }
         private void CloseWindow(object sender, RoutedEventArgs e)
@@ -163,6 +168,10 @@ namespace Connector.View
         }
         #endregion
         #region Other
+        private void OnLoginComplete (object? sender, EventArgs e)
+        {
+            BusyMessage = "Авторизация пройдена...";
+        }
         private void PinBarDown(object? sender, EventArgs e)
         {
             OnWindowMode(sender, e);
@@ -185,8 +194,139 @@ namespace Connector.View
         }
         private void OnDisconnected(object? sender, IMsTscAxEvents_OnDisconnectedEvent e)
         {
+            // codes: https://learn.microsoft.com/en-us/windows/win32/termserv/imstscaxevents-ondisconnected
+            switch (e.discReason)
+            {
+                case 2308:
+                    AuraS.Controls.AuraMessageWindow message =
+                    new AuraS.Controls.AuraMessageWindow(new AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel
+                    ($"Ошибка подключения к {Connection.ConnectionName}", "Сокет был неожиданно закрыт", "Ок",
+                    AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel.MessageTypes.Error));
+                    message.ShowDialog();
+                    break;
+                case 3:
+                case 2:
+                    message =
+                    new AuraS.Controls.AuraMessageWindow(new AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel
+                    ($"Закрытие подключения к {Connection.ConnectionName}", "Ваш сеанс был завершен удаленно", "Ок",
+                    AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel.MessageTypes.Error));
+                    message.ShowDialog();
+                    break;
+                case 776:
+                    message =
+                    new AuraS.Controls.AuraMessageWindow(new AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel
+                    ($"Ошибка подключения к {Connection.ConnectionName}", "Недопустимый IP адрес", "Ок",
+                    AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel.MessageTypes.Error));
+                    message.ShowDialog();
+                    break;
+                case 2823:
+                    message =
+                    new AuraS.Controls.AuraMessageWindow(new AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel
+                    ($"Ошибка подключения к {Connection.ConnectionName}", "Учетная запись отключена, обратитесь к администратору", "Ок",
+                    AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel.MessageTypes.Error));
+                    message.ShowDialog();
+                    break;
+                case 3591:
+                    message =
+                    new AuraS.Controls.AuraMessageWindow(new AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel
+                    ($"Ошибка подключения к {Connection.ConnectionName}", "Срок действия учетная записи истек, обратитесь к администратору", "Ок",
+                    AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel.MessageTypes.Error));
+                    message.ShowDialog();
+                    break;
+                case 2567:
+                    message =
+                    new AuraS.Controls.AuraMessageWindow(new AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel
+                    ($"Ошибка подключения к {Connection.ConnectionName}", "Пользователь не имеет учетной записи, обратитесь к администратору", "Ок",
+                    AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel.MessageTypes.Error));
+                    message.ShowDialog();
+                    break;
+                case 2055:
+                    message =
+                    new AuraS.Controls.AuraMessageWindow(new AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel
+                    ($"Ошибка подключения к {Connection.ConnectionName}", "Не удалось авторизоваться на сервере, обратитесь к администратору", "Ок",
+                    AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel.MessageTypes.Error));
+                    message.ShowDialog();
+                    break;
+                case 262:
+                case 518:
+                case 774:
+                    message =
+                    new AuraS.Controls.AuraMessageWindow(new AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel
+                    ($"Ошибка подключения к {Connection.ConnectionName}", "Нехватает памяти, обратитесь к администратору", "Ок",
+                    AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel.MessageTypes.Error));
+                    message.ShowDialog();
+                    break;
+                case 2056:
+                    message =
+                    new AuraS.Controls.AuraMessageWindow(new AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel
+                    ($"Ошибка подключения к {Connection.ConnectionName}", "Ошибка RDP лицензии, обратитесь к администратору", "Ок",
+                    AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel.MessageTypes.Error));
+                    message.ShowDialog();
+                    break;
+                case 3078:
+                case 2822:
+                case 2310:
+                case 2566:
+                case 1286:
+                case 1542:
+                case 1030:
+                case 1798:
+                case 6919:
+                case 8455:
+                case 6151:
+                case 5895:
+                    message =
+                    new AuraS.Controls.AuraMessageWindow(new AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel
+                    ($"Ошибка подключения к {Connection.ConnectionName}", $"Ошибка безопасности, обратитесь к администратору ({e.discReason})", "Ок",
+                    AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel.MessageTypes.Error));
+                    message.ShowDialog();
+                    break;
+                case 3847:
+                    message =
+                    new AuraS.Controls.AuraMessageWindow(new AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel
+                    ($"Ошибка подключения к {Connection.ConnectionName}", "Срок действия пароля истек, обратитесь к администратору", "Ок",
+                    AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel.MessageTypes.Error));
+                    message.ShowDialog();
+                    break;
+                case 4615:
+                    message =
+                    new AuraS.Controls.AuraMessageWindow(new AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel
+                    ($"Ошибка подключения к {Connection.ConnectionName}", "Необходимо изменить пароль перед первым входом, обратитесь к администратору", "Ок",
+                    AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel.MessageTypes.Error));
+                    message.ShowDialog();
+                    break;
+                case 3335:
+                case 3079:
+                    message =
+                    new AuraS.Controls.AuraMessageWindow(new AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel
+                    ($"Ошибка подключения к {Connection.ConnectionName}", "Учетная запись заблокирована или ограничена, обратитесь к администратору", "Ок",
+                    AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel.MessageTypes.Error));
+                    message.ShowDialog();
+                    break;
+
+                case 264:
+                case 260:
+                case 1288:
+                case 1540:
+                case 520:
+                case 2312:
+                case 516:
+                case 1028:
+                case 1796:
+                    message =
+                    new AuraS.Controls.AuraMessageWindow(new AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel
+                    ($"Ошибка подключения к {Connection.ConnectionName}", $"Истекло время ожидания сервера или сервер отказал в подключении ({e.discReason})", "Ок",
+                    AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel.MessageTypes.Error));
+                    message.ShowDialog();
+                    break;
+                case 1:
+                    // normal close connection
+                    break;
+                default:
+                    break;
+            }
             OnClosed(null);
-            this.Close();
+            this.Close();            
         }
         private void OnTimeout(object? sender, EventArgs e)
         {

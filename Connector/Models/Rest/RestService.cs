@@ -67,8 +67,7 @@ namespace Connector.Models.REST
                     throw new Exception("Ошибка при авторизации. Неверный логин пароль.");
                 if (tokenResponse.StatusCode == HttpStatusCode.NotFound)
                     throw new Exception("Ошибка при авторизации. Сервер не найден.");
-                else
-                    throw new Exception($"Ошибка при авторизации. Проверьте адрес сервера и учетные данные.");
+                throw new Exception($"Ошибка авторизации. Проверьте адрес сервера и учетные данные.");
             }
         }
         public async Task<UnitedSettings?> GetUnitedSettingsAsync()

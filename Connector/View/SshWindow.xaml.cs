@@ -167,6 +167,7 @@ namespace Connector.View
 
         private void ConsoleKeyUp(object sender, KeyEventArgs e)
         {
+            // key history
             if (e.Key is Key.Up)
             {
                 if (LastCommands.ElementAtOrDefault(LastCommands.Count -1 - lastCommandIndex) is not null)
@@ -177,6 +178,8 @@ namespace Connector.View
                 }                   
                 return;
             }
+
+            // key history
             if (e.Key is Key.Down)
             {
                 if (lastCommandIndex >= 0 && LastCommands.Count > 0)
@@ -190,6 +193,25 @@ namespace Connector.View
                 }                   
                 return;
             }
+
+            // shortkeys
+            // see https://donsnotes.com/tech/charsets/ascii.html
+            if (Keyboard.IsKeyDown(Key.LeftCtrl))
+            {
+                if (e.Key is Key.Z) 
+                {
+                    SshStream.WriteLine("\x1A");
+                }
+                if (e.Key is Key.C)
+                {
+                    SshStream.WriteLine("\x003");
+                }
+                if (e.Key is Key.D)
+                {
+                    SshStream.WriteLine("\x004");
+                }
+            }            
+
             lastCommandIndex = 0;
             if (e.Key is Key.Enter)
             {
@@ -200,11 +222,13 @@ namespace Connector.View
                         ClearHistory();
                         AddToHistory("История команд очищена.");
                         CurrentCommand = "";
+                        OnPropertyChanged("CurrentCommand");
                         return;
                     case "clear":
                         ClearHistory();
                         AddToHistory("История команд очищена.");
                         CurrentCommand = "";
+                        OnPropertyChanged("CurrentCommand");
                         return;
                     default:
                         break;

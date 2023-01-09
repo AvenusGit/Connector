@@ -17,6 +17,7 @@ using AuraS.Controls.ControlsViewModels;
 using AuraS.Controls;
 using ConnectorCore.Models.VisualModels;
 using Microsoft.VisualBasic.ApplicationServices;
+using ConnectorCore.Cryptography;
 
 namespace Connector
 {
@@ -24,7 +25,7 @@ namespace Connector
     {
         public const string AppName = "Connector";
         public static readonly ApplicationVersion AppVersion = new ApplicationVersion("A", 0, string.Empty);
-        public string _connectorCenterUrl = "https://localhost:51980"; 
+        public string _connectorCenterUrl = "https://localhost:49158"; 
 
         #region Singletone
         private static ConnectorApp _connectorApp;
@@ -148,7 +149,14 @@ namespace Connector
                 if (Session is null || Session.User is null) return;
                 WindowViewModel.ShowBusyScreen("Обновление токена...");
                 RestService restService = new RestService();
-                TokenInfo? tokenInfo = await restService.GetTokenInfoAsync(Session.User.Credentials);
+                Credentials hashedCredentials = new Credentials()
+                {
+                    Login = Session.User.Credentials.Login,
+                    Password = PasswordCryptography.GetUserPasswordHash(
+                        Session.User.Credentials.Login,
+                        Session.User.Credentials.Password)
+                };
+                TokenInfo? tokenInfo = await restService.GetTokenInfoAsync(hashedCredentials);
                 if (tokenInfo is null)
                     throw new Exception("Ошибка при авторизации. Не удалось десериализовать данные авторизации.");
                 Session.Token = tokenInfo;

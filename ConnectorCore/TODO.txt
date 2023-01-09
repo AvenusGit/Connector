@@ -1,10 +1,7 @@
-﻿//	client rdp connection timeout
-//	client connection timeout ???
-////client-server timeout
-/// timeout token bug
-// rdp size bug
-//ssh ctrl+z realize
+﻿//// cert
 
+// reset password crypt
+// rdp size bug
 // check activeX rdp control in web page
 // server download logs
 // client lang
