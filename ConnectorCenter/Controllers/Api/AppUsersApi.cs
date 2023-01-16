@@ -12,6 +12,9 @@ using Newtonsoft.Json;
 
 namespace ConnectorCenter.Controllers.Api
 {
+    /// <summary>
+    /// Api for user information request
+    /// </summary>
     [Authorize(AuthenticationSchemes = "Bearer")]
     [ApiController]
     public class AppUsersApi : ControllerBase
@@ -27,6 +30,11 @@ namespace ConnectorCenter.Controllers.Api
             _logger = logger;
         }
         #endregion
+        #region Requests
+        /// <summary>
+        /// Full user information API request
+        /// </summary>
+        /// <returns>JSON full user info</returns>
         [Route("api/appuser/full")]
         [HttpGet]
         public async Task GetAppUserFull()
@@ -65,15 +73,13 @@ namespace ConnectorCenter.Controllers.Api
                         .FirstOrDefaultAsync(user => user.Id == JwtAuthorizeService.GetJwtUserId(HttpContext));
                     if (user is not null)
                     {
-                        user.Credentials.Password = null; //  очистка перед пересылкой
-                                                          // jsonIgore нельзя добавить т.к. credentials используется при пересылке подключений
+                        user.Credentials.Password = null; //  clear user password
                         HttpContext.Response.ContentType = "application/json";
                         await HttpContext.Response.WriteAsync(JsonConvert.SerializeObject(user, new JsonSerializerSettings
                         {
-                            PreserveReferencesHandling = PreserveReferencesHandling.Objects//,
-                            //ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                            PreserveReferencesHandling = PreserveReferencesHandling.Objects
                         }));
-                        _logger.LogWarning($"Выполнен API запрос данных пользователя. Пользователь {user.Name}.");
+                        _logger.LogInformation($"Выполнен API запрос данных пользователя. Пользователь {user.Name}.");
                     }
                     else
                     {
@@ -90,6 +96,11 @@ namespace ConnectorCenter.Controllers.Api
                 }
             }
         }
+
+        /// <summary>
+        /// API Request user groups
+        /// </summary>
+        /// <returns>JSON user groups collection</returns>
         [Route("api/appuser/groups")]
         [HttpGet]
         public async Task GetAppUserGroups()
@@ -140,6 +151,11 @@ namespace ConnectorCenter.Controllers.Api
                 }
             }
         }
+
+        /// <summary>
+        /// API Request user connections
+        /// </summary>
+        /// <returns>JSON connections collection (self and groups)</returns>
         [Route("api/appuser/connections")]
         [HttpGet]
         public async Task GetAppUserConnections()
@@ -195,6 +211,11 @@ namespace ConnectorCenter.Controllers.Api
                 }
             }
         }
+
+        /// <summary>
+        /// API Request user settings
+        /// </summary>
+        /// <returns>JSON user settings</returns>
         [Route("api/appuser/userSettings")]
         [HttpGet]
         public async Task GetAppUserSettings()
@@ -239,6 +260,11 @@ namespace ConnectorCenter.Controllers.Api
                 }
             }
         }
+
+        /// <summary>
+        /// API Request user visual scheme
+        /// </summary>
+        /// <returns>JSON user, only with user visual scheme information</returns>
         [Route("api/appuser/visualScheme")]
         [HttpGet]
         public async Task GetAppUserVisualScheme()
@@ -284,6 +310,11 @@ namespace ConnectorCenter.Controllers.Api
                 }
             }
         }
+
+        /// <summary>
+        /// API Request user access settings
+        /// </summary>
+        /// <returns>JSON user access settings</returns>
         [Route("api/appuser/access")]
         [HttpGet]
         public async Task GetAppUserAccess()
@@ -316,6 +347,11 @@ namespace ConnectorCenter.Controllers.Api
                 }
             }
         }
+
+        /// <summary>
+        /// API Request on change user visual scheme
+        /// </summary>
+        /// <returns>StatusCode</returns>
         [Route("api/appuser/visualScheme/set")]
         [HttpPost]
         public async Task SetAppUserVisualScheme([FromBody] VisualScheme? scheme)
@@ -360,6 +396,11 @@ namespace ConnectorCenter.Controllers.Api
                 }
             }
         }
+
+        /// <summary>
+        /// API Request on change user rdp settings
+        /// </summary>
+        /// <returns>StatusCode</returns>
         [Route("api/appuser/rdpsettings/set")]
         [HttpPost]
         public async Task SetAppUserRdpSettings([FromBody] RdpSettings? rdpSettings)
@@ -407,5 +448,6 @@ namespace ConnectorCenter.Controllers.Api
                 }
             }
         }
+        #endregion
     }
 }

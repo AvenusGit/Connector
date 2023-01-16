@@ -10,16 +10,24 @@ using System.Net.Mime;
 
 namespace ConnectorCenter.Controllers.Api
 {
+    /// <summary>
+    /// API for united settings requests
+    /// </summary>
     [Route("/api/unitedSettings")]
     [Authorize(AuthenticationSchemes = "Bearer")]   
     [ApiController]
     public class UnitedSettingsApi : ControllerBase
     {
+        #region Fields
         private readonly ILogger _logger;
+        #endregion
+        #region Constructors
         public UnitedSettingsApi(ILogger<TokenApi> logger)
         {
             _logger = logger;
         }
+        #endregion
+        #region Requests
         [HttpGet]
         public async Task GetUnitedSettings()
         {
@@ -29,6 +37,7 @@ namespace ConnectorCenter.Controllers.Api
                 {
                     if (!ConnectorCenterApp.Instance.ApiSettings.ApiEnabled)
                     {
+                        _logger.LogWarning($"Отказано в запросе данных пользователя. API глобально выключен.");
                         HttpContext.Response.StatusCode = 403;
                         await HttpContext.Response.WriteAsync("API disabled in app settings.");
                         return;
@@ -43,6 +52,7 @@ namespace ConnectorCenter.Controllers.Api
                     await HttpContext.Response.WriteAsync("500: Server internal error");
                 }
             }
-        }        
+        }
+        #endregion
     }
 }

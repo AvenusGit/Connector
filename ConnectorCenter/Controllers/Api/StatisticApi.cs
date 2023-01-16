@@ -8,22 +8,35 @@ using Newtonsoft.Json;
 
 namespace ConnectorCenter.Controllers.Api
 {
+    /// <summary>
+    /// Api for statistic requests
+    /// </summary>
     [Authorize(AuthenticationSchemes = "Cookies")]
     [ApiController]
     public class StatisticApi : ControllerBase
     {
+        #region Fields and Properties
         private readonly ILogger _logger;
+        #endregion
+        #region Constructors
         public StatisticApi(ILogger<AppUserGroupsController> logger)
         {
             _logger = logger;
         }
+        #endregion
+        #region Requests
+
+        /// <summary>
+        /// API request full statistics
+        /// </summary>
+        /// <returns>JSON statistic</returns>
         [HttpGet]
         [Route("api/statistic/all")]
         public async Task GetStatistics()
         {
             using (var scope = _logger.BeginScope($"API({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
-                // статистика сама себя не считает
+                // request statistics not increment statistic counter
                 try
                 {
                     if (!ConnectorCenterApp.Instance.ApiSettings.ApiEnabled)
@@ -53,13 +66,18 @@ namespace ConnectorCenter.Controllers.Api
                 }
             }
         }
+
+        /// <summary>
+        /// API request minute statistic
+        /// </summary>
+        /// <returns>JSON statistic part</returns>
         [HttpGet]
         [Route("api/statistic/min")]
         public async Task GetStatisticsMin()
         {
             using (var scope = _logger.BeginScope($"API({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
-                // статистика сама себя не считает
+                // request statistics not increment statistic counter
                 try
                 {
                     if (!ConnectorCenterApp.Instance.ApiSettings.ApiEnabled)
@@ -90,13 +108,18 @@ namespace ConnectorCenter.Controllers.Api
                 }
             }
         }
+
+        /// <summary>
+        /// API request hour statistic
+        /// </summary>
+        /// <returns>JSON statistic part</returns>
         [HttpGet]
         [Route("api/statistic/hour")]
         public async Task GetStatisticsHour()
         {
             using (var scope = _logger.BeginScope($"API({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
-                // статистика сама себя не считает
+                // request statistics not increment statistic counter
                 try
                 {
                     if (!ConnectorCenterApp.Instance.ApiSettings.ApiEnabled)
@@ -127,13 +150,18 @@ namespace ConnectorCenter.Controllers.Api
                 }
             }
         }
+
+        /// <summary>
+        /// API request day statistic
+        /// </summary>
+        /// <returns>JSON statistic part</returns>
         [HttpGet]
         [Route("api/statistic/day")]
         public async Task GetStatisticsDay()
         {
             using (var scope = _logger.BeginScope($"API({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
-                // статистика сама себя не считает
+                // request statistics not increment statistic counter
                 try
                 {
                     if (!ConnectorCenterApp.Instance.ApiSettings.ApiEnabled)
@@ -164,5 +192,6 @@ namespace ConnectorCenter.Controllers.Api
                 }
             }
         }
+        #endregion
     }
 }

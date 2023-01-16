@@ -6,13 +6,26 @@ using ConnectorCenter.Models.Statistics;
 
 namespace ConnectorCenter
 {
+    /// <summary>
+    /// Application main class
+    /// Initialization on app start. It is singletone, use Instance property.
+    /// </summary>
     public class ConnectorCenterApp
     {
         #region Singletone
+        /// <summary>
+        /// Application version 
+        /// </summary>
         public readonly ApplicationVersion ApplicationVersion = new ApplicationVersion("A", 0);
+        /// <summary>
+        /// Configuration folder path
+        /// </summary>
         public readonly string ConfigurationFolderPath = Environment.CurrentDirectory.ToString() + "\\Configurations";
 
         private static ConnectorCenterApp _connectorCenterApp;
+        /// <summary>
+        /// Current instance ConnectorCenterApp class
+        /// </summary>
         public static ConnectorCenterApp Instance
         {
             get
@@ -22,6 +35,11 @@ namespace ConnectorCenter
                 return _connectorCenterApp;
             }
         }
+        /// <summary>
+        /// Create instance ConnectorCenter
+        /// </summary>
+        /// <param name="logger">Logger</param>
+        /// <returns>Instance ConnectorCenter</returns>
         public static ConnectorCenterApp CreateInstance(ILogger logger)
         {
             _connectorCenterApp = new ConnectorCenterApp()
@@ -30,17 +48,42 @@ namespace ConnectorCenter
             };
             return _connectorCenterApp;
         }
-        #endregion
+        /// <summary>
+        /// Current logger
+        /// </summary>
         public ILogger Logger { get; set; }
+        #endregion
+
         #region Settings
+        /// <summary>
+        /// User access settings configuration
+        /// </summary>
         public AccessSettings UserAccessSettings { get; set; } = AccessSettings.GetUserDefault();
+        /// <summary>
+        /// Support access settings configuration
+        /// </summary>
         public AccessSettings SupportAccessSettings { get; set; } = AccessSettings.GetSupportDefault();
+        /// <summary>
+        /// Logger configuration
+        /// </summary>
         public LogSettings LogSettings { get; set; }
+        /// <summary>
+        /// Api configuration
+        /// </summary>
         public ApiSettings ApiSettings { get; set; } = ApiSettings.GetDefault();
+        /// <summary>
+        /// Other configuration
+        /// </summary>
         public OtherSettings OtherSettings { get; set; } = OtherSettings.GetDefault();
+        /// <summary>
+        /// Current statistics
+        /// </summary>
         public Statistic Statistics { get; private set; } = new Statistic();
         #endregion
         #region Methods
+        /// <summary>
+        /// Load all configuration from configuration path and apply 
+        /// </summary>
         public void Initialize()
         {
             object? configuration;

@@ -2,7 +2,6 @@ using ConnectorCenter.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using System.Text;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Net.Http.Headers;
 using ConnectorCenter;
@@ -10,30 +9,31 @@ using ConnectorCenter.Services.Logs;
 using ConnectorCenter.Models.Settings;
 using ConnectorCenter.Services.Authorize;
 
-
-// Первоначальное задание на подгрузку конфигурации логгера. Это очень странная штука, которая то работает, то нет. Поэтому она дублирована ниже.
-// Watch = true ВАЖНО, т.к. таким образом обновляются параметры логгера!
+// Upload logger configuration. It sometimes doesn't work.
+// Watch = true IMPORTANT!, need for logger configuration update!
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "Configurations/Log.config", Watch = true)]
 
-// Будет ли log4net логировать собственные ошибки. Стандартная политика log4net - проглатывать исключения.
-//TODO выключить этот параметр на проде.
+// Logger Internal logging. Default = false.
 log4net.Util.LogLog.InternalDebugging = true;
 log4net.GlobalContext.Properties["LogFileName"] = LogService.GetLastLogFilePath();
-    
+
+// Apply logger configuration 
 log4net.Config.XmlConfigurator.Configure();
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-// Добавление консольного логгера .Net Core
+// Adding default console logger
 builder.Logging.Services.AddLogging();
 
-// Добавление log4net логгера
+// Adding log4net file logger
 if(!File.Exists(LogSettings.ConfigurationPath))
 {
     LogSettings.SaveDefaultConfiguration();
 }
 builder.Logging.AddLog4Net(LogSettings.ConfigurationPath);
 
+// Authentification
+// Cookies for web, jwt for API
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultScheme = "BearerOrCookies";
@@ -42,7 +42,8 @@ builder.Services.AddAuthentication(options =>
     })
     .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
     {
-        options.LoginPath = new Microsoft.AspNetCore.Http.PathString("/login");
+        // Default login page
+        options.LoginPath = new PathString("/login");
         options.ExpireTimeSpan = TimeSpan.FromHours(4);
         options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
@@ -54,19 +55,12 @@ builder.Services.AddAuthentication(options =>
             options.SaveToken = true;
             options.TokenValidationParameters = new TokenValidationParameters
             {
-                // указывает, будет ли валидироваться издатель при валидации токена
                 ValidateIssuer = true,
-                // строка, представляющая издателя
                 ValidIssuer = JwtAuthorizeService.AuthOptions.ISSUER,
-                // будет ли валидироваться потребитель токена
                 ValidateAudience = true,
-                // установка потребителя токена
                 ValidAudience = JwtAuthorizeService.AuthOptions.AUDIENCE,
-                // будет ли валидироваться время существования
                 ValidateLifetime = true,
-                // установка ключа безопасности
                 IssuerSigningKey = JwtAuthorizeService.AuthOptions.GetSymmetricSecurityKey(),
-                // валидация ключа безопасности
                 ValidateIssuerSigningKey = true,
             };
         })
@@ -75,12 +69,14 @@ builder.Services.AddAuthentication(options =>
         options.ForwardDefaultSelector = context =>
         {
             string authorization = context.Request.Headers[HeaderNames.Authorization];
+            // jwt token using only if headers contains request for this
             if (!string.IsNullOrEmpty(authorization) && authorization.StartsWith("Bearer "))
                 return JwtBearerDefaults.AuthenticationScheme;
             return CookieAuthenticationDefaults.AuthenticationScheme;
         };
     });
-        
+
+// Authorization policy
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(JwtBearerDefaults.AuthenticationScheme, policy =>
@@ -102,13 +98,13 @@ builder.Services.AddAuthorization(options =>
     //options.DefaultPolicy = options.GetPolicy("BearerOrCookies")!;
 });
 
-// Add services to the container.
+// Connect Postgre DB
 var connectionString = builder.Configuration.GetConnectionString("PostgresConnectionString");
 builder.Services.AddDbContext<DataBaseContext>(options =>
     options.UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-// add MVC service
+// Adding MVC
 builder.Services.AddControllersWithViews(mvcOtions =>
 {
     mvcOtions.EnableEndpointRouting = false;
@@ -120,13 +116,13 @@ var app = builder.Build();
 
 try
 {
+    // Application singletone initialization
     log4net.Config.XmlConfigurator.Configure(new FileInfo(LogSettings.ConfigurationPath));
     ConnectorCenterApp.CreateInstance(app.Logger);
     ConnectorCenterApp.Instance.Initialize();
 }
 catch
 {
-    // сообщение в консоль, что файловый логгер не применил конфиг
     app.Logger.LogCritical($"Не удалось применить конфигурацию логгера {LogSettings.ConfigurationPath}. " +
         $"Проверьте существование и структуру файла.");
 }
@@ -146,26 +142,21 @@ else
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// static files access (wwwroot folder)
 app.UseStaticFiles();
 
-// стандартный маршрут mvc
+// mvc default route
 app.UseMvcWithDefaultRoute();
 
-app.UseAuthentication();
-app.UseAuthorization();
-
-// включаем паттерн mvc
+// enable mvc
 app.UseMvc(routes =>
 {
-    routes.MapRoute( // базовый маршрут при отсутствии указанного пути
+    routes.MapRoute( // default route
         name: "default",
         template: "{controller=Home}/{action=Index}/{id?}");
 });
-// запуск
+// run
 using (var scope = app.Logger.BeginScope(".NET CORE 6"))
 {
     app.Run();
 }
-
-

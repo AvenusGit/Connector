@@ -9,38 +9,32 @@ using System.Net.Mime;
 
 namespace ConnectorCenter.Controllers.Api
 {
+    /// <summary>
+    /// Api for token authorization
+    /// </summary>
     [Route("/api/token")]
     [AllowAnonymous]
     [ApiController]
     public class TokenApi : ControllerBase
     {
+        #region Fields
         private readonly DataBaseContext _dataBaseContext;
         private readonly ILogger _logger;
+        #endregion
+        #region Constructors
         public TokenApi(DataBaseContext context, ILogger<TokenApi> logger)
         {
             _dataBaseContext = context;
             _logger = logger;
-    }
-
-        [HttpGet]
-        private async Task Index()
-        {
-            if (!ConnectorCenterApp.Instance.ApiSettings.ApiEnabled)
-            {
-                HttpContext.Response.StatusCode = 403;
-                await HttpContext.Response.WriteAsync("API disabled in app settings.");
-                return;
-            }
-            if (!ConnectorCenterApp.Instance.ApiSettings.AuthorizeApiEnabled)
-            {
-                HttpContext.Response.StatusCode = 403;
-                await HttpContext.Response.WriteAsync("API JWT token authorization disabled in app settings.");
-                return;
-            }
-            Response.StatusCode = 400;
-            await HttpContext.Response.WriteAsync("JSON (Credentials{string Login, string Password}) in request body need!");
         }
-
+        #endregion
+        #region Requests
+        /// <summary>
+        /// API request access JWT token
+        /// Token need for other requests
+        /// </summary>
+        /// <param name="credentials">JSON Credentials</param>
+        /// <returns>JSON TokenInfo</returns>
         [Route("/api/token/gettoken")]
         [Produces(MediaTypeNames.Application.Json)]
         [Consumes("application/json")]
@@ -113,5 +107,6 @@ namespace ConnectorCenter.Controllers.Api
                 }
             }
         }
+        #endregion
     }
 }

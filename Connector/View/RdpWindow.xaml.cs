@@ -323,6 +323,11 @@ namespace Connector.View
                     // normal close connection
                     break;
                 default:
+                    message =
+                    new AuraS.Controls.AuraMessageWindow(new AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel
+                    ($"Ошибка подключения к {Connection.ConnectionName}", $"По неизвестной причине инициировано закрытие подключения ({e.discReason}). Обратитесь к администратору.", "Ок",
+                    AuraS.Controls.ControlsViewModels.AuraMessageWindowViewModel.MessageTypes.Error));
+                    message.ShowDialog();
                     break;
             }
             OnClosed(null);

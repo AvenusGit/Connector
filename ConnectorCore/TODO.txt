@@ -1,4 +1,5 @@
-﻿//// cert
+﻿//// cert???
+// logs in docker only errors
 
 // reset password crypt
 // rdp size bug
