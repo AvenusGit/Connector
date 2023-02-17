@@ -70,10 +70,16 @@ namespace ConnectorCenter.Services.Authorize
         }
         public static AppUser.AppRoles GetUserRole(HttpContext context)
         {
-            object? role;
-            if (Enum.TryParse(typeof(AppUser.AppRoles), context.User.FindFirstValue(ClaimTypes.GroupSid), true, out role))
+            try
+            {
+                object? role;
+                Enum.TryParse(typeof(AppUser.AppRoles), context.User.FindFirstValue(ClaimTypes.GroupSid), true, out role);
                 return (AppUser.AppRoles)role!;
-            else throw new Exception("Не удалось определить роль пользователя в запросе.");
+            }
+            catch (Exception ex) 
+            {
+                throw new Exception($"Не удалось определить роль пользователя в запросе.\n{ex.Message}");
+            }
         }
         public static string GetUserName(HttpContext context)
         {
