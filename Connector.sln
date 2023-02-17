@@ -18,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{
 		Docker.txt = Docker.txt
 	EndProjectSection
 EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "ConnectorCenterNG", "..\ConnectorCenterNG\ConnectorCenterNG.esproj", "{DD699264-594C-4F42-BB7B-E1066D000076}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,6 +46,12 @@ Global
 		{F8C73640-371E-4408-9137-EF516D5C4861}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F8C73640-371E-4408-9137-EF516D5C4861}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F8C73640-371E-4408-9137-EF516D5C4861}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD699264-594C-4F42-BB7B-E1066D000076}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD699264-594C-4F42-BB7B-E1066D000076}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD699264-594C-4F42-BB7B-E1066D000076}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{DD699264-594C-4F42-BB7B-E1066D000076}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD699264-594C-4F42-BB7B-E1066D000076}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD699264-594C-4F42-BB7B-E1066D000076}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

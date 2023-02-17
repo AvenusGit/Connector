@@ -10,19 +10,30 @@ using ConnectorCenter.Models.Settings;
 namespace ConnectorCenter.Controllers
 {
     /// <summary>
-    /// Контроллер главного меню
+    /// Main menu controller
     /// </summary>
     [Authorize(Policy = "Cookies")]
     public class DashBoardController : Controller
     {
+        #region Fields
+        /// <summary>
+        /// Current logger
+        /// </summary>
         private readonly ILogger<HomeController> _logger;
-        private readonly DataBaseContext _dataBaseContext;
-
-        public DashBoardController(ILogger<HomeController> logger, DataBaseContext context)
+        #endregion
+        #region Constructors
+        public DashBoardController(ILogger<HomeController> logger)
         {
             _logger = logger;
-            _dataBaseContext = context;
         }
+        #endregion
+        #region Requests
+        #region GET
+        /// <summary>
+        /// Request main menu page
+        /// </summary>
+        /// <returns>Main menu page</returns>
+        [HttpGet]
         public IActionResult Index()
         {
             using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
@@ -51,5 +62,7 @@ namespace ConnectorCenter.Controllers
                 }                
             }
         }
+        #endregion
+        #endregion
     }
 }

@@ -22,6 +22,19 @@ log4net.Config.XmlConfigurator.Configure();
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
+//Adding CORS
+var MyAllowSpecificOrigins = "currentCORS";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+                      policy =>
+                      {
+                          policy.WithOrigins("http://localhost")
+                                            .AllowAnyHeader()
+                                            .AllowAnyMethod();
+                      });
+});
+
 // Adding default console logger
 builder.Logging.Services.AddLogging();
 
@@ -126,7 +139,7 @@ catch
     app.Logger.LogCritical($"Не удалось применить конфигурацию логгера {LogSettings.ConfigurationPath}. " +
         $"Проверьте существование и структуру файла.");
 }
-
+app.UseCors(MyAllowSpecificOrigins);
 app.UseAuthentication();
 app.UseAuthorization();
 

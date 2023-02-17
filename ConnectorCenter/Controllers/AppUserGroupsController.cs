@@ -16,13 +16,23 @@ using ConnectorCenter.Models.Settings;
 namespace ConnectorCenter.Controllers
 {
     /// <summary>
-    /// Контроллер для работы с группами пользователей
+    /// Application user's groups controller
     /// </summary>
     [Authorize(AuthenticationSchemes = "Cookies")]
     public class AppUserGroupsController : Controller
     {
         #region Fields
-        private readonly Microsoft.Extensions.Logging.ILogger _logger;
+        /// <summary>
+        /// Current users access settings 
+        /// </summary>
+        private readonly AccessSettings _accessSettings;
+        /// <summary>
+        /// Current logger
+        /// </summary>
+        private readonly ILogger _logger;
+        /// <summary>
+        /// Database context
+        /// </summary>
         private readonly DataBaseContext _context;
         #endregion
         #region Constructors
@@ -30,13 +40,14 @@ namespace ConnectorCenter.Controllers
         {
             _context = context;
             _logger = logger;
+            _accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
         }
         #endregion
         #region GET
         /// <summary>
-        /// Get: Запрос страницы групп пользователей.
+        /// Get: Request appuser groups page.
         /// </summary>
-        /// <returns>Страница групп пользователей</returns>
+        /// <returns>Page</returns>
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -44,20 +55,19 @@ namespace ConnectorCenter.Controllers
             {
                 ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
-                {                    
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if(accessSettings.Groups == AccessSettings.AccessModes.None)
+                {
+                    if(_accessSettings.Groups == AccessSettings.AccessModes.None)
                     {
                         _logger.LogWarning("Отказано в попытке запросить список групп. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\dashboard");
                     }
                     _logger.LogInformation("Запрошен список групп пользователей.");
                     return _context.UserGroups is null
-                          ? View(new IndexModel(new List<AppUserGroup>(), accessSettings))
+                          ? View(new IndexModel(new List<AppUserGroup>(), _accessSettings))
                           : View(new IndexModel(await _context.UserGroups
                                 .Include(gr => gr.Connections)
                                 .Include(gr => gr.Users)
-                                .ToListAsync(), accessSettings));
+                                .ToListAsync(), _accessSettings));
                 }
                 catch (Exception ex)
                 {
@@ -77,9 +87,9 @@ namespace ConnectorCenter.Controllers
             }
         }
         /// <summary>
-        /// Get: Запрос страницы добавления группы пользователей
+        /// Get: Request add new app user group page
         /// </summary>
-        /// <returns>Страница добавления группы пользователей</returns>
+        /// <returns>Page</returns>
         [HttpGet]
         public IActionResult Add()
         {
@@ -88,8 +98,7 @@ namespace ConnectorCenter.Controllers
                 ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.Groups != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.Groups != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу добавления групп. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUserGroups");
@@ -115,10 +124,10 @@ namespace ConnectorCenter.Controllers
             }
         }
         /// <summary>
-        /// Запрос страницы редактирования группы
+        /// Get: Request edit of app user groups
         /// </summary>
-        /// <param name="id">Идентификатор группы для редактирования</param>
-        /// <returns>Возврат на страницу групп</returns>
+        /// <param name="id">pp user groups identifier</param>
+        /// <returns>Index Page</returns>
         [HttpGet]
         public async Task<IActionResult> Edit(long? id)
         {
@@ -127,8 +136,7 @@ namespace ConnectorCenter.Controllers
                 ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.Groups != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.Groups != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу изменения группы. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUserGroups");
@@ -177,8 +185,8 @@ namespace ConnectorCenter.Controllers
                             message = "Ошибка при попытке получить страницу изменения группы пользователей.",
                             buttons = new Dictionary<string, string>()
                             {
-                            {"На главную",@"\dashboard" },
-                            {"К логам",@"\logs" }
+                                {"На главную",@"\dashboard" },
+                                {"К логам",@"\logs" }
                             },
                             errorCode = 500
                         }));
@@ -186,10 +194,10 @@ namespace ConnectorCenter.Controllers
             }
         }
         /// <summary>
-        /// Запрос страницы подключений указанной группы
+        /// Get: Request connections of app user groups
         /// </summary>
-        /// <param name="groupId">Идентификатор группы</param>
-        /// <returns>Страница подключений указанной группы</returns>
+        /// <param name="groupId">App user groups identifier</param>
+        /// <returns>Connections page</returns>
         [HttpGet]
         public async Task<IActionResult> ShowConnections(long? groupId)
         {
@@ -198,8 +206,7 @@ namespace ConnectorCenter.Controllers
                 ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.GroupConnections == AccessSettings.AccessModes.None)
+                    if (_accessSettings.GroupConnections == AccessSettings.AccessModes.None)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу списка подключений группы. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUserGroups");
@@ -213,8 +220,8 @@ namespace ConnectorCenter.Controllers
                                     message = "Ошибка при запросе страницы подключений группы пользователей. Не указан ИД группы.",
                                     buttons = new Dictionary<string, string>()
                                     {
-                                    {"На главную",@"\dashboard" },
-                                    {"К логам",@"\logs" }
+                                        {"На главную",@"\dashboard" },
+                                        {"К логам",@"\logs" }
                                     },
                                     errorCode = 400
                                 }));
@@ -230,7 +237,7 @@ namespace ConnectorCenter.Controllers
                     if (userGroup != null)
                     {
                         _logger.LogInformation($"Запрошены подключения группы пользователей:{userGroup.GroupName}."); ;
-                        return View(new ShowConnectionsModel(userGroup, accessSettings));
+                        return View(new ShowConnectionsModel(userGroup, _accessSettings));
                     }
                     _logger.LogWarning($"Не найдена запрошенная группа пользователей:{userGroup.GroupName}."); ;
                     return RedirectToAction("Index", "Message", new RouteValueDictionary(
@@ -263,10 +270,10 @@ namespace ConnectorCenter.Controllers
             }
         }
         /// <summary>
-        /// Запрос страницы подключений группы пользователей
+        /// Get: Request add new connection for app user group page
         /// </summary>
-        /// <param name="groupId">Идентификатор группы пользователей</param>
-        /// <returns>Страница подключений указанной группы</returns>
+        /// <param name="groupId">App user group identifier</param>
+        /// <returns>New connection page</returns>
         [HttpGet]
         public async Task<IActionResult> AddConnections(long? groupId)
         {
@@ -275,8 +282,7 @@ namespace ConnectorCenter.Controllers
                 ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.GroupConnections != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.GroupConnections != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке запросить добавления подключений группы. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUserGroups\showConnections");
@@ -343,10 +349,10 @@ namespace ConnectorCenter.Controllers
             }
         }
         /// <summary>
-        /// Запрос на страницу списка пользователей группы
+        /// Get: Request of user in app user groups
         /// </summary>
-        /// <param name="groupId">Идентификатор группы</param>
-        /// <returns></returns>
+        /// <param name="groupId">App user group identifier</param>
+        /// <returns>User list page</returns>
         [HttpGet]
         public async Task<IActionResult> ShowUsers(long? groupId)
         {
@@ -355,8 +361,7 @@ namespace ConnectorCenter.Controllers
                 ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.GroupUsers == AccessSettings.AccessModes.None)
+                    if (_accessSettings.GroupUsers == AccessSettings.AccessModes.None)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу списка пользователей группы. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUserGroups");
@@ -383,7 +388,7 @@ namespace ConnectorCenter.Controllers
                     if (userGroup != null)
                     {
                         _logger.LogInformation($"Запрос на страницу пользователй группы {userGroup.GroupName}");
-                        return View(new ShowUsersModel(userGroup, accessSettings));
+                        return View(new ShowUsersModel(userGroup, _accessSettings));
                     }
                     else
                     {
@@ -419,10 +424,10 @@ namespace ConnectorCenter.Controllers
             }
         }
         /// <summary>
-        /// Запрос страницы добавления пользователя в группу
+        /// Get: Request add new user in app user group
         /// </summary>
-        /// <param name="groupId">Идентификатор группы</param>
-        /// <returns></returns>
+        /// <param name="groupId">App user group identifier</param>
+        /// <returns>Add user page</returns>
         [HttpGet]
         public async Task<IActionResult> AddUser(long? groupId)
         {
@@ -431,8 +436,7 @@ namespace ConnectorCenter.Controllers
                 ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.GroupUsers != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.GroupUsers != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу добавления пользователей в группу. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUserGroups\showConnections");
@@ -498,10 +502,10 @@ namespace ConnectorCenter.Controllers
         #endregion
         #region POST
         /// <summary>
-        /// POST: Запрос на добавление новой группы
+        /// POST: Request to add new group
         /// </summary>
-        /// <param name="appUserGroup">Новая группа</param>
-        /// <returns>Возвращает в список групп</returns>
+        /// <param name="appUserGroup">New group</param>
+        /// <returns>Group list page</returns>
         [HttpPost]
         public async Task<IActionResult> Add(AppUserGroup appUserGroup)
         {
@@ -510,8 +514,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.Groups != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.Groups != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке добавления группы. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUserGroups");
@@ -554,10 +557,10 @@ namespace ConnectorCenter.Controllers
             }
         }
         /// <summary>
-        /// Запрос на изменение группы
+        /// POST: Request for edit group
         /// </summary>
-        /// <param name="appUserGroup">Группа для изменения</param>
-        /// <returns>Возврат на страницу групп</returns>
+        /// <param name="appUserGroup">Edited group (contains Id)</param>
+        /// <returns>Group list page</returns>
         [HttpPost]
         public async Task<IActionResult> Edit(AppUserGroup appUserGroup)
         {
@@ -566,8 +569,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.Groups != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.Groups != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке изменения группы. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUserGroups");
@@ -610,10 +612,10 @@ namespace ConnectorCenter.Controllers
             }
         }
         /// <summary>
-        /// Запрос на удаление группы
+        /// POST: Delete group request
         /// </summary>
-        /// <param name="id">Идентификатор группы</param>
-        /// <returns>Возврат на страницу групп</returns>
+        /// <param name="id">Group identifier</param>
+        /// <returns>GroupList page</returns>
         [HttpPost]
         public async Task<IActionResult> Delete(long id)
         {
@@ -622,8 +624,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.Groups != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.Groups != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке удаления группы. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUserGroups");
@@ -677,11 +678,11 @@ namespace ConnectorCenter.Controllers
             }
         }
         /// <summary>
-        /// Запрос на добавление подключения к группе
+        /// POST: Add connection to group request
         /// </summary>
-        /// <param name="connectionId">Идентификатор подключения</param>
-        /// <param name="groupId">Идентификатор группы</param>
-        /// <returns>Возврат на страницу добавления подключений</returns>
+        /// <param name="connectionId">Connection identifier</param>
+        /// <param name="groupId">Group identifier</param>
+        /// <returns>Back to add connection page</returns>
         [HttpPost]
         public async Task<IActionResult> AddConnections(long? connectionId, long? groupId)
         {
@@ -690,8 +691,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.GroupConnections != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.GroupConnections != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке добавления подключения группе. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUserGroups\showConnections");
@@ -760,11 +760,11 @@ namespace ConnectorCenter.Controllers
             }
         }
         /// <summary>
-        /// Запрос на удаление подключения у группы из списка добавлений подключений
+        /// POST Remove connection - add connection list page version
         /// </summary>
-        /// <param name="connectionId">Идентификатор подключения</param>
-        /// <param name="groupId">Идентификатор группы</param>
-        /// <returns>Страница добавления подключений</returns>
+        /// <param name="connectionId">Connection identifier</param>
+        /// <param name="groupId">Group identifier</param>
+        /// <returns>Back to add connection page</returns>
         [HttpPost]
         public async Task<IActionResult> DropConnectionOnAddConnectionList(long? connectionId, long? groupId)
         {
@@ -773,8 +773,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.GroupConnections != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.GroupConnections != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке удаления подключения из группы. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUserGroups\showConnections");
@@ -843,11 +842,11 @@ namespace ConnectorCenter.Controllers
             }
         }
         /// <summary>
-        /// Запрос на удаление подключения у группы из списка подключений
+        /// POST: Remove connection - connection list version
         /// </summary>
-        /// <param name="connectionId">Идентификатор подключения</param>
-        /// <param name="groupId">Идентификатор группы</param>
-        /// <returns></returns>
+        /// <param name="connectionId">Connection identifier</param>
+        /// <param name="groupId">Group identifier</param>
+        /// <returns>Back to connection list page</returns>
         [HttpPost]
         public async Task<IActionResult> DropConnectionOnConnectionList(long? connectionId, long? groupId)
         {
@@ -856,8 +855,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.GroupConnections != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.GroupConnections != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке удаления подключения из группы. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUserGroups\showConnections");
@@ -898,7 +896,7 @@ namespace ConnectorCenter.Controllers
                             }));
                     }
                     await DropConnection(connectionId.Value, group);
-                    return View("ShowConnections", new ShowConnectionsModel(group, accessSettings));
+                    return View("ShowConnections", new ShowConnectionsModel(group, _accessSettings));
                 }
                 catch (Exception ex)
                 {
@@ -918,11 +916,11 @@ namespace ConnectorCenter.Controllers
             }
         }
         /// <summary>
-        /// Запрос на добавление пользователя в группу
+        /// POST: Add user to group
         /// </summary>
-        /// <param name="userId">Идентификатор пользователя</param>
-        /// <param name="groupId">Идентификатор группы</param>
-        /// <returns></returns>
+        /// <param name="userId">User identifier</param>
+        /// <param name="groupId">Group identifier</param>
+        /// <returns>Back to add user page</returns>
         [HttpPost]
         public async Task<IActionResult> AddUser(long? userId, long? groupId)
         {
@@ -931,8 +929,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.GroupUsers != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.GroupUsers != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке добавления пользователя в группу. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUserGroups\showUsers");
@@ -1014,11 +1011,11 @@ namespace ConnectorCenter.Controllers
             }
         }
         /// <summary>
-        /// Запрос на удаление пользователя из группы
+        /// POST Remove user from group - add user page version
         /// </summary>
-        /// <param name="userId">Идентификатор пользователя</param>
-        /// <param name="groupId">Идентификатор группы</param>
-        /// <returns></returns>
+        /// <param name="userId">User identifier</param>
+        /// <param name="groupId">Group identifier</param>
+        /// <returns>Back to add user page</returns>
         [HttpPost]
         public async Task<IActionResult> DropUserOnAddUserList(long? userId, long? groupId)
         {
@@ -1027,8 +1024,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.GroupUsers != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.GroupUsers != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке удаления пользователя из группы. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUserGroups\showUsers");
@@ -1095,11 +1091,11 @@ namespace ConnectorCenter.Controllers
             }
         }
         /// <summary>
-        /// Запрос на удаление пользователя из группы
+        /// POST: Remove user from group - user list page version
         /// </summary>
-        /// <param name="userId">Идентификатор пользователя</param>
-        /// <param name="groupId">Идентификатор группы</param>
-        /// <returns></returns>
+        /// <param name="userId">User identifier</param>
+        /// <param name="groupId">Group identifier</param>
+        /// <returns>User list page</returns>
         [HttpPost]
         public async Task<IActionResult> DropUserOnUserList(long? userId, long? groupId)
         {
@@ -1108,8 +1104,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.GroupUsers != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.GroupUsers != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке удаления пользователя из группы. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUserGroups\showUsers");
@@ -1151,7 +1146,7 @@ namespace ConnectorCenter.Controllers
                     }
                     await DropUser(userId.Value, group);
                     _logger.LogInformation($"Запрос на удаление пользователя из группы {group.GroupName}.");
-                    return View("ShowUsers", new ShowUsersModel(group, accessSettings));
+                    return View("ShowUsers", new ShowUsersModel(group, _accessSettings));
                 }
                 catch (Exception ex)
                 {
@@ -1173,10 +1168,10 @@ namespace ConnectorCenter.Controllers
         #endregion
         #region Methods
         /// <summary>
-        /// Общий метод удаления подключения из группы
+        /// Remove connection from group
         /// </summary>
-        /// <param name="connectionId">Идентификатор подключения</param>
-        /// <param name="group">Группа, в которой удаляем</param>
+        /// <param name="connectionId">Connection identifier</param>
+        /// <param name="group">Group identifier</param>
         /// <returns></returns>
         private async Task DropConnection(long connectionId, AppUserGroup group)
         {
@@ -1191,10 +1186,10 @@ namespace ConnectorCenter.Controllers
             await _context.SaveChangesAsync();
         }
         /// <summary>
-        /// Общий метод удаления пользователя из группы
+        /// Remove user from group
         /// </summary>
-        /// <param name="userId">Идентификатор пользователя</param>
-        /// <param name="group">Группа, в которой удаляем</param>
+        /// <param name="userId">User identifier</param>
+        /// <param name="group">Group identifier</param>
         /// <returns></returns>
         private async Task DropUser(long userId, AppUserGroup group)
         {

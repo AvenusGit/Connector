@@ -1,8 +1,11 @@
 ﻿//// cert???
 // logs in docker only errors
 
+//// DI messages, logs, validation
+
 // reset password crypt
 // rdp size bug
+// rdp minimize-maximize bug 
 // check activeX rdp control in web page
 // server download logs
 // client lang

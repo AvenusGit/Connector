@@ -20,13 +20,23 @@ using ConnectorCore.Cryptography;
 namespace ConnectorCenter.Controllers
 {
     /// <summary>
-    /// Контроллер для работы с пользователями
+    /// AppUser controller
     /// </summary>
     [Authorize(AuthenticationSchemes = "Cookies")]
     public class AppUsersController : Controller
     {
         #region Fields
+        /// <summary>
+        /// Current user access settings
+        /// </summary>        
+        private readonly AccessSettings _accessSettings;
+        /// <summary>
+        /// Current database context
+        /// </summary>
         private readonly DataBaseContext _context;
+        /// <summary>
+        /// Current logger
+        /// </summary>
         private readonly ILogger _logger;
         #endregion
         #region Constructors
@@ -34,13 +44,14 @@ namespace ConnectorCenter.Controllers
         {
             _context = context;
             _logger = logger;
+            _accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
         }
         #endregion
         #region GET
         /// <summary>
-        /// Запрос на получение списка пользователей
+        /// GET: user list request
         /// </summary>
-        /// <returns>Страница с списком пользователей</returns>
+        /// <returns>User list page</returns>
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -49,21 +60,20 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.Users == AccessSettings.AccessModes.None)
+                    if (_accessSettings.Users == AccessSettings.AccessModes.None)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу списка пользователей. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\dashboard");
                     }
                     _logger.LogInformation("Запрос на получение списка пользователей");
                     return _context.Users is null
-                        ? View(new IndexModel(new List<AppUser>(), accessSettings))
+                        ? View(new IndexModel(new List<AppUser>(), _accessSettings))
                         : View(new IndexModel(await _context.Users
                             .Include(usr => usr.Groups)
                                 .ThenInclude(gr => gr.Connections)
                             .Include(user => user.Credentials)
                             .Include(user => user.Connections)
-                            .ToListAsync(), accessSettings));
+                            .ToListAsync(), _accessSettings));
                 }
                 catch (Exception ex)
                 {
@@ -83,9 +93,9 @@ namespace ConnectorCenter.Controllers
             }
         }
         /// <summary>
-        /// Запрос формы для добавления пользователя
+        /// GET: request page for adding anew user
         /// </summary>
-        /// <returns>Страница с формой для добавления пользователя</returns>
+        /// <returns>Page for adding a new user</returns>
         [HttpGet]
         public IActionResult Add()
         {
@@ -94,8 +104,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.Users != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.Users != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу добавления пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -121,10 +130,10 @@ namespace ConnectorCenter.Controllers
             }
         }
         /// <summary>
-        /// Запрос формы на редактирование пользователя
+        /// GET: page request to edit user
         /// </summary>
-        /// <param name="id">Идентификатор редактируемого пользователя</param>
-        /// <returns>Страница редактирования, </returns>
+        /// <param name="id">User identifier</param>
+        /// <returns>User's edit page</returns>
         [HttpGet]
         public async Task<IActionResult> Edit(long? id)
         {
@@ -133,8 +142,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.Users != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.Users != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу изменения пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -174,7 +182,7 @@ namespace ConnectorCenter.Controllers
 
                     appUser.Credentials.Password = "֍password֍";
                     _logger.LogInformation($"Запрос страницы для редактирования пользователя {appUser.Name}.");
-                    return View(new EditModel(appUser, accessSettings));
+                    return View(new EditModel(appUser, _accessSettings));
                 }
                 catch (Exception ex)
                 {
@@ -194,10 +202,10 @@ namespace ConnectorCenter.Controllers
             }
         }
         /// <summary>
-        /// Запрос страницы подключений конкретного пользователя
+        /// GET: request connection list for user
         /// </summary>
-        /// <param name="userId">Идентификатор пользователя</param>
-        /// <returns>Страница подключений пользователя</returns>
+        /// <param name="userId">User identifier</param>
+        /// <returns>Connection list page</returns>
         [HttpGet]
         public async Task<IActionResult> ShowConnections(long? userId)
         {
@@ -206,8 +214,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.UserConnections == AccessSettings.AccessModes.None)
+                    if (_accessSettings.UserConnections == AccessSettings.AccessModes.None)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу подключений пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -242,7 +249,7 @@ namespace ConnectorCenter.Controllers
                             .ThenInclude(conn => conn.Server)
                         .FirstOrDefaultAsync(usr => usr.Id == userId);
                     if (user != null)
-                        return View(new ShowConnectionsModel(user,accessSettings));
+                        return View(new ShowConnectionsModel(user, _accessSettings));
                     else
                     {
                         _logger.LogWarning($"Ошибка при запросе страницы подключений пользователя. Пользователь не найден.");
@@ -277,10 +284,10 @@ namespace ConnectorCenter.Controllers
             }
         }
         /// <summary>
-        /// Запрос страницы на добавление подключений пользователю
+        /// GET: page request to adding connection
         /// </summary>
-        /// <param name="userId">Идентификатор пользователя</param>
-        /// <returns>Страница добавления подключений пользователю</returns>
+        /// <param name="userId">User identifier</param>
+        /// <returns>Add connection page </returns>
         [HttpGet]
         public async Task<IActionResult> AddConnections(long? userId)
         {
@@ -289,8 +296,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.UserConnections != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.UserConnections != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу добавления подключения для пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -366,10 +372,10 @@ namespace ConnectorCenter.Controllers
         #endregion
         #region POST
         /// <summary>
-        /// Запрос на добавление пользователя
+        /// POST: request adding new user
         /// </summary>
-        /// <param name="appUser">Пользователь для добавления</param>
-        /// <returns>Страница со списком пользователей</returns>
+        /// <param name="appUser">New user</param>
+        /// <returns>User's list page</returns>
         [HttpPost]
         public async Task<IActionResult> Add(AppUser appUser)
         {
@@ -378,8 +384,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.Users != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.Users != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке добавить пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -459,10 +464,10 @@ namespace ConnectorCenter.Controllers
             }
         }
         /// <summary>
-        /// Запрос на изиенение пользователя
+        /// POST: user editing request
         /// </summary>
-        /// <param name="appUser">Пользователь для изменения</param>
-        /// <returns></returns>
+        /// <param name="appUser">User for editing</param>
+        /// <returns>User's list page</returns>
         [HttpPost]
         public async Task<IActionResult> Edit(AppUser appUser)
         {
@@ -471,8 +476,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.Users != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.Users != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу изменения пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -559,10 +563,10 @@ namespace ConnectorCenter.Controllers
             }
         }
         /// <summary>
-        /// Запрос на удаление пользователя
+        /// POST: user delete request
         /// </summary>
-        /// <param name="id">Идентификатор пользователя</param>
-        /// <returns>Страница списка пользователей</returns>
+        /// <param name="id">User identifier</param>
+        /// <returns>Users list page</returns>
         [HttpPost]
         public async Task<IActionResult> Delete(long? id)
         {
@@ -572,7 +576,7 @@ namespace ConnectorCenter.Controllers
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                     AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.Users != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.Users != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу удаления пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -669,10 +673,10 @@ namespace ConnectorCenter.Controllers
             }
         }
         /// <summary>
-        /// Запрос на изменение статуса активности пользователя
+        /// POST: change enable mode
         /// </summary>
-        /// <param name="id">Идентификатор пользователя</param>
-        /// <returns>СТраница списка пользователей</returns>
+        /// <param name="id">User identifier</param>
+        /// <returns>User list page</returns>
         [HttpPost]
         public async Task<IActionResult> ChangeEnableMode(long? id)
         {
@@ -681,8 +685,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.Users != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.Users != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке изменить статус активности пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -743,11 +746,11 @@ namespace ConnectorCenter.Controllers
         }
 
         /// <summary>
-        /// Запрос на добавление подключения пользователю
+        /// POST: add connection to user request
         /// </summary>
-        /// <param name="connectionId">Идентификатор подключения</param>
-        /// <param name="userId">Идентификатор пользователя</param>
-        /// <returns>Страница подключений пользователя</returns>
+        /// <param name="connectionId">Connection identifier</param>
+        /// <param name="userId">User identifier</param>
+        /// <returns>User connection list page</returns>
         [HttpPost]
         public async Task<IActionResult> AddConnections(long? connectionId, long? userId)
         {
@@ -756,8 +759,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.UserConnections != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.UserConnections != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке добавить подключение для пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -844,12 +846,13 @@ namespace ConnectorCenter.Controllers
                 }
             }
         }
+
         /// <summary>
-        /// Запрос на удаление подключения из списка добавления подключений
+        /// POST: Remove connection from user connection list request - add connection page version
         /// </summary>
-        /// <param name="connectionId">Идентификатор подключения</param>
-        /// <param name="userId">Идентификатор пользователя</param>
-        /// <returns>Страница добавления подключений</returns>
+        /// <param name="connectionId">Connection identifier</param>
+        /// <param name="userId">User identifier</param>
+        /// <returns>Add connection list page</returns>
         [HttpPost]
         public async Task<IActionResult> DropConnectionOnAddConnectionList(long? connectionId, long? userId)
         {
@@ -858,8 +861,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.UserConnections != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.UserConnections != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке удалить подключение для пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -936,12 +938,13 @@ namespace ConnectorCenter.Controllers
                 }
             }
         }
+
         /// <summary>
-        /// Запрос на удаление подключения у пользователя из списка подключений
+        /// POST: Remove connection from user connection list request - connection list page version
         /// </summary>
-        /// <param name="connectionId">Идентификатор подключения</param>
-        /// <param name="userId">Идентификатор пользователя</param>
-        /// <returns></returns>
+        /// <param name="connectionId">Connection identifier</param>
+        /// <param name="userId">User identifier</param>
+        /// <returns>Connection list page</returns>
         [HttpPost]
         public async Task<IActionResult> DropConnectionOnConnectionList(long? connectionId, long? userId)
         {
@@ -950,8 +953,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.UserConnections != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.UserConnections != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке удалить подключение для пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -1002,7 +1004,7 @@ namespace ConnectorCenter.Controllers
                             }));
                     }
                     await DropConnection(connectionId.Value, user);
-                    return View("ShowConnections", new ShowConnectionsModel(user,accessSettings));
+                    return View("ShowConnections", new ShowConnectionsModel(user, _accessSettings));
                 }
                 catch (Exception ex)
                 {
@@ -1021,6 +1023,12 @@ namespace ConnectorCenter.Controllers
                 }
             }
         }
+
+        /// <summary>
+        /// POST: Set to default selected user visual settings
+        /// </summary>
+        /// <param name="userId">User identifier</param>
+        /// <returns>User list page</returns>
         [HttpPost]
         public async Task<IActionResult> DropUserVisualSetting(long? userId)
         {
@@ -1029,8 +1037,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.ResetVisualSettings != true)
+                    if (_accessSettings.ResetVisualSettings != true)
                     {
                         _logger.LogWarning("Отказано в попытке сбросить визуальные настройки пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -1091,10 +1098,10 @@ namespace ConnectorCenter.Controllers
         #endregion
         #region Methods
         /// <summary>
-        /// Метод удаления подключения у указанного пользователя
+        /// Remove connection on selected user
         /// </summary>
-        /// <param name="connectionId">Идентификатор подключения</param>
-        /// <param name="user">Экземпляр пользователя, выгруженный из БД.</param>
+        /// <param name="connectionId">Connection identifier</param>
+        /// <param name="user">Selected user instance</param>
         private async Task DropConnection(long connectionId, AppUser user)
         {
             Connection? connection = await _context.Connections.FindAsync(connectionId);
@@ -1109,16 +1116,21 @@ namespace ConnectorCenter.Controllers
             await _context.SaveChangesAsync();
         }
         /// <summary>
-        /// Проверка на существование пользователя в БД
+        /// CHeck on exist user in DB by identifier
         /// </summary>
-        /// <param name="id">Идентификатор пользователя</param>
-        /// <returns>True - пользователь есть, False - пользователя нет</returns>
+        /// <param name="id">User identifier</param>
+        /// <returns>True - user exist</returns>
         private bool AppUserExists(long id)
         {
             return (_context.Users?
                 .Include(usr => usr.UserSettings)
                 .Any(e => e.Id == id)).GetValueOrDefault();
         }
+        /// <summary>
+        /// CHeck on exist user in DB by login name
+        /// </summary>
+        /// <param name="login">User login (AppUser.Credentials.Login)</param>
+        /// <returns>True - user exist</returns>
         private bool AppUserExist(string login)
         {
             return (_context.Users?.Any(usr => usr.Credentials.Login == login)).GetValueOrDefault();

@@ -20,6 +20,7 @@ namespace ConnectorCenter.Controllers
     public class StatisticController : Controller
     {
         #region Fields
+        private readonly AccessSettings _accessSettings;
         private readonly ILogger _logger;
         private readonly DataBaseContext _context;
         #endregion
@@ -28,6 +29,7 @@ namespace ConnectorCenter.Controllers
         {
             _logger = logger;
             _context = context;
+            _accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
         }
         #endregion
         [HttpGet]
@@ -39,10 +41,9 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings? accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if(accessSettings is not null)
+                    if(_accessSettings is not null)
                     {
-                        if (!accessSettings.Statistics)
+                        if (!_accessSettings.Statistics)
                         {
                             _logger.LogWarning("Отказано в попытке запросить страницу статистики. Недостаточно прав.");
                             return AuthorizeService.ForbiddenActionResult(this, @"\dashboard");
@@ -97,10 +98,9 @@ namespace ConnectorCenter.Controllers
                 ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
-                    AccessSettings? accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings is not null)
+                    if (_accessSettings is not null)
                     {
-                        if (!accessSettings.Statistics)
+                        if (!_accessSettings.Statistics)
                         {
                             _logger.LogWarning("Отказано в попытке очистить статистику приложения. Недостаточно прав.");
                             return AuthorizeService.ForbiddenActionResult(this, @"\dashboard");

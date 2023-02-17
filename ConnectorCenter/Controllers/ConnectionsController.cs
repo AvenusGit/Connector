@@ -17,28 +17,40 @@ using ConnectorCenter.Models.Settings;
 namespace ConnectorCenter.Controllers
 {
     /// <summary>
-    /// Контроллер для работы с подключениями
+    /// Connections controller
     /// </summary>
     [Authorize(AuthenticationSchemes = "Cookies")]
     public class ConnectionsController : Controller
     {
         #region Fields
+        /// <summary>
+        /// Current access setting for current user
+        /// </summary>
+        private readonly AccessSettings _accessSettings;
+        /// <summary>
+        /// Current database context
+        /// </summary>
         private readonly DataBaseContext _context;
-        private readonly Microsoft.Extensions.Logging.ILogger _logger;
+        /// <summary>
+        /// Current logger
+        /// </summary>
+        private readonly ILogger _logger;
         #endregion
         #region Constructors
         public ConnectionsController(DataBaseContext context, ILogger<AppUserGroupsController> logger)
         {
             _context = context;
             _logger = logger;
+            _accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
         }
         #endregion
         #region GET
+
         /// <summary>
-        /// Запрос на страницу создания нового подключения
+        /// GET: add new connection request
         /// </summary>
-        /// <param name="serverId">Идентификатор сервера</param>
-        /// <returns>Страница создания нового подключения у указанного сервера</returns>
+        /// <param name="serverId">Server identifier</param>
+        /// <returns>Add new connection page</returns>
         [HttpGet]
         public async Task<IActionResult> Add(long serverId)
         {
@@ -47,8 +59,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу добавления подключения к серверу. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\servers");
@@ -92,11 +103,12 @@ namespace ConnectorCenter.Controllers
                 }
             }
         }
+
         /// <summary>
-        /// Запрос страницы редактирования подключения
+        /// GET: edit connection page request
         /// </summary>
-        /// <param name="connectionId">Идентификатор подключения</param>
-        /// <returns>Страница редатирования подключения с заполненными полями</returns>
+        /// <param name="connectionId">Connection identifier</param>
+        /// <returns>Edit connection page</returns>
         [HttpGet]
         public async Task<IActionResult> Edit(long? connectionId)
         {
@@ -105,8 +117,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу изменения подключения к серверу. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\servers");
@@ -168,11 +179,12 @@ namespace ConnectorCenter.Controllers
                 }
             }
         }
+        //TODO change to POST or DELETE type!
         /// <summary>
-        /// Запрос на удаление подключения
+        /// GET: Delete connection request 
         /// </summary>
-        /// <param name="id">Идентификатор подключения</param>
-        /// <returns>Страница подключений</returns>
+        /// <param name="id">Connection identifier</param>
+        /// <returns>Connection list page</returns>
         [HttpGet]
         public async Task<IActionResult> Delete(long? id)
         {
@@ -181,8 +193,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке удаления подключения к серверу. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\servers");
@@ -249,13 +260,12 @@ namespace ConnectorCenter.Controllers
         }
         #endregion
         #region POST
-
         /// <summary>
-        /// Запрос на добавление нового подключения к серверу
+        /// POST: request on add new connection to server
         /// </summary>
-        /// <param name="serverId">Идентификатор сервера</param>
-        /// <param name="connection">Новое подключение</param>
-        /// <returns>Страница подключений к серверу</returns>
+        /// <param name="serverId">Server identifier</param>
+        /// <param name="connection">New connection instance</param>
+        /// <returns>Server's connection list page</returns>
         [HttpPost]
         public async Task<IActionResult> Add(long serverId, Connection connection)
         {
@@ -266,8 +276,7 @@ namespace ConnectorCenter.Controllers
                 {
                     try
                     {
-                        AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                        if (accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
+                        if (_accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
                         {
                             _logger.LogWarning("Отказано в попытке добавления подключения к серверу. Недостаточно прав.");
                             return AuthorizeService.ForbiddenActionResult(this, @"\servers");
@@ -332,12 +341,13 @@ namespace ConnectorCenter.Controllers
                 }
             }
         }
+
         /// <summary>
-        /// Запрос на изменение подключения
+        /// POST: edit connection request
         /// </summary>
-        /// <param name="serverId">Идентификатор сервера</param>
-        /// <param name="connection">Измененное подключение</param>
-        /// <returns>Страница подключений сервера</returns>
+        /// <param name="serverId">Server identifier</param>
+        /// <param name="connection">Connection edited instance</param>
+        /// <returns>Server's connection list</returns>
         [HttpPost]
         public async Task<IActionResult> Edit(long serverId, Connection connection)
         {
@@ -346,8 +356,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке изменения подключения к серверу. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\servers");
@@ -409,11 +418,12 @@ namespace ConnectorCenter.Controllers
                 }
             }
         }
+
         /// <summary>
-        /// Запрос на изменение статуса активности подключения
+        /// POST: change access mode request
         /// </summary>
-        /// <param name="id">Идентификатор подключения</param>
-        /// <returns>Страница подключений</returns>
+        /// <param name="id">Connection identifier</param>
+        /// <returns>Server's connection list</returns>
         [HttpPost]
         public async Task<IActionResult> ChangeAcessMode(long? id)
         {
@@ -422,8 +432,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
+                    if (_accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке изменения статуса активности подключения к серверу. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\servers");
@@ -489,10 +498,10 @@ namespace ConnectorCenter.Controllers
         #endregion
         #region Methods
         /// <summary>
-        /// Проверка на существование подключения в БД
+        /// Check on exisisting connection in database
         /// </summary>
-        /// <param name="id">Идентификатор подключения</param>
-        /// <returns>True - подключение есть, иначе - нет.</returns>
+        /// <param name="id">Connection identifier</param>
+        /// <returns>True - connection exist, otherwise - false.</returns>
         private bool ConnectionExists(long id)
         {
             return (_context.Connections?.Any(e => e.Id == id)).GetValueOrDefault();

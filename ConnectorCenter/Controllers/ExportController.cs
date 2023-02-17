@@ -8,22 +8,38 @@ using Microsoft.AspNetCore.Authorization;
 using ConnectorCenter.Services.Authorize;
 using ConnectorCenter.Data;
 using Microsoft.EntityFrameworkCore;
-using ConnectorCenter.Services.Archive;
 
 namespace ConnectorCenter.Controllers
 {
+    /// <summary>
+    /// Settings exporter controller
+    /// </summary>
     [Authorize(AuthenticationSchemes = "Cookies")]
     public class ExportController : Controller
     {
         #region Fields
+        /// <summary>
+        /// Current logger
+        /// </summary>
         private readonly ILogger _logger;
+        /// <summary>
+        /// Current database context
+        /// </summary>
         private DataBaseContext _context;
         #endregion
+        #region Constructors
         public ExportController(ILogger<AppUserGroupsController> logger, DataBaseContext context)
         {
             _context = context;
             _logger = logger;
         }
+        #endregion
+        #region Requests
+        #region GET
+        /// <summary>
+        /// GET: request file user access settings configuration
+        /// </summary>
+        /// <returns>File</returns>
         [HttpGet]
         public IActionResult UserAccessSettings()
         {
@@ -63,6 +79,11 @@ namespace ConnectorCenter.Controllers
                 }
             }
         }
+
+        /// <summary>
+        /// GET: request file user access settings configuration
+        /// </summary>
+        /// <returns>File</returns>
         [HttpGet]
         public IActionResult SupportAccessSettings()
         {
@@ -348,7 +369,8 @@ namespace ConnectorCenter.Controllers
                 }
             }
         }
-        
+        #endregion
+        #endregion
         #region Methods
         private FileResult SendFile(byte[] file, string fileName)
         {
