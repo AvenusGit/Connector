@@ -23,7 +23,6 @@ namespace ConnectorCenter.Controllers
     public class ServersController : Controller
     {
         #region Fields
-        private readonly AccessSettings _accessSettings;
         private readonly DataBaseContext _context;
         private readonly ILogger _logger;
         #endregion
@@ -32,7 +31,6 @@ namespace ConnectorCenter.Controllers
         {
             _context = context;
             _logger = logger;
-            _accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
         }
         #endregion
         #region GET
@@ -258,7 +256,7 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
-                    if (_accessSettings.Servers != AccessSettings.AccessModes.Edit)
+                    if (AuthorizeService.GetAccessSettings(HttpContext).Servers != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке добавить сервер. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\servers");
@@ -316,7 +314,7 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
-                    if (_accessSettings.Servers != AccessSettings.AccessModes.Edit)
+                    if (AuthorizeService.GetAccessSettings(HttpContext).Servers != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке изменить сервер. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\servers");
@@ -388,7 +386,7 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
-                    if (_accessSettings.Servers != AccessSettings.AccessModes.Edit)
+                    if (AuthorizeService.GetAccessSettings(HttpContext).Servers != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке изменить статус активности сервера. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\servers");
@@ -459,7 +457,7 @@ namespace ConnectorCenter.Controllers
             {
                 try
                 {
-                    if (_accessSettings.Servers != AccessSettings.AccessModes.Edit)
+                    if (AuthorizeService.GetAccessSettings(HttpContext).Servers != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке удалить сервер. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\servers");

@@ -21,7 +21,6 @@ namespace ConnectorCenter.Controllers
     public class SettingsController : Controller
     {
         #region Fields
-        private readonly AccessSettings _accessSettings;
         private readonly ILogger _logger;
         private readonly DataBaseContext _context;
         #endregion
@@ -30,7 +29,6 @@ namespace ConnectorCenter.Controllers
         {
             _logger = logger;
             _context = context;
-            _accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
         }
         #endregion
         #region GET
@@ -113,13 +111,14 @@ namespace ConnectorCenter.Controllers
                 ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
-                    if (_accessSettings.SettingsLogs == AccessSettings.AccessModes.None)
+                    AccessSettings currentAcessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (currentAcessSettings.SettingsLogs == AccessSettings.AccessModes.None)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу настроек логов. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\servers");
                     }
                     _logger.LogInformation($"Запрошена страница настроек логов.");
-                    return View(new LogsModel(ConnectorCenterApp.Instance.LogSettings, _accessSettings.SettingsLogs == AccessSettings.AccessModes.Edit));
+                    return View(new LogsModel(ConnectorCenterApp.Instance.LogSettings, currentAcessSettings.SettingsLogs == AccessSettings.AccessModes.Edit));
                 }
                 catch (Exception ex)
                 {
@@ -146,11 +145,11 @@ namespace ConnectorCenter.Controllers
                 ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
-                    
-                    if (_accessSettings.SettingsAPI != AccessSettings.AccessModes.None)
+                    AccessSettings currentAcessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (currentAcessSettings.SettingsAPI != AccessSettings.AccessModes.None)
                     {
                         _logger.LogInformation($"Запрошена страница настроек Api.");
-                        return View(new ApiModel(ConnectorCenterApp.Instance.ApiSettings, _accessSettings));
+                        return View(new ApiModel(ConnectorCenterApp.Instance.ApiSettings, currentAcessSettings));
                     }
                     else
                     {
@@ -184,11 +183,11 @@ namespace ConnectorCenter.Controllers
                 ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
-
-                    if (_accessSettings.ImportAndExport)
+                    AccessSettings currentAcessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (currentAcessSettings.ImportAndExport)
                     {
                         _logger.LogInformation($"Запрошена страница импорта и экспорта.");
-                        return View("ImportAndExport", new IEModel(_accessSettings,
+                        return View("ImportAndExport", new IEModel(currentAcessSettings,
                             AuthorizeService.GetUserRole(HttpContext)));
                     }
                     else
@@ -223,15 +222,16 @@ namespace ConnectorCenter.Controllers
                 ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
-                    if(_accessSettings is null)
+                    AccessSettings currentAcessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (currentAcessSettings is null)
                     {
                         _logger.LogWarning($"Отказанов запросе страницы прочих настроек. Роль пользователя не определена.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\settings");
                     }
-                    if (_accessSettings?.SettingsOther != AccessSettings.AccessModes.None)
+                    if (currentAcessSettings?.SettingsOther != AccessSettings.AccessModes.None)
                     {
                         _logger.LogInformation($"Запрошена страница прочих настроек.");
-                        return View(new OtherSettingsModel(ConnectorCenterApp.Instance.OtherSettings, _accessSettings!));
+                        return View(new OtherSettingsModel(ConnectorCenterApp.Instance.OtherSettings, currentAcessSettings!));
                     }
                     else
                     {
@@ -410,7 +410,8 @@ namespace ConnectorCenter.Controllers
                 ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
-                    if (_accessSettings.SettingsLogs != AccessSettings.AccessModes.Edit)
+                    AccessSettings currentAcessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (currentAcessSettings.SettingsLogs != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке изменить параметры логгера. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\settings");
@@ -437,7 +438,7 @@ namespace ConnectorCenter.Controllers
                     _logger.LogInformation($"Изменены настройки логгера.");
                     return View("Index",
                         new IndexViewModel(
-                            _accessSettings,
+                            currentAcessSettings,
                             AuthorizeService.GetUserRole(HttpContext)
                         ));
                 }
@@ -466,7 +467,8 @@ namespace ConnectorCenter.Controllers
                 ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
-                    if (_accessSettings.SettingsAPI != AccessSettings.AccessModes.Edit)
+                    AccessSettings currentAcessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (currentAcessSettings.SettingsAPI != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке изменить параметры API. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\settings");
@@ -491,7 +493,7 @@ namespace ConnectorCenter.Controllers
                     _logger.LogInformation($"Изменены настройки API.");
                     return View("Index",
                         new IndexViewModel(
-                            _accessSettings,
+                            currentAcessSettings,
                             AuthorizeService.GetUserRole(HttpContext)
                         ));
                 }
@@ -520,7 +522,8 @@ namespace ConnectorCenter.Controllers
                 ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
-                    if (_accessSettings.SettingsOther != AccessSettings.AccessModes.Edit)
+                    AccessSettings currentAcessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (currentAcessSettings.SettingsOther != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке изменить параметры прочих настроек. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\settings");
@@ -545,7 +548,7 @@ namespace ConnectorCenter.Controllers
                     _logger.LogInformation($"Изменены прочие настройки.");
                     return View("Index",
                         new IndexViewModel(
-                            _accessSettings,
+                            currentAcessSettings,
                             AuthorizeService.GetUserRole(HttpContext)
                         ));
                 }

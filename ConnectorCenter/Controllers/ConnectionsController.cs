@@ -24,10 +24,6 @@ namespace ConnectorCenter.Controllers
     {
         #region Fields
         /// <summary>
-        /// Current access setting for current user
-        /// </summary>
-        private readonly AccessSettings _accessSettings;
-        /// <summary>
         /// Current database context
         /// </summary>
         private readonly DataBaseContext _context;
@@ -41,7 +37,6 @@ namespace ConnectorCenter.Controllers
         {
             _context = context;
             _logger = logger;
-            _accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
         }
         #endregion
         #region GET
@@ -59,7 +54,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    if (_accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
+                    if (AuthorizeService.GetAccessSettings(HttpContext).ServersConnections != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу добавления подключения к серверу. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\servers");
@@ -117,7 +112,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    if (_accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
+                    if (AuthorizeService.GetAccessSettings(HttpContext).ServersConnections != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу изменения подключения к серверу. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\servers");
@@ -193,7 +188,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    if (_accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
+                    if (AuthorizeService.GetAccessSettings(HttpContext).ServersConnections != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке удаления подключения к серверу. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\servers");
@@ -276,7 +271,7 @@ namespace ConnectorCenter.Controllers
                 {
                     try
                     {
-                        if (_accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
+                        if (AuthorizeService.GetAccessSettings(HttpContext).ServersConnections != AccessSettings.AccessModes.Edit)
                         {
                             _logger.LogWarning("Отказано в попытке добавления подключения к серверу. Недостаточно прав.");
                             return AuthorizeService.ForbiddenActionResult(this, @"\servers");
@@ -356,7 +351,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    if (_accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
+                    if (AuthorizeService.GetAccessSettings(HttpContext).ServersConnections != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке изменения подключения к серверу. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\servers");
@@ -432,7 +427,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    if (_accessSettings.ServersConnections != AccessSettings.AccessModes.Edit)
+                    if (AuthorizeService.GetAccessSettings(HttpContext).ServersConnections != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке изменения статуса активности подключения к серверу. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\servers");

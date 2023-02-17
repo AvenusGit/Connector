@@ -27,10 +27,6 @@ namespace ConnectorCenter.Controllers
     {
         #region Fields
         /// <summary>
-        /// Current user access settings
-        /// </summary>        
-        private readonly AccessSettings _accessSettings;
-        /// <summary>
         /// Current database context
         /// </summary>
         private readonly DataBaseContext _context;
@@ -44,7 +40,6 @@ namespace ConnectorCenter.Controllers
         {
             _context = context;
             _logger = logger;
-            _accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
         }
         #endregion
         #region GET
@@ -60,20 +55,21 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    if (_accessSettings.Users == AccessSettings.AccessModes.None)
+                    AccessSettings currentAcessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (currentAcessSettings.Users == AccessSettings.AccessModes.None)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу списка пользователей. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\dashboard");
                     }
                     _logger.LogInformation("Запрос на получение списка пользователей");
                     return _context.Users is null
-                        ? View(new IndexModel(new List<AppUser>(), _accessSettings))
+                        ? View(new IndexModel(new List<AppUser>(), currentAcessSettings))
                         : View(new IndexModel(await _context.Users
                             .Include(usr => usr.Groups)
                                 .ThenInclude(gr => gr.Connections)
                             .Include(user => user.Credentials)
                             .Include(user => user.Connections)
-                            .ToListAsync(), _accessSettings));
+                            .ToListAsync(), currentAcessSettings));
                 }
                 catch (Exception ex)
                 {
@@ -104,7 +100,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    if (_accessSettings.Users != AccessSettings.AccessModes.Edit)
+                    if (AuthorizeService.GetAccessSettings(HttpContext).Users != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу добавления пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -142,7 +138,8 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    if (_accessSettings.Users != AccessSettings.AccessModes.Edit)
+                    AccessSettings currentAcessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (currentAcessSettings.Users != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу изменения пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -182,7 +179,7 @@ namespace ConnectorCenter.Controllers
 
                     appUser.Credentials.Password = "֍password֍";
                     _logger.LogInformation($"Запрос страницы для редактирования пользователя {appUser.Name}.");
-                    return View(new EditModel(appUser, _accessSettings));
+                    return View(new EditModel(appUser, currentAcessSettings));
                 }
                 catch (Exception ex)
                 {
@@ -214,7 +211,8 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    if (_accessSettings.UserConnections == AccessSettings.AccessModes.None)
+                    AccessSettings currentAcessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (currentAcessSettings.UserConnections == AccessSettings.AccessModes.None)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу подключений пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -249,7 +247,7 @@ namespace ConnectorCenter.Controllers
                             .ThenInclude(conn => conn.Server)
                         .FirstOrDefaultAsync(usr => usr.Id == userId);
                     if (user != null)
-                        return View(new ShowConnectionsModel(user, _accessSettings));
+                        return View(new ShowConnectionsModel(user, currentAcessSettings));
                     else
                     {
                         _logger.LogWarning($"Ошибка при запросе страницы подключений пользователя. Пользователь не найден.");
@@ -296,7 +294,8 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    if (_accessSettings.UserConnections != AccessSettings.AccessModes.Edit)
+                    AccessSettings currentAcessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (currentAcessSettings.UserConnections != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу добавления подключения для пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -384,7 +383,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    if (_accessSettings.Users != AccessSettings.AccessModes.Edit)
+                    if (AuthorizeService.GetAccessSettings(HttpContext).Users != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке добавить пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -476,7 +475,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    if (_accessSettings.Users != AccessSettings.AccessModes.Edit)
+                    if (AuthorizeService.GetAccessSettings(HttpContext).Users != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу изменения пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -575,8 +574,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    AccessSettings accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
-                    if (_accessSettings.Users != AccessSettings.AccessModes.Edit)
+                    if (AuthorizeService.GetAccessSettings(HttpContext).Users != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке запросить страницу удаления пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -685,7 +683,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    if (_accessSettings.Users != AccessSettings.AccessModes.Edit)
+                    if (AuthorizeService.GetAccessSettings(HttpContext).Users != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке изменить статус активности пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -759,7 +757,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    if (_accessSettings.UserConnections != AccessSettings.AccessModes.Edit)
+                    if (AuthorizeService.GetAccessSettings(HttpContext).UserConnections != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке добавить подключение для пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -861,7 +859,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    if (_accessSettings.UserConnections != AccessSettings.AccessModes.Edit)
+                    if (AuthorizeService.GetAccessSettings(HttpContext).UserConnections != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке удалить подключение для пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -953,7 +951,8 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    if (_accessSettings.UserConnections != AccessSettings.AccessModes.Edit)
+                    AccessSettings currentAcessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (currentAcessSettings.UserConnections != AccessSettings.AccessModes.Edit)
                     {
                         _logger.LogWarning("Отказано в попытке удалить подключение для пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
@@ -1004,7 +1003,7 @@ namespace ConnectorCenter.Controllers
                             }));
                     }
                     await DropConnection(connectionId.Value, user);
-                    return View("ShowConnections", new ShowConnectionsModel(user, _accessSettings));
+                    return View("ShowConnections", new ShowConnectionsModel(user, currentAcessSettings));
                 }
                 catch (Exception ex)
                 {
@@ -1037,7 +1036,7 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    if (_accessSettings.ResetVisualSettings != true)
+                    if (AuthorizeService.GetAccessSettings(HttpContext).ResetVisualSettings != true)
                     {
                         _logger.LogWarning("Отказано в попытке сбросить визуальные настройки пользователя. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");

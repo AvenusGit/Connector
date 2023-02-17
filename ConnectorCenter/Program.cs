@@ -111,10 +111,17 @@ builder.Services.AddAuthorization(options =>
     //options.DefaultPolicy = options.GetPolicy("BearerOrCookies")!;
 });
 
-// Connect Postgre DB
-var connectionString = builder.Configuration.GetConnectionString("PostgresConnectionString");
-builder.Services.AddDbContext<DataBaseContext>(options =>
-    options.UseNpgsql(connectionString));
+// Connect to DB
+if(builder.Environment.IsDevelopment())
+{
+    builder.Services.AddDbContext<DataBaseContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DebugConnectionString")));
+}
+else
+{
+    builder.Services.AddDbContext<DataBaseContext>(options =>
+        options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnectionString")));
+}
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 // Adding MVC

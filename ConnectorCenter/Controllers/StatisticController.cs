@@ -20,7 +20,6 @@ namespace ConnectorCenter.Controllers
     public class StatisticController : Controller
     {
         #region Fields
-        private readonly AccessSettings _accessSettings;
         private readonly ILogger _logger;
         private readonly DataBaseContext _context;
         #endregion
@@ -29,9 +28,9 @@ namespace ConnectorCenter.Controllers
         {
             _logger = logger;
             _context = context;
-            _accessSettings = AuthorizeService.GetAccessSettings(HttpContext);
         }
         #endregion
+        #region GET
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -40,10 +39,11 @@ namespace ConnectorCenter.Controllers
                 ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
+                    AccessSettings currentAcessSettings = AuthorizeService.GetAccessSettings(HttpContext);
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();
-                    if(_accessSettings is not null)
+                    if(currentAcessSettings is not null)
                     {
-                        if (!_accessSettings.Statistics)
+                        if (!currentAcessSettings.Statistics)
                         {
                             _logger.LogWarning("Отказано в попытке запросить страницу статистики. Недостаточно прав.");
                             return AuthorizeService.ForbiddenActionResult(this, @"\dashboard");
@@ -98,9 +98,10 @@ namespace ConnectorCenter.Controllers
                 ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
-                    if (_accessSettings is not null)
+                    AccessSettings currentAcessSettings = AuthorizeService.GetAccessSettings(HttpContext);
+                    if (currentAcessSettings is not null)
                     {
-                        if (!_accessSettings.Statistics)
+                        if (!currentAcessSettings.Statistics)
                         {
                             _logger.LogWarning("Отказано в попытке очистить статистику приложения. Недостаточно прав.");
                             return AuthorizeService.ForbiddenActionResult(this, @"\dashboard");
@@ -147,5 +148,6 @@ namespace ConnectorCenter.Controllers
                 }
             }
         }
+        #endregion
     }
 }
