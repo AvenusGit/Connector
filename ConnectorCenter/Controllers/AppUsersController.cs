@@ -160,7 +160,9 @@ namespace ConnectorCenter.Controllers
                             }));
                     }
 
-                    AppUser? appUser = await _context.Users.Include(usr => usr.Credentials).Where(usr => usr.Id == id).FirstOrDefaultAsync();
+                    AppUser? appUser = await _context.Users
+                        .Include(usr => usr.Credentials)
+                        .Where(usr => usr.Id == id).FirstOrDefaultAsync();
                     if (appUser == null)
                     {
                         _logger.LogWarning($"Ошибка при запросе страницы редактирования пользователя. Пользователь не найден.");

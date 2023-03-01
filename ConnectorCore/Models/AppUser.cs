@@ -11,6 +11,7 @@ namespace ConnectorCore.Models
 {
     public class AppUser
     {
+        #region Properties
         [XmlIgnore]
         [JsonIgnore]
         [Key]
@@ -20,6 +21,7 @@ namespace ConnectorCore.Models
         public Credentials Credentials { get; set; }
         public List<AppUserGroup> Groups { get; set; } = new List<AppUserGroup>();
         public List<Connection> Connections { get; set; } = new List<Connection>();
+
         [XmlIgnore]
         [JsonIgnore]
         [NotMapped]
@@ -39,12 +41,16 @@ namespace ConnectorCore.Models
         public AppRoles Role { get; set; }
         public VisualScheme VisualScheme { get; set; } = VisualScheme.GetDefaultVisualScheme();
         public bool IsEnabled { get; set; }
+        #endregion
+        #region Enums
         public enum AppRoles
         {
             User,
             Support,
             Administrator
         }
+        #endregion
+        #region Methods
         public static AppUser GetDefault()
         {
             return new AppUser()
@@ -57,5 +63,6 @@ namespace ConnectorCore.Models
                 IsEnabled = true
             };
         }
+        #endregion
     }
 }

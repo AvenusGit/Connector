@@ -12,12 +12,14 @@ namespace ConnectorCore.Models.Connections
 {
     public class Connection
     {
+        #region Properties
         [XmlIgnore]
         [JsonIgnore]
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
         public string? ConnectionName { get; set; }
+
         [XmlIgnore]
         [JsonIgnore]
         public string ConnectionDescription
@@ -35,16 +37,20 @@ namespace ConnectorCore.Models.Connections
             }            
         }
         public bool IsAvailable { get; set; }
+
         [XmlIgnore]
         //[JsonIgnore]
         public Server Server { get; set; }
         public ServerUser ServerUser { get; set; }
+
         [XmlIgnore]
         [JsonIgnore]
         public List<AppUser> AppUsers { get; set; }
+
         [XmlIgnore]
         [JsonIgnore]
         public List<AppUserGroup> AppUsersGroups { get; set; }
+
         [XmlIgnore]
         [JsonIgnore]
         public int Port
@@ -61,12 +67,16 @@ namespace ConnectorCore.Models.Connections
                 }
             }
         }
+
         public ConnectionTypes ConnectionType { get; set; }
+        #endregion
+        #region Enums
         public enum ConnectionTypes
         {
             SSH,
             RDP
         }
+        #endregion
         public override string ToString()
         {
             return ServerUser.Name + "@" + Server.Name;

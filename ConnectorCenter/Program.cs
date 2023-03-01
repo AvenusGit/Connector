@@ -8,6 +8,8 @@ using ConnectorCenter;
 using ConnectorCenter.Services.Logs;
 using ConnectorCenter.Models.Settings;
 using ConnectorCenter.Services.Authorize;
+using ConnectorCenter.Models.Repository;
+using ConnectorCore.Models;
 
 // Upload logger configuration. It sometimes doesn't work.
 // Watch = true IMPORTANT!, need for logger configuration update!
@@ -131,6 +133,12 @@ builder.Services.AddControllersWithViews(mvcOtions =>
 });
 builder.Services.AddControllers
     (options => options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
+
+//Repositories
+builder.Services.AddScoped<AppUserGroupRepository>();
+builder.Services.AddScoped<ServerRepository>();
+builder.Services.AddScoped<AppUserRepository>();
+builder.Services.AddScoped<ConnectionRepository>();
 
 var app = builder.Build();
 
