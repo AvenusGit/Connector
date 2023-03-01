@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using ConnectorCore.Models;
 using ConnectorCore.Models.VisualModels;
 using Microsoft.AspNetCore.Authorization;
+using ConnectorCenter.Models.Repository;
 
 namespace ConnectorCenter.Controllers
 {
@@ -17,10 +18,10 @@ namespace ConnectorCenter.Controllers
     [AllowAnonymous]
     public class VisualSchemeController : Controller
     {        
-        private readonly DataBaseContext _dataBaseContext;
-        public VisualSchemeController(DataBaseContext context)
+        private readonly AppUserRepository _repository;
+        public VisualSchemeController(AppUserRepository repository)
         {
-            _dataBaseContext = context;
+            _repository = repository;
         }
         /// <summary>
         /// Запрос на генерацию CSS
@@ -36,12 +37,7 @@ namespace ConnectorCenter.Controllers
                 // этот запрос не логируется и не учитывается в статистике ввиду его частоты
                 try
                 {
-                    AppUser? currentUser = await _dataBaseContext.Users
-                        .Include(user => user.VisualScheme)
-                            .ThenInclude(vs => vs.ColorScheme)
-                        .Include(user => user.VisualScheme)
-                            .ThenInclude(vs => vs.FontScheme)
-                        .FirstOrDefaultAsync(user => user.Id == userId);
+                    AppUser? currentUser = await _repository.GetByIdAllSettings(userId);
                     if (currentUser is not null)
                         if (currentUser.VisualScheme is not null)
                             return View(new GenerateCssModel(currentUser.VisualScheme));

@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 using ConnectorCenter.Services.Authorize;
 using ConnectorCenter.Models.Settings;
+using ConnectorCenter.Models.Repository;
 
 namespace ConnectorCenter.Controllers
 {
@@ -21,13 +22,23 @@ namespace ConnectorCenter.Controllers
     {
         #region Fields
         private readonly ILogger _logger;
-        private readonly DataBaseContext _context;
+        private readonly AppUserGroupRepository _appUserGroupRepository;
+        private readonly AppUserRepository _userRepository;
+        private readonly ServerRepository _serverRepository;
+        private readonly ConnectionRepository _connectionRepository;
         #endregion
         #region Constructors
-        public StatisticController(DataBaseContext context,ILogger<AppUserGroupsController> logger)
+        public StatisticController(ILogger<AppUserGroupsController> logger,
+            AppUserGroupRepository appUserGroupRepository,
+            AppUserRepository userRepository,
+            ServerRepository serverRepository,
+            ConnectionRepository connectionRepository)
         {
             _logger = logger;
-            _context = context;
+            _appUserGroupRepository = appUserGroupRepository;
+            _userRepository = userRepository;
+            _serverRepository = serverRepository;
+            _connectionRepository = connectionRepository;
         }
         #endregion
         #region GET
@@ -67,10 +78,10 @@ namespace ConnectorCenter.Controllers
                     _logger.LogInformation($"Запрошена страница статистики.");
                     return View(
                         new IndexModel(
-                            await _context.UserGroups.CountAsync(),
-                            await _context.Users.CountAsync(),
-                            await _context.Servers.CountAsync(),
-                            await _context.Connections.CountAsync()));
+                            await _appUserGroupRepository.Count(),
+                            await _userRepository.Count(),
+                            await _serverRepository.Count(),
+                            await _connectionRepository.Count())) ;
                 }
                 catch(Exception ex)
                 {
@@ -126,10 +137,10 @@ namespace ConnectorCenter.Controllers
                     _logger.LogInformation($"Очищена статистика приложения.");
                     return View( "Index",
                         new IndexModel(
-                            await _context.UserGroups.CountAsync(),
-                            await _context.Users.CountAsync(),
-                            await _context.Servers.CountAsync(),
-                            await _context.Connections.CountAsync()));
+                            await _appUserGroupRepository.Count(),
+                            await _userRepository.Count(),
+                            await _serverRepository.Count(),
+                            await _connectionRepository.Count()));
                 }
                 catch (Exception ex)
                 {

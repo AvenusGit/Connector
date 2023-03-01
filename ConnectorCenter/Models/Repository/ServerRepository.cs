@@ -14,9 +14,10 @@ namespace ConnectorCenter.Models.Repository
             _dbContext = context;
         }
 
-        public Task Add(Server element)
+        public async Task Add(Server server)
         {
-            throw new NotImplementedException();
+            await _dbContext.Servers.AddAsync(server);
+            await _dbContext.SaveChangesAsync();
         }
         public async Task<IEnumerable<Server>> GetAll()
         {
@@ -38,17 +39,24 @@ namespace ConnectorCenter.Models.Repository
         {
             return await _dbContext.Servers.FindAsync(id);
         }
-        public Task<Server> Remove(Server element)
+        public async Task<Server?> Remove(Server server)
         {
-            throw new NotImplementedException();
+            _dbContext.Servers.Remove(server);
+            await _dbContext.SaveChangesAsync();
+            return server;
         }
-        public Task<Server?> RemoveById(long Id)
+        public async Task<Server?> RemoveById(long Id)
         {
-            throw new NotImplementedException();
+            Server? server = await _dbContext.Servers.FindAsync(Id);
+            if (server == null) return null;
+            _dbContext.Servers.Remove(server);
+            await _dbContext.SaveChangesAsync();
+            return server;
         }
-        public Task Update(Server element)
+        public async Task Update(Server server)
         {
-            throw new NotImplementedException();
+            _dbContext.Update(server);
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task AddConnection(Server server, Connection connection)
@@ -61,6 +69,11 @@ namespace ConnectorCenter.Models.Repository
         public async Task<int> Count()
         {
             return await _dbContext.Servers.CountAsync();
+        }
+
+        public async Task<bool> ServerExist(long id)
+        {
+            return await _dbContext.Servers.AnyAsync(srv => srv.Id == id);
         }
     }
 }

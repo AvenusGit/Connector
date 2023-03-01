@@ -11,12 +11,17 @@ using ConnectorCore.Cryptography;
 
 namespace ConnectorCenter.Services.Authorize
 {
-    public abstract class AuthorizeService
+    public class AuthorizeService
     {
-        public static bool IsAuthorized(DataBaseContext dbContext, Credentials credentials, out AppUser? user)
+        private readonly DataBaseContext _context;
+        public AuthorizeService(DataBaseContext dbContext)
+        {
+            _context = dbContext;
+        }
+        public bool IsAuthorized(Credentials credentials, out AppUser? user)
         {
             List<AppUser> userList =
-                dbContext.Users.Where(user =>
+                _context.Users.Where(user =>
                         user.Credentials.Login == credentials.Login
                         && user.Credentials.Password == credentials.Password)
                 .Include("Credentials")
@@ -28,7 +33,7 @@ namespace ConnectorCenter.Services.Authorize
             }
             else
             {
-                if (!dbContext.Users.Where(usr => usr.Role == AppUser.AppRoles.Administrator).Any()
+                if (!_context.Users.Where(usr => usr.Role == AppUser.AppRoles.Administrator).Any()
                     && credentials.Login == AppUser.GetDefault().Credentials!.Login
                     && credentials.Password == PasswordCryptography.GetUserPasswordHash(
                         AppUser.GetDefault().Credentials!.Login,

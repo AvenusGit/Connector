@@ -11,6 +11,7 @@ using ConnectorCore.Models;
 using ConnectorCenter.Services.Logs;
 using ConnectorCore.Models.VisualModels;
 using System.Text;
+using ConnectorCenter.Models.Repository;
 
 namespace ConnectorCenter.Controllers
 {
@@ -22,13 +23,17 @@ namespace ConnectorCenter.Controllers
     {
         #region Fields
         private readonly ILogger _logger;
-        private readonly DataBaseContext _context;
+        private readonly AppUserRepository _userRepository;
+        private readonly UserSettingsRepository _userSettingsRepository;
         #endregion
         #region Constructors
-        public SettingsController(ILogger<AppUserGroupsController> logger, DataBaseContext context)
+        public SettingsController(ILogger<AppUserGroupsController> logger,
+            AppUserRepository userRepository,
+            UserSettingsRepository userSettingRepository)
         {
             _logger = logger;
-            _context = context;
+            _userRepository = userRepository;
+            _userSettingsRepository = userSettingRepository;
         }
         #endregion
         #region GET
@@ -267,14 +272,7 @@ namespace ConnectorCenter.Controllers
                 {
                     _logger.LogInformation($"Запрошена страница личных настроек.");
 
-                    AppUser? currentUser = await _context.Users
-                       .Include(user => user.UserSettings)
-                            .ThenInclude(us => us!.RdpSettings)
-                       .Include(user => user.VisualScheme)
-                           .ThenInclude(vs => vs.ColorScheme)
-                        .Include(user => user.VisualScheme)
-                            .ThenInclude(vs => vs.FontScheme)
-                       .FirstOrDefaultAsync(user => user.Id == AuthorizeService.GetUserId(HttpContext));
+                    AppUser? currentUser = await _userRepository.GetByIdAllSettings(AuthorizeService.GetUserId(HttpContext));
 
                     if (currentUser is null)
                     {
@@ -295,7 +293,7 @@ namespace ConnectorCenter.Controllers
                     {
                         _logger.LogError($"Ошибка при запросе страницы личных настроек. Настройки пользователя не найдены. Будут применены стандартные настройки.");
                         currentUser.UserSettings = UserSettings.GetDefault();
-                        _context.Update(currentUser);
+                        await _userRepository.Update(currentUser);
                         _logger.LogError($"Стандартные личные настройки успешно установлены пользователю {currentUser.Name}.");
                         return RedirectToAction("Index", "Message", new RouteValueDictionary(
                             new
@@ -313,7 +311,7 @@ namespace ConnectorCenter.Controllers
                     {
                         _logger.LogError($"Ошибка при запросе страницы визуальных настроек. Настройки пользователя не найдены. Будут применены стандартные настройки.");
                         currentUser.VisualScheme = VisualScheme.GetDefaultVisualScheme();
-                        _context.Update(currentUser);
+                        await _userRepository.Update(currentUser);
                         _logger.LogError($"Стандартные визуальные настройки успешно установлены пользователю {currentUser.Name}.");
                         return RedirectToAction("Index", "Message", new RouteValueDictionary(
                             new
@@ -594,8 +592,7 @@ namespace ConnectorCenter.Controllers
                     }
                     
                     userSettings.AppUserId = AuthorizeService.GetUserId(HttpContext);
-                    _context.Update(userSettings);
-                    await _context.SaveChangesAsync();
+                    await _userSettingsRepository.Update(userSettings);
                     _logger.LogInformation($"Личные настройки пользователя успешно изменены.");
                     return View("Index",
                         new IndexViewModel(
@@ -643,8 +640,7 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 400
                             }));
                     }
-                    _context.Update(colorScheme);
-                    await _context.SaveChangesAsync();
+                    await _userSettingsRepository.UpdateColorScheme(colorScheme);
                     _logger.LogInformation($"Цветовая схема пользователя успешно сохранена.");
                     return View("Index",
                         new IndexViewModel(
@@ -677,7 +673,7 @@ namespace ConnectorCenter.Controllers
                 ConnectorCenterApp.Instance.Statistics.IncWebRequest();
                 try
                 {
-                    ColorScheme? currentColorScheme = _context.ColorSchemes.Find(Id);
+                    ColorScheme? currentColorScheme = await _userSettingsRepository.GetColorSchemeById(Id);
                     if (currentColorScheme is null)
                     {
                         _logger.LogWarning($"Ошибка при попытке сбросить цветовую схему. Не найдено в БД. Будет установлено по умолчанию");
@@ -697,8 +693,7 @@ namespace ConnectorCenter.Controllers
                         currentColorScheme.Error = defaultColorScheme.Error;
                         currentColorScheme.Disable = defaultColorScheme.Disable;
                     }                    
-                    _context.Update(currentColorScheme);
-                    await _context.SaveChangesAsync();
+                    await _userSettingsRepository.UpdateColorScheme(currentColorScheme);
                     _logger.LogInformation($"Визуальные настройки пользователя успешно сброшены.");
                     return View("Index",
                         new IndexViewModel(
@@ -746,8 +741,7 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 400
                             }));
                     }
-                    _context.Update(fontScheme);
-                    await _context.SaveChangesAsync();
+                    await _userSettingsRepository.UpdateFontScheme(fontScheme);
                     _logger.LogInformation($"Cхема шрифтов пользователя успешно сохранена.");
                     return View("Index",
                         new IndexViewModel(
@@ -795,8 +789,7 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 400
                             }));
                     }
-                    _context.Update(rdpSettings);
-                    await _context.SaveChangesAsync();
+                    await _userSettingsRepository.UpdateRdpSettings(rdpSettings);
                     _logger.LogInformation($"Настройки RDP пользователя успешно сохранена.");
                     return View("Index",
                         new IndexViewModel(

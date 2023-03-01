@@ -1,4 +1,5 @@
 ﻿using ConnectorCenter.Data;
+using ConnectorCenter.Models.Repository;
 using ConnectorCenter.Models.Settings;
 using ConnectorCenter.Services.Authorize;
 using ConnectorCenter.Services.Configurations;
@@ -14,11 +15,11 @@ namespace ConnectorCenter.Controllers
     {
         #region Fields
         private readonly ILogger _logger;
-        private DataBaseContext _context;
+        private AppUserRepository _appUserRepository;
         #endregion
-        public ImportController(ILogger<AppUserGroupsController> logger, DataBaseContext context)
+        public ImportController(ILogger<AppUserGroupsController> logger, AppUserRepository appUserRepository)
         {
-            _context = context;
+            _appUserRepository = appUserRepository;
             _logger = logger;
         }
 
@@ -473,12 +474,11 @@ namespace ConnectorCenter.Controllers
                         var conf = GetConfigurationFromFile<UserSettings>(file);
                         if (conf is UserSettings)
                         {
-                            AppUser? user = await _context.Users
-                                .FindAsync(AuthorizeService.GetUserId(HttpContext));
+                            AppUser? user = await _appUserRepository.GetByIdSimple(AuthorizeService.GetUserId(HttpContext));
                             if (user != null)
                             {
                                 user.UserSettings = (UserSettings)conf;
-                                _context.Update(user);
+                                await _appUserRepository.Update(user);
                                 _logger.LogInformation($"Импорт личных настроек пользователю {user.Name} прошел успешно.");
                                 return RedirectToAction("Index", "Message", new RouteValueDictionary(
                                     new

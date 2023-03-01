@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 using ConnectorCenter.Services.Authorize;
 using ConnectorCenter.Models.Settings;
+using ConnectorCenter.Models.Repository;
 
 namespace ConnectorCenter.Controllers
 {
@@ -23,13 +24,14 @@ namespace ConnectorCenter.Controllers
     public class ServersController : Controller
     {
         #region Fields
-        private readonly DataBaseContext _context;
+        private readonly ServerRepository _repository;
         private readonly ILogger _logger;
         #endregion
         #region Constructors
-        public ServersController(DataBaseContext context, ILogger<AppUserGroupsController> logger)
+        public ServersController(ILogger<AppUserGroupsController> logger,
+            ServerRepository repository)
         {
-            _context = context;
+            _repository = repository;
             _logger = logger;
         }
         #endregion
@@ -53,9 +55,7 @@ namespace ConnectorCenter.Controllers
                         return AuthorizeService.ForbiddenActionResult(this, @"\dashboard");
                     }
                     _logger.LogInformation($"Запрос страницы списка серверов.");
-                    return _context.Servers is null
-                      ? View(new IndexModel(new List<Server>(),accessSettings))
-                      : View(new IndexModel(await _context.Servers.Include("Connections").ToListAsync(),accessSettings));
+                    return View(new IndexModel(await _repository.GetAll(),accessSettings));
                 }
                 catch (Exception ex)
                 {
@@ -144,7 +144,7 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 400
                             }));
                     }
-                    Server? server = await _context.Servers.Where(srv => srv.Id == id).FirstOrDefaultAsync();
+                    Server? server = await _repository.GetById(id.Value);
                     if (server == null)
                     {
                         _logger.LogWarning($"Ошибка при запросе страницы редактирования сервера. Сервер не найден.");
@@ -199,11 +199,7 @@ namespace ConnectorCenter.Controllers
                         _logger.LogWarning("Отказано в попытке запросить страницу подключений сервера. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\servers");
                     }
-                    Server? server = await _context.Servers
-                        .Include(conn => conn.Connections)
-                            .ThenInclude(conn => conn.ServerUser)
-                                .ThenInclude(conn => conn!.Credentials)
-                        .FirstOrDefaultAsync(serv => serv.Id == id);
+                    Server? server = await _repository.GetById(id);
                     if (server != null)
                     {
                         _logger.LogInformation($"Запрошена страница подключений сервера {server.Name}.");
@@ -263,8 +259,7 @@ namespace ConnectorCenter.Controllers
                     }
                     if (ModelState.IsValid)
                     {
-                        _context.Add(server);
-                        await _context.SaveChangesAsync();
+                        await _repository.Add(server);
                         _logger.LogInformation($"Добавлен новый сервер {server.Name}.");
                         return RedirectToAction("Index");
                     }
@@ -321,7 +316,7 @@ namespace ConnectorCenter.Controllers
                     }
                     if (ModelState.IsValid)
                     {
-                        if (!ServerExists(server.Id))
+                        if (!await _repository.ServerExist(server.Id))
                         {
                             _logger.LogWarning($"Ошибка при запросе изменения сервера. Сервер не найден.");
                             return RedirectToAction("Index", "Message", new RouteValueDictionary(
@@ -336,8 +331,7 @@ namespace ConnectorCenter.Controllers
                                     errorCode = 404
                                 }));
                         }
-                        _context.Update(server);
-                        await _context.SaveChangesAsync();
+                        await _repository.Update(server);
                         _logger.LogInformation($"Изменен сервер {server.Name}.");
                         return RedirectToAction("Index");
                     }
@@ -406,7 +400,7 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 400
                             }));
                     }
-                    Server server = await _context.Servers.FindAsync(id) ?? null!;
+                    Server? server = await _repository.GetByIdSimple(id.Value);
                     if (server == null)
                     {
                         _logger.LogWarning($"Ошибка при запросе изменения статуса активности сервера. Сервер не найден.");
@@ -423,8 +417,7 @@ namespace ConnectorCenter.Controllers
                             }));
                     }
                     server.IsAvailable = !server.IsAvailable;
-                    _context.Update(server);
-                    await _context.SaveChangesAsync();
+                    await _repository.Update(server);
                     _logger.LogInformation($"Изменен статус активности сервера {server.Name} с {!server.IsAvailable} на {server.IsAvailable}.");
                     return RedirectToAction("Index");
                 }
@@ -462,11 +455,25 @@ namespace ConnectorCenter.Controllers
                         _logger.LogWarning("Отказано в попытке удалить сервер. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\servers");
                     }
-                    Server? server = await _context.Servers.FindAsync(id);
+                    if(id == null)
+                    {
+                        _logger.LogWarning($"Ошибка при запросе на удаление сервера. Не указан идентификатор.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при запросе на удаление сервера. Не указан идентификатор.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 404
+                            }));
+                    }
+                    Server? server = await _repository.GetByIdSimple(id.Value);
                     if (server != null)
                     {
-                        _context.Servers.Remove(server);
-                        await _context.SaveChangesAsync();
+                        await _repository.Remove(server);
                         _logger.LogInformation($"Удален сервер {server.Name}");
                         return RedirectToAction("Index");
                     }
@@ -502,17 +509,6 @@ namespace ConnectorCenter.Controllers
                         }));
                 }
             }
-        }
-        #endregion
-        #region Methods
-        /// <summary>
-        /// Проверка на существование сервера в БД
-        /// </summary>
-        /// <param name="id">Идентификатор сервера</param>
-        /// <returns>True - сервер существует, False - нет</returns>
-        private bool ServerExists(long id)
-        {
-          return (_context.Servers?.Any(e => e.Id == id)).GetValueOrDefault();
         }
         #endregion
     }

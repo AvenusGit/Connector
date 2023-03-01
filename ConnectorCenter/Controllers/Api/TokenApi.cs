@@ -18,13 +18,13 @@ namespace ConnectorCenter.Controllers.Api
     public class TokenApi : ControllerBase
     {
         #region Fields
-        private readonly DataBaseContext _dataBaseContext;
+        private readonly JwtAuthorizeService _jwtService;
         private readonly ILogger _logger;
         #endregion
         #region Constructors
-        public TokenApi(DataBaseContext context, ILogger<TokenApi> logger)
+        public TokenApi(ILogger<TokenApi> logger, JwtAuthorizeService jwtService)
         {
-            _dataBaseContext = context;
+            _jwtService = jwtService;
             _logger = logger;
         }
         #endregion
@@ -65,38 +65,35 @@ namespace ConnectorCenter.Controllers.Api
                         await HttpContext.Response.WriteAsync("Your model is not valid. Use {string Login, string Password}");
                         return;
                     }
-                    using (DataBaseContext db = _dataBaseContext)
+                    AppUser? user;
+                    if (_jwtService.IsAuthorized(credentials, out user))
                     {
-                        AppUser? user;
-                        if (AuthorizeService.IsAuthorized(_dataBaseContext, credentials, out user))
+                        if(!user.IsEnabled)
                         {
-                            if(!user.IsEnabled)
+                            Response.StatusCode = 451;
+                            _logger.LogWarning($"Отказ в API авторизации. Пользователь деактивирован. Логин:{credentials.Login}.");
+                            await HttpContext.Response.WriteAsync("No active user");
+                            return;
+                        }
+                        JwtSecurityToken jwt = JwtAuthorizeService.GetJwtToken(user!);
+                        Response.StatusCode = 200;
+                        JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+                        user!.Credentials.Password = null;
+                        string json = JsonConvert.SerializeObject(
+                            new TokenInfo(handler.WriteToken(jwt))
                             {
-                                Response.StatusCode = 451;
-                                _logger.LogWarning($"Отказ в API авторизации. Пользователь деактивирован. Логин:{credentials.Login}.");
-                                await HttpContext.Response.WriteAsync("No active user");
-                                return;
-                            }
-                            JwtSecurityToken jwt = JwtAuthorizeService.GetJwtToken(user!);
-                            Response.StatusCode = 200;
-                            JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
-                            user!.Credentials.Password = null;
-                            string json = JsonConvert.SerializeObject(
-                                new TokenInfo(handler.WriteToken(jwt))
-                                {
-                                    UserName = user!.Name ?? string.Empty,
-                                });
-                            _logger.LogWarning($"Успешная API авторизация. Логин:{credentials.Login}.");
-                            await HttpContext.Response.WriteAsync(json);
-                            return;
-                        }
-                        else
-                        {
-                            Response.StatusCode = 401;
-                            _logger.LogWarning($"Отказ в API авторизации. Неверные учетные данные. Логин:{credentials.Login}.");
-                            await HttpContext.Response.WriteAsync("Wrong login or password");
-                            return;
-                        }
+                                UserName = user!.Name ?? string.Empty,
+                            });
+                        _logger.LogWarning($"Успешная API авторизация. Логин:{credentials.Login}.");
+                        await HttpContext.Response.WriteAsync(json);
+                        return;
+                    }
+                    else
+                    {
+                        Response.StatusCode = 401;
+                        _logger.LogWarning($"Отказ в API авторизации. Неверные учетные данные. Логин:{credentials.Login}.");
+                        await HttpContext.Response.WriteAsync("Wrong login or password");
+                        return;
                     }
                 }
                 catch (Exception ex)

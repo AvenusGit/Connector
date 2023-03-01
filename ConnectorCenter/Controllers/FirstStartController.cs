@@ -9,6 +9,7 @@ using ConnectorCore.Models.VisualModels.Interfaces;
 using ConnectorCore.Models.VisualModels;
 using ConnectorCenter.Models.Settings;
 using ConnectorCore.Cryptography;
+using ConnectorCenter.Models.Repository;
 
 namespace ConnectorCenter.Controllers
 {
@@ -20,13 +21,13 @@ namespace ConnectorCenter.Controllers
     {
         #region Fields
         private readonly ILogger<HomeController> _logger;
-        private readonly DataBaseContext _dataBaseContext;
+        private readonly AppUserRepository _appUserRepository;
         #endregion
         #region Constructors
-        public FirstStartController(ILogger<HomeController> logger, DataBaseContext context)
+        public FirstStartController(ILogger<HomeController> logger, AppUserRepository appUserRepository)
         {
             _logger = logger;
-            _dataBaseContext = context;
+            _appUserRepository = appUserRepository;
         }
         #endregion
         #region GET
@@ -35,7 +36,7 @@ namespace ConnectorCenter.Controllers
         /// </summary>
         /// <returns>Страница первого запуска приложения</returns>
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
@@ -43,7 +44,8 @@ namespace ConnectorCenter.Controllers
                 try
                 {
                     _logger.LogInformation($"Запрос страницы первого запуска.");
-                    return View(new IndexViewModel(_dataBaseContext));
+                    bool isFirstStart = await _appUserRepository.Count() < 1;
+                    return View(new IndexViewModel(isFirstStart));
                 }
                 catch (Exception ex)
                 {
@@ -65,7 +67,7 @@ namespace ConnectorCenter.Controllers
         #endregion
         #region POST
         [HttpPost]
-        public IActionResult CreateFirstUser(string username, Credentials credentials)
+        public async Task<IActionResult> CreateFirstUser(string username, Credentials credentials)
         {
             using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
@@ -114,8 +116,7 @@ namespace ConnectorCenter.Controllers
                     newUser.Credentials.Password = PasswordCryptography.GetUserPasswordHash(
                         newUser.Credentials.Login,
                         newUser.Credentials.Password);
-                    _dataBaseContext.Users.Add(newUser);
-                    _dataBaseContext.SaveChanges();
+                    await _appUserRepository.Add(newUser);
                     _logger.LogInformation($"Выполнено сохранение первого пользователя - {newUser.Name}. Назначены права администратора.");
                     CookieAuthorizeService.SignOut(HttpContext);
                     _logger.LogInformation($"Будет выполнен выход из под временного пользователя ввиду наличия постоянных.");

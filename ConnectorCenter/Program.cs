@@ -134,7 +134,9 @@ builder.Services.AddControllersWithViews(mvcOtions =>
 builder.Services.AddControllers
     (options => options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
 
-//Repositories
+//Repositories and Services
+builder.Services.AddScoped<JwtAuthorizeService>();
+builder.Services.AddScoped<CookieAuthorizeService>();
 builder.Services.AddScoped<AppUserGroupRepository>();
 builder.Services.AddScoped<ServerRepository>();
 builder.Services.AddScoped<AppUserRepository>();

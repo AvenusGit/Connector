@@ -1,4 +1,5 @@
 ﻿using ConnectorCenter.Data;
+using ConnectorCenter.Models.Repository;
 using ConnectorCenter.Models.Settings;
 using ConnectorCenter.Services.Authorize;
 using ConnectorCore.Models;
@@ -20,14 +21,18 @@ namespace ConnectorCenter.Controllers.Api
     public class AppUsersApi : ControllerBase
     {
         #region Fields
-        private readonly DataBaseContext _context;
+        private readonly AppUserRepository _repository;
+        private readonly UserSettingsRepository _userSettingsRepository;
         private readonly ILogger _logger;
         #endregion
         #region Constructors
-        public AppUsersApi(DataBaseContext context, ILogger<AppUsersApi> logger)
+        public AppUsersApi(ILogger<AppUsersApi> logger,
+            AppUserRepository repository,
+            UserSettingsRepository userSettingsRepository)
         {
-            _context = context;
+            _repository = repository;
             _logger = logger;
+            _userSettingsRepository = userSettingsRepository;
         }
         #endregion
         #region Requests
@@ -50,27 +55,7 @@ namespace ConnectorCenter.Controllers.Api
                         await HttpContext.Response.WriteAsync("API disabled in app settings.");
                         return;
                     }
-                    AppUser? user = await _context.Users
-                        .Include(user => user.Credentials)
-                        .Include(user => user.Groups)
-                            .ThenInclude(gr => gr.Connections)
-                                .ThenInclude(conn => conn.ServerUser)
-                                    .ThenInclude(suser => suser.Credentials)
-                        .Include(user => user.Groups)
-                            .ThenInclude(gr => gr.Connections)
-                                .ThenInclude(conn => conn.Server)
-                        .Include(user => user.Connections)
-                            .ThenInclude(conn => conn.ServerUser)
-                                    .ThenInclude(suser => suser.Credentials)
-                        .Include(user => user.Connections)
-                            .ThenInclude(conn => conn.Server)
-                        .Include(user => user.UserSettings)
-                            .ThenInclude(set => set.RdpSettings)
-                        .Include(user => user.VisualScheme)
-                            .ThenInclude(vs => vs.ColorScheme)
-                        .Include(user => user.VisualScheme)
-                            .ThenInclude(vs => vs.FontScheme)
-                        .FirstOrDefaultAsync(user => user.Id == JwtAuthorizeService.GetJwtUserId(HttpContext));
+                    AppUser? user = await _repository.GetByIdFull(JwtAuthorizeService.GetJwtUserId(HttpContext));
                     if (user is not null)
                     {
                         user.Credentials.Password = null; //  clear user password
@@ -117,15 +102,7 @@ namespace ConnectorCenter.Controllers.Api
                         return;
                     }
 
-                    AppUser? user = await _context.Users
-                        .Include(user => user.Groups)
-                            .ThenInclude(gr => gr.Connections)
-                                .ThenInclude(conn => conn.ServerUser)
-                                    .ThenInclude(suser => suser.Credentials).IgnoreAutoIncludes()
-                        .Include(user => user.Groups)
-                            .ThenInclude(gr => gr.Connections)
-                                .ThenInclude(conn => conn.Server)
-                        .FirstOrDefaultAsync(user => user.Id == JwtAuthorizeService.GetJwtUserId(HttpContext));
+                    AppUser? user = await _repository.GetByIdWithGroups(JwtAuthorizeService.GetJwtUserId(HttpContext));
 
                     if (user is not null)
                     {
@@ -172,13 +149,7 @@ namespace ConnectorCenter.Controllers.Api
                         return;
                     }
 
-                    AppUser? user = await _context.Users
-                        .Include(user => user.Connections)
-                            .ThenInclude(conn => conn.ServerUser)
-                                    .ThenInclude(suser => suser.Credentials)
-                        .Include(user => user.Connections)
-                            .ThenInclude(conn => conn.Server)
-                        .FirstOrDefaultAsync(user => user.Id == JwtAuthorizeService.GetJwtUserId(HttpContext));
+                    AppUser? user = await _repository.GetByIdWithConnections(JwtAuthorizeService.GetJwtUserId(HttpContext));
 
                     if (user is not null)
                     {
@@ -232,9 +203,7 @@ namespace ConnectorCenter.Controllers.Api
                         return;
                     }
 
-                    UserSettings? userSettings = await _context.UserSettings
-                        .Include(set => set.RdpSettings)
-                        .FirstOrDefaultAsync(settings => settings.AppUserId == JwtAuthorizeService.GetJwtUserId(HttpContext));
+                    UserSettings? userSettings = await _userSettingsRepository.GetByUserId(JwtAuthorizeService.GetJwtUserId(HttpContext));
 
                     if (userSettings is not null)
                     {
@@ -281,10 +250,7 @@ namespace ConnectorCenter.Controllers.Api
                         return;
                     }
 
-                    VisualScheme? visualScheme = await _context.VisualSchemes
-                        .Include(vs => vs.ColorScheme)
-                        .Include(vs => vs.FontScheme)
-                        .FirstOrDefaultAsync(scheme => scheme.AppUserId == JwtAuthorizeService.GetJwtUserId(HttpContext));
+                    VisualScheme? visualScheme = await _repository.GetVisualScheme(JwtAuthorizeService.GetJwtUserId(HttpContext));
 
                     if (visualScheme is not null)
                     {
@@ -362,14 +328,11 @@ namespace ConnectorCenter.Controllers.Api
                 {
                     if (scheme is not null)
                     {
-                        AppUser? user = await _context.Users
-                            .Include(user => user.VisualScheme)
-                            .FirstOrDefaultAsync(user => user.Id == JwtAuthorizeService.GetJwtUserId(HttpContext));
+                        AppUser? user = await _repository.GetByIdAllSettings(JwtAuthorizeService.GetJwtUserId(HttpContext));
                         if (user is not null)
                         {
                             user.VisualScheme = scheme;
-                            _context.Update(user);
-                            await _context.SaveChangesAsync();
+                            await _repository.Update(user);
                             _logger.LogInformation($"Изменена визуальная схема пользователя {user.Name} через API.");
                             HttpContext.Response.StatusCode = 200;
                             await HttpContext.Response.WriteAsync("200: Visual scheme succefull changed.");
@@ -411,17 +374,13 @@ namespace ConnectorCenter.Controllers.Api
                 {
                     if (rdpSettings is not null)
                     {
-                        AppUser? user = await _context.Users
-                            .Include(user => user.UserSettings)
-                                .ThenInclude(userSettings => userSettings.RdpSettings)
-                            .FirstOrDefaultAsync(user => user.Id == JwtAuthorizeService.GetJwtUserId(HttpContext));
+                        AppUser? user = await _repository.GetById(JwtAuthorizeService.GetJwtUserId(HttpContext));
                         if (user is not null)
                         {
                             if (user.UserSettings is null)
                                 user.UserSettings = UserSettings.GetDefault();
                             user.UserSettings.RdpSettings = rdpSettings;
-                            _context.Update(user);
-                            await _context.SaveChangesAsync();
+                            await _repository.Update(user);
                             _logger.LogInformation($"Изменены настройки RDP пользователя {user.Name} через API.");
                             HttpContext.Response.StatusCode = 200;
                             await HttpContext.Response.WriteAsync("200: Rdp settings succefull changed.");

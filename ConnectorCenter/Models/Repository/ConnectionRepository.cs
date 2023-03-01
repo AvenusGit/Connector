@@ -75,7 +75,7 @@ namespace ConnectorCenter.Models.Repository
         /// </summary>
         /// <param name="id">Connection identifier</param>
         /// <returns>True - connection exist, otherwise - false.</returns>
-        private async Task<bool> ConnectionExists(long id)
+        public async Task<bool> ConnectionExists(long id)
         {
             return await _context.Connections.AnyAsync(conn => conn.Id == id);
         }

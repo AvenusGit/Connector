@@ -18,6 +18,7 @@ namespace ConnectorCenter.Services.Authorize
 {
     public class JwtAuthorizeService : AuthorizeService
     {
+        public JwtAuthorizeService(DataBaseContext dataBaseContext) : base(dataBaseContext) { }
         public static JwtSecurityToken GetJwtToken(AppUser user)
         {
             IEnumerable<Claim> claims = GetUserClaims(user);

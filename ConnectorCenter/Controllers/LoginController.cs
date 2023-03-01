@@ -16,13 +16,13 @@ namespace ConnectorCenter.Controllers
     {
         #region Fields
         private readonly ILogger<HomeController> _logger;
-        private readonly DataBaseContext _dataBaseContext;
+        private readonly CookieAuthorizeService _authorizeService;
         #endregion
         #region Constructors
-        public LoginController(ILogger<HomeController> logger, DataBaseContext context)
+        public LoginController(ILogger<HomeController> logger, CookieAuthorizeService authorizeService)
         {
             _logger = logger;
-            _dataBaseContext = context;
+            _authorizeService = authorizeService;
         }
         #endregion
         #region GET
@@ -101,7 +101,7 @@ namespace ConnectorCenter.Controllers
                     }
                     credentials.Password = PasswordCryptography.GetUserPasswordHash(credentials.Login, credentials.Password);
                     AppUser? user;
-                    if (AuthorizeService.IsAuthorized(_dataBaseContext, credentials, out user))
+                    if (_authorizeService.IsAuthorized(credentials, out user))
                     {
                         if( !AuthorizeService.GetAccessSettings(user.Role).WebAccess)
                         {

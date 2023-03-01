@@ -1,4 +1,5 @@
 ﻿using ConnectorCenter.Data;
+using ConnectorCenter.Services.Authorize;
 using ConnectorCore.Models;
 using ConnectorCore.Models.Connections;
 using ConnectorCore.Models.VisualModels;
@@ -56,10 +57,46 @@ namespace ConnectorCenter.Models.Repository
                 .Include(usr => usr.Groups)
                 .FirstAsync(usr => usr.Id == Id);
         }
-
+        public async Task<AppUser?> GetByIdFull(long id)
+        {
+            return await _dbContext.Users
+                        .Include(user => user.Credentials)
+                        .Include(user => user.Groups)
+                            .ThenInclude(gr => gr.Connections)
+                                .ThenInclude(conn => conn.ServerUser)
+                                    .ThenInclude(suser => suser.Credentials)
+                        .Include(user => user.Groups)
+                            .ThenInclude(gr => gr.Connections)
+                                .ThenInclude(conn => conn.Server)
+                        .Include(user => user.Connections)
+                            .ThenInclude(conn => conn.ServerUser)
+                                    .ThenInclude(suser => suser.Credentials)
+                        .Include(user => user.Connections)
+                            .ThenInclude(conn => conn.Server)
+                        .Include(user => user.UserSettings)
+                            .ThenInclude(set => set.RdpSettings)
+                        .Include(user => user.VisualScheme)
+                            .ThenInclude(vs => vs.ColorScheme)
+                        .Include(user => user.VisualScheme)
+                            .ThenInclude(vs => vs.FontScheme)
+                        .FirstOrDefaultAsync(user => user.Id == id);
+        }
         public async Task<AppUser?> GetByIdSimple(long id)
         {
             return await _dbContext.Users.FindAsync(id);
+        }
+
+        public async Task<AppUser?> GetByIdWithGroups(long id)
+        {
+            return await _dbContext.Users
+                        .Include(user => user.Groups)
+                            .ThenInclude(gr => gr.Connections)
+                                .ThenInclude(conn => conn.ServerUser)
+                                    .ThenInclude(suser => suser.Credentials).IgnoreAutoIncludes()
+                        .Include(user => user.Groups)
+                            .ThenInclude(gr => gr.Connections)
+                                .ThenInclude(conn => conn.Server)
+                        .FirstOrDefaultAsync(user => user.Id == id);
         }
 
         public async Task<AppUser?> GetByIdWithConnections(long id)
@@ -102,6 +139,18 @@ namespace ConnectorCenter.Models.Repository
             return await _dbContext.Users
                 .Include(usr => usr.Credentials)
                 .FirstAsync(usr => usr.Id == Id);
+        }
+
+        public async Task<AppUser?> GetByIdAllSettings(long id)
+        {
+            return await _dbContext.Users
+                       .Include(user => user.UserSettings)
+                            .ThenInclude(us => us!.RdpSettings)
+                       .Include(user => user.VisualScheme)
+                           .ThenInclude(vs => vs.ColorScheme)
+                        .Include(user => user.VisualScheme)
+                            .ThenInclude(vs => vs.FontScheme)
+                       .FirstOrDefaultAsync(user => user.Id == id);
         }
 
         public async Task<AppUser?> Remove(AppUser user)
