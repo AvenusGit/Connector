@@ -139,6 +139,7 @@ builder.Services.AddScoped<AppUserGroupRepository>();
 builder.Services.AddScoped<ServerRepository>();
 builder.Services.AddScoped<AppUserRepository>();
 builder.Services.AddScoped<ConnectionRepository>();
+builder.Services.AddScoped<UserSettingsRepository>();
 
 var app = builder.Build();
 

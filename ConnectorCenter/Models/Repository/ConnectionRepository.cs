@@ -39,19 +39,45 @@ namespace ConnectorCenter.Models.Repository
                         .FirstOrDefaultAsync(conn => conn.Id == Id);
         }
 
-        public Task<Connection> Remove(Connection element)
+        public async Task<Connection?> GetByIdWithServerOnly(long id)
         {
-            throw new NotImplementedException();
+            return await _context.Connections
+                        .Include(srv => srv.Server)
+                        .FirstOrDefaultAsync(m => m.Id == id);
         }
 
-        public Task<Connection?> RemoveById(long Id)
+        public async Task<Connection?> Remove(Connection connection)
         {
-            throw new NotImplementedException();
+            _context.Connections.Remove(connection);
+            await _context.SaveChangesAsync();
+            return connection;
         }
 
-        public Task Update(Connection element)
+        public async Task<Connection?> RemoveById(long id)
         {
-            throw new NotImplementedException();
+            Connection? connection = await _context.Connections
+                        .Include(srv => srv.Server)
+                        .FirstOrDefaultAsync(m => m.Id == id);
+            if (connection is null) return null;
+            _context.Connections.Remove(connection);
+            await _context.SaveChangesAsync();
+            return connection;
+        }
+
+        public async Task Update(Connection connection)
+        {
+            _context.Update(connection);
+            await _context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Check on exisisting connection in database
+        /// </summary>
+        /// <param name="id">Connection identifier</param>
+        /// <returns>True - connection exist, otherwise - false.</returns>
+        private async Task<bool> ConnectionExists(long id)
+        {
+            return await _context.Connections.AnyAsync(conn => conn.Id == id);
         }
     }
 }

@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using log4net.Repository.Hierarchy;
 using ConnectorCenter.Services.Authorize;
 using ConnectorCenter.Models.Settings;
+using ConnectorCenter.Models.Repository;
 
 namespace ConnectorCenter.Controllers
 {
@@ -24,18 +25,19 @@ namespace ConnectorCenter.Controllers
     {
         #region Fields
         /// <summary>
-        /// Current database context
-        /// </summary>
-        private readonly DataBaseContext _context;
-        /// <summary>
         /// Current logger
         /// </summary>
         private readonly ILogger _logger;
+        private readonly ConnectionRepository _repository;
+        private readonly ServerRepository _serverRepository;
         #endregion
         #region Constructors
-        public ConnectionsController(DataBaseContext context, ILogger<AppUserGroupsController> logger)
+        public ConnectionsController(ILogger<AppUserGroupsController> logger,
+            ConnectionRepository connectionRepository,
+            ServerRepository serverRepository)
         {
-            _context = context;
+            _repository = connectionRepository;
+            _serverRepository = serverRepository;
             _logger = logger;
         }
         #endregion
@@ -59,7 +61,7 @@ namespace ConnectorCenter.Controllers
                         _logger.LogWarning("Отказано в попытке запросить страницу добавления подключения к серверу. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\servers");
                     }
-                    Server? server = await _context.Servers.FindAsync(serverId);
+                    Server? server = await _serverRepository.GetByIdSimple(serverId);
                     if (server is not null)
                     {
                         _logger.LogInformation($"Запрос страницы добавления нового подключения для сервера {server.Name}.S");
@@ -133,12 +135,7 @@ namespace ConnectorCenter.Controllers
                             }));
                     }
 
-                    Connection? connection = await _context.Connections
-                        .Include(conn => conn.Server)
-                        .Include(conn => conn.ServerUser)
-                            .ThenInclude(user => user!.Credentials)
-                        .Where(conn => conn.Id == connectionId)
-                        .FirstOrDefaultAsync();
+                    Connection? connection = await _repository.GetById(connectionId.Value);
                     if (connection == null)
                     {
                         _logger.LogWarning($"Ошибка при запросе страницы редактирования подключения. Подключение на найдено.");
@@ -209,9 +206,7 @@ namespace ConnectorCenter.Controllers
                             }));
                     }
 
-                    Connection? connection = await _context.Connections
-                        .Include(srv => srv.Server)
-                        .FirstOrDefaultAsync(m => m.Id == id);
+                    Connection? connection = await _repository.GetByIdWithServerOnly(id.Value);
                     if (connection == null)
                     {
                         _logger.LogWarning($"Ошибка при запросе удаления подключения. Подключение не найдено.");
@@ -229,8 +224,7 @@ namespace ConnectorCenter.Controllers
                     }
                     else
                     {
-                        _context.Connections.Remove(connection);
-                        await _context.SaveChangesAsync();
+                        await _repository.Remove(connection);
                         _logger.LogInformation($"Удалено подключение {connection.ConnectionName} у сервера {connection.Server.Name}.");
                         return RedirectToAction("ShowConnections", "Servers", new RouteValueDictionary(
                                         new { id = connection.Server.Id }));
@@ -262,7 +256,7 @@ namespace ConnectorCenter.Controllers
         /// <param name="connection">New connection instance</param>
         /// <returns>Server's connection list page</returns>
         [HttpPost]
-        public async Task<IActionResult> Add(long serverId, Connection connection)
+        public async Task<IActionResult> Add(long? serverId, Connection? connection)
         {
             using (var scope = _logger.BeginScope($"WEB({AuthorizeService.GetUserName(HttpContext)}:{HttpContext.Connection.RemoteIpAddress}"))
             {
@@ -276,13 +270,28 @@ namespace ConnectorCenter.Controllers
                             _logger.LogWarning("Отказано в попытке добавления подключения к серверу. Недостаточно прав.");
                             return AuthorizeService.ForbiddenActionResult(this, @"\servers");
                         }
-                        Server? server = await _context.Servers.FindAsync(serverId);
+
+                        if(serverId is null || connection is null)
+                        {
+                            _logger.LogWarning($"Ошибка при запросе добавления подключения к серверу. Ошибка в агументах.");
+                            return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                                new
+                                {
+                                    message = "Ошибка при запросе добавления подключения к серверу. Ошибка в агументах.",
+                                    buttons = new Dictionary<string, string>()
+                                    {
+                                        {"На главную",@"\dashboard" },
+                                        {"К логам",@"\logs" }
+                                    },
+                                    errorCode = 404
+                                }));
+                        }
+
+                        Server? server = await _serverRepository.GetById(serverId.Value);
                         if (server is not null)
                         {
                             connection.Server = server;
-                            server.Connections.Add(connection);
-                            _context.Update(server);
-                            await _context.SaveChangesAsync();
+                            await _serverRepository.AddConnection(server, connection);
                             _logger.LogInformation($"Серверу {server.Name} добавлено новое подключение {connection.ConnectionName}.");
                             return RedirectToAction("ShowConnections", "Servers", new RouteValueDictionary(
                                         new { id = connection.Server.Id }));
@@ -356,7 +365,7 @@ namespace ConnectorCenter.Controllers
                         _logger.LogWarning("Отказано в попытке изменения подключения к серверу. Недостаточно прав.");
                         return AuthorizeService.ForbiddenActionResult(this, @"\servers");
                     }
-                    if (!ConnectionExists(connection.Id))
+                    if (!await _repository.ConnectionExists(connection.Id))
                     {
                         _logger.LogWarning($"Ошибка при запросе изменения подключения. Указанного подключения не существует.");
                         return RedirectToAction("Index", "Message", new RouteValueDictionary(
@@ -374,8 +383,7 @@ namespace ConnectorCenter.Controllers
 
                     if (ModelState.IsValid)
                     {
-                        _context.Update(connection);
-                        await _context.SaveChangesAsync();
+                        await _repository.Update(connection);
                         _logger.LogInformation($"Изменено подключение {connection.ConnectionName}.");
                         return RedirectToAction("ShowConnections", "Servers", new RouteValueDictionary(
                                         new { id = serverId }));
@@ -447,10 +455,7 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 400
                             }));
                     }
-                    Connection? connection = await _context.Connections
-                        .Include(conn => conn.Server)
-                        .Where(conn => conn.Id == id)
-                        .FirstOrDefaultAsync();
+                    Connection? connection = await _repository.GetByIdWithServerOnly(id.Value);
                     if (connection == null)
                     {
                         _logger.LogError($"Ошибка при запросе изменения статуса активности подключения. Подключение не найдено.");
@@ -467,8 +472,7 @@ namespace ConnectorCenter.Controllers
                             }));
                     }
                     connection.IsAvailable = !connection.IsAvailable;
-                    _context.Update(connection);
-                    await _context.SaveChangesAsync();
+                    await _repository.Update(connection);
                     _logger.LogInformation($"Изменен статус активности подключения {connection.ConnectionName} с {!connection.IsAvailable} на {connection.IsAvailable}");
                     return RedirectToAction("ShowConnections", "Servers", new RouteValueDictionary(
                                         new { id = connection.Server.Id }));
@@ -489,17 +493,6 @@ namespace ConnectorCenter.Controllers
                         }));
                 }
             }
-        }
-        #endregion
-        #region Methods
-        /// <summary>
-        /// Check on exisisting connection in database
-        /// </summary>
-        /// <param name="id">Connection identifier</param>
-        /// <returns>True - connection exist, otherwise - false.</returns>
-        private bool ConnectionExists(long id)
-        {
-            return (_context.Connections?.Any(e => e.Id == id)).GetValueOrDefault();
         }
         #endregion
     }

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using ConnectorCenter.Services.Authorize;
 using ConnectorCenter.Data;
 using Microsoft.EntityFrameworkCore;
+using ConnectorCenter.Models.Repository;
 
 namespace ConnectorCenter.Controllers
 {
@@ -23,14 +24,14 @@ namespace ConnectorCenter.Controllers
         /// </summary>
         private readonly ILogger _logger;
         /// <summary>
-        /// Current database context
+        /// User Settings DataBase Repository
         /// </summary>
-        private DataBaseContext _context;
+        private UserSettingsRepository _repository;
         #endregion
         #region Constructors
-        public ExportController(ILogger<AppUserGroupsController> logger, DataBaseContext context)
+        public ExportController(ILogger<AppUserGroupsController> logger, UserSettingsRepository repository)
         {
-            _context = context;
+            _repository = repository;
             _logger = logger;
         }
         #endregion
@@ -249,8 +250,7 @@ namespace ConnectorCenter.Controllers
                     ConnectorCenterApp.Instance.Statistics.IncWebRequest();                    
                     long userId = AuthorizeService.GetUserId(HttpContext);
 
-                    UserSettings? mySettings = await _context.UserSettings
-                        .FirstOrDefaultAsync(us => us.AppUserId == userId);
+                    UserSettings? mySettings = await _repository.GetByUserId(userId);
                     if(mySettings is not null)
                     {
                         _logger.LogInformation($"Запрошен экспорт личных настроек.");
@@ -262,8 +262,7 @@ namespace ConnectorCenter.Controllers
                     else
                     {
                         mySettings = UserSettings.GetDefault();
-                        _context.Update(mySettings);
-                        _context.SaveChanges();
+                        await _repository.Update(mySettings);
                         _logger.LogWarning($"Ошибка при запросе экспорта личных настроек. У пользователя не найдены настройки. Будут назначены по умолчанию.");
                         return RedirectToAction("Index", "Message", new RouteValueDictionary(
                             new
