@@ -5,7 +5,7 @@
 @{
     Layout = "~/Views/Shared/ViewBase.cshtml";
 }
-
+<div>
     <div class="container panel" style="height:80vh;">
         <!--Logo-->
     <form>
@@ -47,8 +47,8 @@
             </div>
         </div>
         <!--List-->
-        <form>
-    <div class="row" style="margin:0px 2vw; height:70vh;">
+
+            <div class="row" style="margin:0px 2vw; height:70vh;">
         @if (Model.Group.Connections.Any())
                 {
                 <div class="scrollDiv">
@@ -67,13 +67,14 @@
                         <tbody>
                         @foreach (Connection connection in Model.Group.Connections.OrderBy(conn => conn.ConnectionName))
                             {
+                            <form>
                                 <tr>
                                     <td class="text text-center">@connection.ConnectionName</td>
                                     <td class="text text-center">@connection.ConnectionType.ToString()</td>
                                     <td class="text text-center">@connection.Port</td>
                                 @if (connection.IsAvailable)
                                     {
-                                    <td class="text text-center">Да</td>
+                                        <td class="text text-center">Да</td>
                                     }
                                     else
                                     {
@@ -106,6 +107,7 @@
                                     </div>    
                                     </td>
                                 </tr>
+                                </form>
                              }
                         </tbody>
                     </table>
@@ -115,5 +117,4 @@
                     <p class="text text-center m-3">Список подключений пуст</p>
                 }
             </div>
-        </form>
 </div>

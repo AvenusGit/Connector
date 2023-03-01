@@ -5,7 +5,7 @@
 @{
     Layout = "~/Views/Shared/ViewBase.cshtml";
 }
-
+<div>
     <div class="container panel" style="height:80vh;">
         <!--Logo-->
     <form>
@@ -47,7 +47,7 @@
             </div>
         </div>
         <!--List-->
-        <form>
+
     <div class="row" style="margin:0px 2vw; height:70vh;">
                 @if(Model.Group.Users.Any())
                 {
@@ -65,6 +65,7 @@
                         <tbody>
                         @foreach (AppUser user in Model.Group.Users.OrderBy(conn => conn.Name))
                             {
+                                <form>
                                 <tr>
                                     <td class="text text-center">@user.Name</td>
                                     <td class="text text-center">@user.Credentials?.Login</td>
@@ -95,6 +96,7 @@
                                     </div>    
                                     </td>
                                 </tr>
+                                </form>
                              }
                         </tbody>
                     </table>
@@ -104,5 +106,4 @@
                     <p class="text text-center m-3">Список пользователей пуст</p>
                 }
             </div>
-        </form>
 </div>
