@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using ConnectorCenter.Models.Settings;
 using ConnectorCore.Cryptography;
+using ConnectorCenter.Models.Repository;
 
 namespace ConnectorCenter.Controllers
 {
@@ -29,16 +30,23 @@ namespace ConnectorCenter.Controllers
         /// <summary>
         /// Current database context
         /// </summary>
-        private readonly DataBaseContext _context;
+        private readonly AppUserRepository _repository;
+        private readonly ServerRepository _serverRepository;
+        private readonly ConnectionRepository _connectionRepository;
         /// <summary>
         /// Current logger
         /// </summary>
         private readonly ILogger _logger;
         #endregion
         #region Constructors
-        public AppUsersController(DataBaseContext context, ILogger<AppUserGroupsController> logger)
+        public AppUsersController(ILogger<AppUserGroupsController> logger,
+            AppUserRepository repository, 
+            ServerRepository serverRepository,
+            ConnectionRepository connectionRepository)
         {
-            _context = context;
+            _repository = repository;
+            _serverRepository = serverRepository;
+            _connectionRepository = connectionRepository;
             _logger = logger;
         }
         #endregion
@@ -62,14 +70,7 @@ namespace ConnectorCenter.Controllers
                         return AuthorizeService.ForbiddenActionResult(this, @"\dashboard");
                     }
                     _logger.LogInformation("Запрос на получение списка пользователей");
-                    return _context.Users is null
-                        ? View(new IndexModel(new List<AppUser>(), currentAcessSettings))
-                        : View(new IndexModel(await _context.Users
-                            .Include(usr => usr.Groups)
-                                .ThenInclude(gr => gr.Connections)
-                            .Include(user => user.Credentials)
-                            .Include(user => user.Connections)
-                            .ToListAsync(), currentAcessSettings));
+                    return View(new IndexModel(await _repository.GetAll(), currentAcessSettings));
                 }
                 catch (Exception ex)
                 {
@@ -159,10 +160,7 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 400
                             }));
                     }
-
-                    AppUser? appUser = await _context.Users
-                        .Include(usr => usr.Credentials)
-                        .Where(usr => usr.Id == id).FirstOrDefaultAsync();
+                    AppUser? appUser = await _repository.GetByIdCredentialsOnly(id.Value);
                     if (appUser == null)
                     {
                         _logger.LogWarning($"Ошибка при запросе страницы редактирования пользователя. Пользователь не найден.");
@@ -179,7 +177,7 @@ namespace ConnectorCenter.Controllers
                             }));
                     }
 
-                    appUser.Credentials.Password = "֍password֍";
+                    appUser.Credentials.Password = "֍password֍"; // hide real password
                     _logger.LogInformation($"Запрос страницы для редактирования пользователя {appUser.Name}.");
                     return View(new EditModel(appUser, currentAcessSettings));
                 }
@@ -234,20 +232,7 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 400
                             }));
                     }
-                    AppUser? user = await _context.Users
-                        .Include(usr => usr.Groups)
-                            .ThenInclude(gr => gr.Connections)
-                                .ThenInclude(conn => conn.ServerUser)
-                                    .ThenInclude(usr => usr!.Credentials)
-                        .Include(usr => usr.Groups)
-                            .ThenInclude(gr => gr.Connections)
-                                .ThenInclude(conn => conn.Server)
-                        .Include(usr => usr.Connections)
-                            .ThenInclude(conn => conn.ServerUser)
-                                .ThenInclude(usr => usr!.Credentials)
-                        .Include(usr => usr.Connections)
-                            .ThenInclude(conn => conn.Server)
-                        .FirstOrDefaultAsync(usr => usr.Id == userId);
+                    AppUser? user = await _repository.GetByIdWithConnections(userId.Value);
                     if (user != null)
                         return View(new ShowConnectionsModel(user, currentAcessSettings));
                     else
@@ -317,22 +302,8 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 400
                             }));
                     }
-                    AppUser? user = await _context.Users
-                        .Include(usr => usr.Groups)
-                            .ThenInclude(gr => gr.Connections)
-                                .ThenInclude(conn => conn.ServerUser)
-                                    .ThenInclude(usr => usr!.Credentials)
-                        .Include(usr => usr.Groups)
-                            .ThenInclude(gr => gr.Connections)
-                                .ThenInclude(conn => conn.Server)
-                        .Include(usr => usr.Connections)
-                                .ThenInclude(conn => conn.Server)
-                        .FirstOrDefaultAsync(usr => usr.Id == userId);
-                    List<Server> servers = _context.Servers
-                        .Include(srv => srv.Connections)
-                            .ThenInclude(conn => conn.ServerUser)
-                                .ThenInclude(usr => usr!.Credentials)
-                        .ToList();
+                    AppUser? user = await _repository.GetByIdWithConnections(userId.Value);
+                    IEnumerable<Server> servers = await _serverRepository.GetAll();
                     if (user is null)
                     {
                         _logger.LogWarning($"Ошибка при запросе страницы добавления подключений пользователю. Пользователь не найден.");
@@ -348,8 +319,6 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 404
                             }));
                     }
-                    if (servers is null)
-                        servers = new List<Server>();
                     _logger.LogInformation($"Запрос на страницу доабвления подключений пользователю.");
                     return View(new AddConnectionsModel(servers, user));
                 }
@@ -407,7 +376,7 @@ namespace ConnectorCenter.Controllers
                                     errorCode = 400
                                 }));
                         }
-                        if (AppUserExist(appUser.Credentials.Login))
+                        if (await _repository.UserExistByName(appUser.Credentials.Login))
                         {
                             _logger.LogWarning("Отказано в попытке добавления пользователя. Пользователь с таким логином уже существует.");
                             return RedirectToAction("Index", "Message", new RouteValueDictionary(
@@ -429,8 +398,7 @@ namespace ConnectorCenter.Controllers
                             );
 
                         appUser.VisualScheme = VisualScheme.GetDefaultVisualScheme();
-                        _context.Users.Add(appUser);
-                        await _context.SaveChangesAsync();
+                        await _repository.Add(appUser);
                         _logger.LogInformation($"Добавлен новый пользователь {appUser.Name} под логином {appUser.Credentials?.Login}");
                         return RedirectToAction("Index", "AppUsers");
                     }
@@ -499,21 +467,18 @@ namespace ConnectorCenter.Controllers
                                     errorCode = 400
                                 }));
                         }
-                        AppUser? user = _context.Users
-                            .Include(usr => usr.Credentials)
-                            .FirstOrDefault(x => x.Id == appUser.Id);
+                        AppUser? user = await _repository.GetByIdCredentialsOnly(appUser.Id);
                         if (user is not null)
                         {
                             user.Name = appUser.Name;
                             user.Credentials.Login = appUser.Credentials.Login;
-                            if (appUser.Credentials.Password != "֍password֍")
+                            if (appUser.Credentials.Password != "֍password֍") // if password changed by user
                                 user.Credentials.Password = PasswordCryptography.GetUserPasswordHash(
                                     appUser.Credentials.Login,
                                     appUser.Credentials.Password);                       
                             user.Role = appUser.Role;
                             user.IsEnabled = appUser.IsEnabled;
-                            _context.Update(user);
-                            await _context.SaveChangesAsync();
+                            await _repository.Update(user);
                             _logger.LogInformation($"Изменен пользователь {appUser.Name} (ID:{appUser.Id}).");
                             return RedirectToAction("Index");
                         }
@@ -597,22 +562,12 @@ namespace ConnectorCenter.Controllers
                             }));
                     }
 
-                    AppUser? appUser = await _context.Users
-                        .Include(usr => usr.Connections)
-                        .FirstOrDefaultAsync(m => m.Id == id);
+                    AppUser? appUser = await _repository.GetByIdWithConnectionsSimple(id.Value);
                     if (appUser != null)
                     {
-                        if(appUser.Role == AppUser.AppRoles.Administrator && 
-                            await _context.Users
-                                .Where(usr => usr.Role == AppUser.AppRoles.Administrator && usr.Id != appUser.Id)
-                                .AnyAsync()
-                          )
+                        if (await _repository.IsNotOnlyOneAdministrator(appUser))
                         {
-                            appUser.Connections.Clear(); // очистка подключений, чтобы они не были каскадно удалены с пользователем
-                            _context.Update(appUser);
-                            await _context.SaveChangesAsync();
-                            _context.Users.Remove(appUser);
-                            await _context.SaveChangesAsync();
+                            await _repository.Remove(appUser);
                             if (AuthorizeService.CompareHttpUserWithAppUser(HttpContext.User, appUser))
                             {
                                 CookieAuthorizeService.SignOut(HttpContext);
@@ -705,7 +660,7 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 400
                             }));
                     }
-                    AppUser? user = await _context.Users.FindAsync(id) ?? null!;
+                    AppUser? user = await _repository.GetByIdSimple(id.Value);
                     if (user == null)
                     {
                         _logger.LogError($"Ошибка при запросе изменения активности пользователя. Пользователь не найден.");
@@ -722,8 +677,7 @@ namespace ConnectorCenter.Controllers
                             }));
                     }
                     user.IsEnabled = !user.IsEnabled;
-                    _context.Update(user);
-                    await _context.SaveChangesAsync();
+                    await _repository.Update(user);
                     _logger.LogInformation($"Изменен статус активности пользователя {user.Name} с {!user.IsEnabled} на {user.IsEnabled}.");
                     return RedirectToAction("Index");
                 }
@@ -779,14 +733,7 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 400
                             }));
                     }
-                    AppUser? user = await _context.Users
-                        .Include(usr => usr.Groups)
-                            .ThenInclude(gr => gr.Connections)
-                                .ThenInclude(conn => conn.ServerUser)
-                                    .ThenInclude(usr => usr!.Credentials)
-
-                        .Include(usr => usr.Connections)
-                        .FirstOrDefaultAsync(usr => usr.Id == userId);
+                    AppUser? user = await _repository.GetByIdWithConnections(userId.Value);
                     if (user is null)
                     {
                         _logger.LogWarning($"Ошибка при запросе добавления подключения пользователю. Пользователь не найден.");
@@ -802,7 +749,7 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 404
                             }));
                     }
-                    Connection? connection = await _context.Connections.FindAsync(connectionId);
+                    Connection? connection = await _connectionRepository.GetById(connectionId.Value);
                     if (connection is null)
                     {
                         _logger.LogWarning($"Ошибка при запросе добавления подключения пользователю. Подключение не найдено.");
@@ -818,14 +765,8 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 404
                             }));
                     }
-                    user.Connections.Add(connection);
-                    _context.Update(user);
-                    await _context.SaveChangesAsync();
-                    List<Server> servers = _context.Servers
-                        .Include(srv => srv.Connections)
-                            .ThenInclude(conn => conn.ServerUser)
-                                .ThenInclude(usr => usr!.Credentials)
-                        .ToList();
+                    await _repository.AddConnection(user, connection);
+                    IEnumerable<Server> servers = await _serverRepository.GetAll();
                     _logger.LogInformation($"Подключение {connection.ConnectionName} добавлено пользователю {user.Name}.");
                     return View("AddConnections", new AddConnectionsModel(servers, user));
                 }
@@ -882,20 +823,7 @@ namespace ConnectorCenter.Controllers
                             }));
                     }
 
-                    AppUser? user = await _context.Users
-                        .Include(usr => usr.Groups)
-                            .ThenInclude(gr => gr.Connections)
-                                .ThenInclude(conn => conn.ServerUser)
-                                    .ThenInclude(usr => usr!.Credentials)
-                        .Include(usr => usr.Groups)
-                            .ThenInclude(gr => gr.Connections)
-                                .ThenInclude(conn => conn.Server)
-                        .Include(usr => usr.Connections)
-                            .ThenInclude(conn => conn.ServerUser)
-                                .ThenInclude(usr => usr!.Credentials)
-                        .Include(usr => usr.Connections)
-                            .ThenInclude(conn => conn.Server)
-                        .FirstOrDefaultAsync(usr => usr.Id == userId);
+                    AppUser? user = await _repository.GetByIdWithConnections(userId.Value);
 
                     if (user is null)
                     {
@@ -912,13 +840,8 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 404
                             }));
                     }
-
-                    await DropConnection(connectionId.Value, user);
-                    List<Server> servers = _context.Servers
-                        .Include(srv => srv.Connections)
-                            .ThenInclude(conn => conn.ServerUser)
-                                .ThenInclude(usr => usr!.Credentials)
-                        .ToList();
+                    await _repository.DeleteConnection(user,connectionId.Value);
+                    IEnumerable<Server> servers = await _serverRepository.GetAll();
                     return View("AddConnections", new AddConnectionsModel(servers, user));
                 }
                 catch (Exception ex)
@@ -974,20 +897,7 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 400
                             }));
                     }
-                    AppUser? user = await _context.Users
-                        .Include(usr => usr.Groups)
-                            .ThenInclude(gr => gr.Connections)
-                                .ThenInclude(conn => conn.ServerUser)
-                                    .ThenInclude(usr => usr!.Credentials)
-                        .Include(usr => usr.Groups)
-                            .ThenInclude(gr => gr.Connections)
-                                .ThenInclude(conn => conn.Server)
-                        .Include(usr => usr.Connections)
-                            .ThenInclude(conn => conn.ServerUser)
-                                .ThenInclude(usr => usr!.Credentials)
-                        .Include(usr => usr.Connections)
-                            .ThenInclude(conn => conn.Server)
-                        .FirstOrDefaultAsync(usr => usr.Id == userId);
+                    AppUser? user = await _repository.GetByIdWithConnections(userId.Value);
 
                     if (user is null)
                     {
@@ -1004,7 +914,7 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 404
                             }));
                     }
-                    await DropConnection(connectionId.Value, user);
+                    await _repository.DeleteConnection(user, connectionId.Value);
                     return View("ShowConnections", new ShowConnectionsModel(user, currentAcessSettings));
                 }
                 catch (Exception ex)
@@ -1044,9 +954,23 @@ namespace ConnectorCenter.Controllers
                         return AuthorizeService.ForbiddenActionResult(this, @"\appUsers");
                     }
 
-                    AppUser? user = await _context.Users
-                        .Include(usr => usr.VisualScheme)
-                        .FirstOrDefaultAsync(usr => usr.Id == userId);
+                    if(userId == null)
+                    {
+                        _logger.LogWarning($"Ошибка при попытке сбросить визуальную схему пользователя. Не указан ID.");
+                        return RedirectToAction("Index", "Message", new RouteValueDictionary(
+                            new
+                            {
+                                message = "Ошибка при попытке сбросить визуальную схему пользователя. Не указан ID.",
+                                buttons = new Dictionary<string, string>()
+                                {
+                                    {"На главную",@"\dashboard" },
+                                    {"К логам",@"\logs" }
+                                },
+                                errorCode = 400
+                            }));
+                    }
+
+                    AppUser? user = await _repository.GetByIdWithVisualScheme(userId.Value);
 
                     if (user is null)
                     {
@@ -1063,9 +987,7 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 404
                             }));
                     }
-                    user.VisualScheme = VisualScheme.GetDefaultVisualScheme();
-                    _context.Update(user);
-                    await _context.SaveChangesAsync();
+                    await _repository.SetVisualSchemeToDefault(user);
                     _logger.LogInformation($"Сброшены визуальные настройки у пользователя {user.Name}.");
                     return RedirectToAction("Index", "Message", new RouteValueDictionary(
                         new
@@ -1095,46 +1017,6 @@ namespace ConnectorCenter.Controllers
                         }));
                 }
             }
-        }
-        #endregion
-        #region Methods
-        /// <summary>
-        /// Remove connection on selected user
-        /// </summary>
-        /// <param name="connectionId">Connection identifier</param>
-        /// <param name="user">Selected user instance</param>
-        private async Task DropConnection(long connectionId, AppUser user)
-        {
-            Connection? connection = await _context.Connections.FindAsync(connectionId);
-            if (connection is null)
-            {
-                _logger.LogError($"Ошибка при запросе удаления подключения у пользователя. Подключение не найдено.");
-                return;
-            }
-            user.Connections.Remove(connection);
-            _context.Update(user);
-            _logger.LogInformation($"Подключение {connection.ConnectionName} удалено у пользователя {user.Name}.");
-            await _context.SaveChangesAsync();
-        }
-        /// <summary>
-        /// CHeck on exist user in DB by identifier
-        /// </summary>
-        /// <param name="id">User identifier</param>
-        /// <returns>True - user exist</returns>
-        private bool AppUserExists(long id)
-        {
-            return (_context.Users?
-                .Include(usr => usr.UserSettings)
-                .Any(e => e.Id == id)).GetValueOrDefault();
-        }
-        /// <summary>
-        /// CHeck on exist user in DB by login name
-        /// </summary>
-        /// <param name="login">User login (AppUser.Credentials.Login)</param>
-        /// <returns>True - user exist</returns>
-        private bool AppUserExist(string login)
-        {
-            return (_context.Users?.Any(usr => usr.Credentials.Login == login)).GetValueOrDefault();
         }
         #endregion
     }

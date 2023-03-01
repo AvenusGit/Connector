@@ -12,7 +12,7 @@ namespace ConnectorCenter.Models.Repository
         public Task<Type?> GetById(long Id);
         public Task<IEnumerable<Type>> GetAll();
         public Task Add(Type element);
-        public Task Remove(Type element);
+        public Task<Type> Remove(Type? element);
         public Task<Type?> RemoveById(long Id);
         public Task Update(Type element);
         public Task<int> Count();

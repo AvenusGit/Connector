@@ -64,10 +64,11 @@ namespace ConnectorCenter.Models.Repository
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task Remove(AppUserGroup element)
+        public async Task<AppUserGroup> Remove(AppUserGroup group)
         {
-            _dbContext.UserGroups.Remove(element);
+            _dbContext.UserGroups.Remove(group);
             await _dbContext.SaveChangesAsync();
+            return group;
         }
 
         public async Task<AppUserGroup?> RemoveById(long id)

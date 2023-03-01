@@ -39,7 +39,7 @@ namespace ConnectorCenter.Models.Repository
                         .FirstOrDefaultAsync(conn => conn.Id == Id);
         }
 
-        public Task Remove(Connection element)
+        public Task<Connection> Remove(Connection element)
         {
             throw new NotImplementedException();
         }

@@ -28,7 +28,7 @@ namespace ConnectorCenter.Models.Repository
         {
             throw new NotImplementedException();
         }
-        public Task Remove(Server element)
+        public Task<Server> Remove(Server element)
         {
             throw new NotImplementedException();
         }

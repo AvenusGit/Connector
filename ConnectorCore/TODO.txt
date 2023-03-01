@@ -1,7 +1,4 @@
 ﻿//// cert???
-// logs in docker only errors
-// bug deleting user from group!!! now delete first
-// bug deleting connection from group!!! now delete first
 
 //// DI messages, logs, validation
 

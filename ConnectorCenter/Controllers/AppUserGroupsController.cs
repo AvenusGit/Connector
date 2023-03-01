@@ -77,12 +77,6 @@ namespace ConnectorCenter.Controllers
                     return View(new IndexModel(
                         await _repository.GetAll(),
                         currentAcessSettings));
-                    //return _context.UserGroups is null
-                    //      ? View(new IndexModel(new List<AppUserGroup>(), currentAcessSettings))
-                    //      : View(new IndexModel(await _context.UserGroups
-                    //            .Include(gr => gr.Connections)
-                    //            .Include(gr => gr.Users)
-                    //            .ToListAsync(), currentAcessSettings));
                 }
                 catch (Exception ex)
                 {
@@ -312,19 +306,8 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 400
                             }));
                     }
-
                     AppUserGroup? group = await _repository.GetByIdWithConnections(groupId.Value);
-
-                    //AppUserGroup? group = await _context.UserGroups
-                    //    .Include(userGroup => userGroup.Connections)
-                    //        .ThenInclude(conn => conn.Server)
-                    //    .FirstOrDefaultAsync(group => group.Id == groupId);
                     IEnumerable<Server> servers = await _serverRepository.GetAll();
-                    //List<Server> servers = _context.Servers
-                    //    .Include(srv => srv.Connections)
-                    //        .ThenInclude(conn => conn.ServerUser)
-                    //            .ThenInclude(usr => usr!.Credentials)
-                    //    .ToList();
                     if (group is null)
                     {
                         _logger.LogError($"Ошибка при запросе страницы добавления подключений для группы пользователей. Группа не найдена в БД.");
@@ -470,13 +453,7 @@ namespace ConnectorCenter.Controllers
                             }));
                     }
                     AppUserGroup? group = await _repository.GetByIdUsersOnly(groupId.Value);
-                    //AppUserGroup? group = await _context.UserGroups
-                    //    .Include(gr => gr.Users)
-                    //    .FirstOrDefaultAsync(gr => gr.Id == groupId);
                     IEnumerable<AppUser> users = await _userRepository.GetAllCredentialsOnly();
-                    //List <AppUser> users = _context.Users
-                    //    .Include(usr => usr.Credentials)
-                    //    .ToList();
                     if (group is null)
                     {
                         _logger.LogError($"Ошибка при попытке получить страницу добавления пользователя в группу. Группа не найдена.");
@@ -537,8 +514,6 @@ namespace ConnectorCenter.Controllers
                     if (ModelState.IsValid)
                     {
                         await _repository.Add(appUserGroup);
-                        //_context.UserGroups.Add(appUserGroup);
-                        //await _context.SaveChangesAsync();
                         _logger.LogInformation($"Добавлена новая группа пользователей:{appUserGroup.GroupName}."); ;
                         return RedirectToAction("Index");
                     }
@@ -593,8 +568,6 @@ namespace ConnectorCenter.Controllers
                     if (ModelState.IsValid)
                     {
                         await _repository.Update(appUserGroup);
-                        //_context.Update(appUserGroup);
-                        //await _context.SaveChangesAsync();
                         _logger.LogInformation($"Изменена группа пользователей:{appUserGroup.GroupName}."); ;
                         return RedirectToAction("Index");
                     }
@@ -648,11 +621,6 @@ namespace ConnectorCenter.Controllers
                     }
 
                     AppUserGroup? deletedGroup = await _repository.RemoveById(id);
-                    // //AppUserGroup? appUserGroup = await _repository.GetById(id);
-                    //AppUserGroup? appUserGroup = await _context.UserGroups
-                    //    .Include(gr => gr.Users)
-                    //    .Include(gr => gr.Connections)
-                    //    .FirstOrDefaultAsync(usr => usr.Id == id);
                     if (deletedGroup is not null)
                     {
                         _logger.LogInformation($"Удалена группа пользователей:{deletedGroup.GroupName}."); ;
@@ -727,12 +695,7 @@ namespace ConnectorCenter.Controllers
                     }
 
                     AppUserGroup? group = await _repository.GetByIdWithConnections(groupId.Value);
-                    //AppUserGroup? group = await _context.UserGroups
-                    //    .Include(usr => usr.Connections)
-                    //    .Where(usr => usr.Id == groupId)
-                    //    .FirstOrDefaultAsync();
                     Connection? connection = await _connectionRepository.GetById(connectionId.Value);
-                    //Connection ? connection = await _context.Connections.FindAsync(connectionId);
                     if (connection is null)
                     {
                         _logger.LogWarning($"Ошибка при попытке добавить подключение группе пользователей. Не найдено подключение.");
@@ -829,12 +792,6 @@ namespace ConnectorCenter.Controllers
                     }
 
                     AppUserGroup? group = await _repository.GetByIdWithConnections(groupId.Value);
-                    //AppUserGroup? group = await _context.UserGroups
-                    //    .Include(usr => usr.Connections)
-                    //        .ThenInclude(conn => conn.Server)
-                    //    .Where(usr => usr.Id == groupId)
-                    //    .FirstOrDefaultAsync();
-
                     if (group is null)
                     {
                         _logger.LogError($"Ошибка при попытке удалить подключение у группы. Не найдена группа.");
@@ -916,13 +873,7 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 400
                             }));
                     }
-
                     AppUserGroup? group = await _repository.GetByIdWithConnections(groupId.Value);
-                    //AppUserGroup? group = await _context.UserGroups
-                    //    .Include(usr => usr.Connections)
-                    //    .Where(gr => gr.Id == groupId)
-                    //    .FirstOrDefaultAsync();
-
                     if (group is null)
                     {
                         _logger.LogWarning($"Ошибка при попытке удалить подключение у группы. Не найдена группа.");
@@ -997,10 +948,6 @@ namespace ConnectorCenter.Controllers
                     }
 
                     AppUserGroup? group = await _repository.GetByIdUsersOnly(groupId.Value);
-                    //AppUserGroup? group = await _context.UserGroups
-                    //    .Include(usr => usr.Users)
-                    //    .Where(usr => usr.Id == groupId)
-                    //    .FirstOrDefaultAsync();
                     if (group is null)
                     {
                         _logger.LogWarning($"Ошибка при попытке добавить пользователя в группу. Нет группы в БД.");
@@ -1088,13 +1035,7 @@ namespace ConnectorCenter.Controllers
                                 errorCode = 400
                             }));
                     }
-
                     AppUserGroup? group = await _repository.GetByIdUsersOnly(groupId.Value);
-                    //AppUserGroup? group = await _context.UserGroups
-                    //    .Include(usr => usr.Users)
-                    //    .Where(usr => usr.Id == groupId)
-                    //    .FirstOrDefaultAsync();
-
                     if (group is null)
                     {
                         _logger.LogWarning($"Ошибка при попытке удалить пользователя из группы. Не найдена группа в БД.");
@@ -1175,11 +1116,6 @@ namespace ConnectorCenter.Controllers
                             }));
                     }
                     AppUserGroup? group = await _repository.GetByIdUsersOnly(groupId.Value);
-                    //AppUserGroup? group = await _context.UserGroups
-                    //    .Include(usr => usr.Users)
-                    //    .Where(usr => usr.Id == groupId)
-                    //    .FirstOrDefaultAsync();
-
                     if (group is null)
                     {
                         _logger.LogError($"Ошибка при попытке удалить пользователя из группы. Группа не найдена в БД.");

@@ -55,7 +55,7 @@
 
             @foreach (AppUserGroup group in Model.User.Groups.Where(gr => gr.Connections.Count > 0))
                 {
-                            <form>
+                            
                         <h1 class="text fw-bold text-center" style="margin:2vh 0px">От группы @group.GroupName</h1>
                     <table class="table tableBorder my-3 w-100">
                         <thead class="tableBorderHead">
@@ -72,6 +72,7 @@
                             <tbody>
                             @foreach (Connection grConnection in group.Connections.OrderBy(conn => conn.ConnectionName))
                                 {
+                                    <form>
                                     <tr>
                                         <td class="text text-center">@grConnection.ConnectionName</td>
                                         <td class="text text-center">@grConnection.ConnectionType.ToString()</td>
@@ -111,14 +112,15 @@
                                             </div>
                                         </td>
                                     </tr>
+                                </form>
                                 }
                             </tbody>
                         </table>
-                </form>
+                
                 }
                 @if(Model.User.Connections.Any())
                 {
-                    <form>
+                    
                         <h1 class="text fw-bold text-center" style="margin:2vh 0px">Личные</h1>
                     <table class="table tableBorder my-3 w-100">
                         <thead class="tableBorderHead">
@@ -134,7 +136,7 @@
                                 </thead>
                                 <tbody>
                                     @foreach (Connection connection in Model.User.Connections.OrderBy(conn => conn.ConnectionName))
-                                    {
+                                    {<form>
                                         <tr>
                                             <td class="text text-center">@connection.ConnectionName</td>
                                             <td class="text text-center">@connection.ConnectionType.ToString()</td>
@@ -174,10 +176,11 @@
                                         </div>    
                                             </td>
                                         </tr>
+                                    </form>
                                      }
                                 </tbody>
                             </table>
-                    </form>
+                    
                     }
                     </div>
                 }
